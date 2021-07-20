@@ -13,7 +13,7 @@ public class UserAuth {
     private Long id;
     private String email;
     private String password;
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private UserType userType;
 
     @OneToOne(fetch = FetchType.LAZY)
