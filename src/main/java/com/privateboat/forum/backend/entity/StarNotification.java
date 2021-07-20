@@ -13,9 +13,9 @@ public class StarNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long from;
+    private Long fromUserId;
 
-    private Long to;
+    private Long toUserId;
 
     private Timestamp timestamp;
 
