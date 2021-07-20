@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.entity;
 
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -15,6 +16,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     Long postId;
+    @Length(max = 300)
     String content;
     Timestamp time;
     Integer floor;
@@ -30,5 +32,5 @@ public class Comment {
     @Transient
     ApprovalStatus approvalStatus;
     @Transient
-    Boolean isStared;
+    Boolean isStarred;
 }
