@@ -12,7 +12,8 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
+    @ManyToOne(targetEntity = UserInfo.class, fetch = FetchType.LAZY)
+    private UserInfo userInfo;
     private String title;
     private Integer commentCount;
 
