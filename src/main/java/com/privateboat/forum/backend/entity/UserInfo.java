@@ -12,7 +12,7 @@ public class UserInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String userName;
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private Gender gender;
     private String brief;
     private String avatarUrl;
