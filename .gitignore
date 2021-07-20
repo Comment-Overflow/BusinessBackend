@@ -33,6 +33,5 @@ build/
 .vscode/
 
 ### Custom Application ###
-<<<<<<< HEAD
 src/main/resources/application.properties
 src/main/resources/banner.txt
