@@ -14,7 +14,7 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(targetEntity = UserInfo.class, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private UserInfo userInfo;
     private String title;
     private Integer commentCount;
@@ -23,8 +23,8 @@ public class Post {
     private PostTag tag;
 
     @OneToMany(cascade = CascadeType.REMOVE,
-            targetEntity = Comment.class,
-            fetch = FetchType.LAZY)
+            fetch = FetchType.LAZY,
+            mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
     @Transient

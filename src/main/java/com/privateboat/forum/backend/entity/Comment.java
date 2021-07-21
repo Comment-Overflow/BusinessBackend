@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
+import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
@@ -14,10 +15,16 @@ import java.util.List;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    Long postId;
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserInfo userInfo;
+    private Long quoteId;
     @Length(max = 300)
-    String content;
+    private String content;
     Timestamp time;
     Integer floor;
     Integer approvalCount;
@@ -33,4 +40,6 @@ public class Comment {
     ApprovalStatus approvalStatus;
     @Transient
     Boolean isStarred;
+    @Transient
+    QuoteDTO quoteDTO;
 }
