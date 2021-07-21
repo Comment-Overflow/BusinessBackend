@@ -6,6 +6,8 @@ import com.privateboat.forum.backend.repository.UserAuthRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 public class UserAuthRepositoryImpl implements UserAuthRepository {
@@ -14,5 +16,10 @@ public class UserAuthRepositoryImpl implements UserAuthRepository {
     @Override
     public Boolean existsByEmail(String email) {
         return userAuthDAO.existsByEmail(email);
+    }
+
+    @Override
+    public Optional<UserAuth> findByEmail(String email) {
+        return userAuthDAO.findByEmail(email);
     }
 }

@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.interceptor;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
 import com.privateboat.forum.backend.util.JWTUtil;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -23,13 +24,13 @@ public class JWTInterceptor implements HandlerInterceptor {
             @NonNull Object handler) {
 
         if (!(handler instanceof HandlerMethod)) {
-            return true;
+            return false;
         }
 
         // Check the request authentication. ALl the methods in the controller should be annotated with @Authentication.
         HandlerMethod handlerMethod = (HandlerMethod)handler;
         Method method = handlerMethod.getMethod();
-        if (method.isAnnotationPresent(JWTUtil.Authentication.class)) {
+        if (!method.isAnnotationPresent(JWTUtil.Authentication.class)) {
             return false;
         }
 
@@ -39,7 +40,7 @@ public class JWTInterceptor implements HandlerInterceptor {
         }
 
         // Acquire token.
-         String token = request.getHeader("Authorization");
+        String token = request.getHeader("Authorization");
 
         // Get fields from token.
         Map<String, Claim> claims;
@@ -49,8 +50,11 @@ public class JWTInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // TODO: Verify permission and password
+        // Add user Id to request attribute.
+        Long userId = claims.get("userId").asLong();
+        request.setAttribute("userId", userId);
 
+        // TODO: Verify permission and password
         return true;
     }
 

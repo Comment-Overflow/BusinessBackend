@@ -8,11 +8,13 @@ import com.privateboat.forum.backend.repository.UserAuthRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import com.privateboat.forum.backend.service.AuthService;
+import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 @Transactional
 @AllArgsConstructor
@@ -26,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void register(String email, String password) throws AuthException {
         if (userAuthRepository.existsByEmail(email)) {
-            throw new AuthException();
+            throw new AuthException(AuthException.AuthExceptionType.DUPLICATE_EMAIL);
         }
 
         // Save user authentication information.
@@ -39,7 +41,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(String email, String password) {
-        return null;
+    public String login(String email, String password) throws AuthException {
+        UserAuth verifiedUserAuth = verifyAuth(email, password);
+
+        return JWTUtil.getToken(verifiedUserAuth);
+    }
+
+    private UserAuth verifyAuth(String email, String password) throws AuthException {
+        Optional<UserAuth> optionalUserAuth = userAuthRepository.findByEmail(email);
+
+        if (optionalUserAuth.isEmpty()) {
+            throw new AuthException(AuthException.AuthExceptionType.WRONG_EMAIL);
+        }
+
+        UserAuth userAuth = optionalUserAuth.get();
+
+        if (!encoder.matches(password, userAuth.getPassword())) {
+            throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
+        }
+
+        return userAuth;
     }
 }
