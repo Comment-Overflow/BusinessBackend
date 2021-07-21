@@ -1,12 +1,17 @@
 package com.privateboat.forum.backend.entity;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class UserStatistic implements Serializable {
     @Id
     private Long userId;

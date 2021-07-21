@@ -2,13 +2,16 @@ package com.privateboat.forum.backend.entity;
 
 import com.privateboat.forum.backend.enumerate.UserType;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class UserAuth implements Serializable {
     @Id
