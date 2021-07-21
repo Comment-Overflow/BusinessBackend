@@ -2,30 +2,35 @@ package com.privateboat.forum.backend.entity;
 
 import com.privateboat.forum.backend.enumerate.Gender;
 import lombok.Data;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Data
-public class UserInfo {
+public class UserInfo implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String userName;
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
     private String brief;
     private String avatarUrl;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo", cascade = CascadeType.PERSIST)
     UserAuth userAuth;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo", cascade = CascadeType.PERSIST)
     UserStatistic userStatistic;
 
-    public interface IdAndUserNameAndAvatarUrl {
-        Long getId();
-        String getUserName();
-        String getAvatarUrl();
+    public UserInfo() {
+        this.userName = "ykfg_" + RandomStringUtils.randomAlphanumeric(5);
+        this.gender = Gender.SECRET;
     }
 }
