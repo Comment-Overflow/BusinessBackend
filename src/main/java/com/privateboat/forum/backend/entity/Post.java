@@ -1,8 +1,11 @@
 package com.privateboat.forum.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.privateboat.forum.backend.enumerate.PostTag;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -10,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Post {
     @Id
@@ -27,6 +31,7 @@ public class Post {
     @OneToMany(cascade = CascadeType.REMOVE,
             fetch = FetchType.LAZY,
             mappedBy = "post")
+    @JsonIgnore
     private List<Comment> comments;
 
     @Transient
