@@ -13,7 +13,9 @@ public class FollowNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long followedUserId;
+    @OneToOne
+    @JoinColumn
+    private UserInfo followedUser;
 
     private Timestamp timestamp;
 

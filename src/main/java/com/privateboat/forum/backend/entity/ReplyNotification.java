@@ -13,13 +13,17 @@ public class ReplyNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long fromUserId;
+    @OneToOne
+    @JoinColumn
+    private UserInfo fromUser;
 
     private Long toUserId;
 
     private Timestamp timestamp;
 
-    private Long commentId;
+    @OneToOne
+    @JoinColumn
+    private Comment comment;
 
     private Long quoteId;
 }

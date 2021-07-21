@@ -13,7 +13,9 @@ public class ApprovalNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long fromUserId;
+    @OneToOne
+    @JoinColumn
+    private UserInfo fromUser;
 
     private Long toUserId;
 

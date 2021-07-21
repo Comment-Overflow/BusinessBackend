@@ -13,11 +13,15 @@ public class StarNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long fromUserId;
+    @OneToOne
+    @JoinColumn
+    private UserInfo fromUser;
 
     private Long toUserId;
 
     private Timestamp timestamp;
 
-    private Long postId;
+    @OneToOne
+    @JoinColumn
+    private Post post;
 }
