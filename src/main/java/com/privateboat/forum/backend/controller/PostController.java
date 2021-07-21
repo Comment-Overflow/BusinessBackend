@@ -1,6 +1,7 @@
 package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.request.PostDTO;
+import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.service.PostService;
@@ -19,7 +20,7 @@ public class PostController {
 
     @GetMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<Page<Post>> getTaggedPosts(PostDTO postDTO) {
+    ResponseEntity<PageDTO<Post>> getTaggedPosts(PostDTO postDTO) {
         try {
             Page<Post> posts;
             if (postDTO.getTag() == null) {
@@ -27,7 +28,7 @@ public class PostController {
             } else {
                 posts = postService.findByTag(postDTO.getTag(), postDTO.getPageNum(), postDTO.getPageSize());
             }
-            return ResponseEntity.ok(posts);
+            return ResponseEntity.ok(new PageDTO<>(posts));
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }

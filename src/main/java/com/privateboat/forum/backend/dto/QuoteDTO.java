@@ -11,7 +11,7 @@ public class QuoteDTO {
     private String content;
     private UserInfo userInfo;
 
-    QuoteDTO(Comment comment) {
+    public QuoteDTO(Comment comment) {
         postTitle = comment.getPost().getTitle();
         floor = comment.getFloor();
         content = comment.getContent();

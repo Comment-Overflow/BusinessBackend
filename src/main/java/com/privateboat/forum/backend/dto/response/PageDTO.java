@@ -10,7 +10,7 @@ public class PageDTO<T> {
     List<T> content;
     Integer size;
 
-    PageDTO(Page<T> page) {
+    public PageDTO(Page<T> page) {
         content = page.getContent();
         size = page.getNumberOfElements();
     }
