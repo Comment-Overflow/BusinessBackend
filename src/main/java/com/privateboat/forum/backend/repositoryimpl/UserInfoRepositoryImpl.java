@@ -6,6 +6,8 @@ import com.privateboat.forum.backend.repository.UserInfoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 public class UserInfoRepositoryImpl implements UserInfoRepository {
@@ -14,5 +16,10 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
     @Override
     public UserInfo save(UserInfo userInfo) {
         return userInfoDao.save(userInfo);
+    }
+
+    @Override
+    public Optional<UserInfo> findByUserId(Long userId) {
+        return userInfoDao.findById(userId);
     }
 }
