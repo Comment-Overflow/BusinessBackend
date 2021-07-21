@@ -21,5 +21,8 @@ public class ApprovalNotification {
 
     private Timestamp timestamp;
 
-    private Long commentId;
+//    @OneToOne
+//    @JoinColumn
+//    private Comment comment;
+    // use comment.postId to get post Title
 }
