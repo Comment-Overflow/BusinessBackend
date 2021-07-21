@@ -15,9 +15,10 @@ import java.sql.Timestamp;
 public class ApprovalNotificationServiceImpl implements ApprovalNotificationService {
     @Autowired
     UserInfoRepository userInfoRepository;
-
     @Autowired
     ApprovalNotificationRepository approvalNotificationRepository;
+    @Autowired
+    CommentRepository commentRepository;
 
     @Override
     public Page<ApprovalNotification> getApprovalNotifications(Long userId, Pageable pageable) {
@@ -30,7 +31,7 @@ public class ApprovalNotificationServiceImpl implements ApprovalNotificationServ
         newApprovalNotification.setFromUser(userInfoRepository.findById(fromUserId));
         newApprovalNotification.setToUserId(toUserId);
         newApprovalNotification.setTimestamp(new Timestamp(System.currentTimeMillis()));
-//        newApprovalNotification.setQuoteId(quoteId);
+        newApprovalNotification.setQuoteId(quoteId);
 
         approvalNotificationRepository.postApprovalNotification(newApprovalNotification);
     }

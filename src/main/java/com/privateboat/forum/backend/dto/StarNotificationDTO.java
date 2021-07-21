@@ -1,17 +1,13 @@
 package com.privateboat.forum.backend.dto;
 
-import lombok.Data;
-
 import java.sql.Timestamp;
 
-@Data
-public class ApprovalNotificationDTO {
+public class StarNotificationDTO {
     private Timestamp timestamp;
 
-    // UserInfo transfer
     private String userName;
     private String avatarUrl;
-    // quote transfer
-    private String title;
-    private String content;
+
+    private String postTitle;
+    private String postContent;
 }
