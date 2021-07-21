@@ -4,7 +4,7 @@ import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Data;
 
 @Data
-public class PostDTO {
+public class PostListDTO {
     PostTag tag;
     Integer pageNum;
     Integer pageSize;

@@ -17,4 +17,9 @@ public class CommentRepositoryImpl implements CommentRepository  {
     public Page<Comment> findByPostId(Long postId, Pageable pageable) {
         return commentDAO.findByPostId(postId, pageable);
     }
+
+    @Override
+    public Comment save(Comment comment) {
+        return commentDAO.save(comment);
+    }
 }

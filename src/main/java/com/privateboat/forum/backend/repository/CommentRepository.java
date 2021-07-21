@@ -6,4 +6,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface CommentRepository {
     Page<Comment> findByPostId(Long postId, Pageable pageable);
+    Comment save(Comment comment);
 }

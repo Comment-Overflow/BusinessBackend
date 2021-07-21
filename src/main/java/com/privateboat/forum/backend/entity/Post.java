@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.entity;
 
 import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +27,28 @@ public class Post {
     @OneToMany(cascade = CascadeType.REMOVE,
             fetch = FetchType.LAZY,
             mappedBy = "post")
-    private List<Comment> comments = new ArrayList<>();
+    private List<Comment> comments;
 
     @Transient
     private Comment hostComment;
+
+    public Post(String title, PostTag tag) {
+        this.title = title;
+        this.tag = tag;
+        this.commentCount = 0;
+        postTime = new Timestamp(System.currentTimeMillis());
+        comments = new ArrayList<>();
+    }
+
+    public void setHostComment(Comment hostComment) {
+        this.hostComment = hostComment;
+        this.userInfo = hostComment.getUserInfo();
+    }
+
+    public void addComment(Comment comment) {
+        comments.add(comment);
+        commentCount++;
+    }
 
     public void setTransientProperties() {
         hostComment = comments.get(0);
