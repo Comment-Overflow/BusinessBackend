@@ -29,4 +29,8 @@ public class Post {
 
     @Transient
     private Comment hostComment;
+
+    public void setTransientProperties() {
+        hostComment = comments.get(0);
+    }
 }

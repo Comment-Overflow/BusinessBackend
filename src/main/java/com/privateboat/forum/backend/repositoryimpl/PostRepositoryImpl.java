@@ -18,22 +18,36 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Optional<Post> findByPostId(Long postId) {
-        return postDAO.findById(postId);
+        Optional<Post> post = postDAO.findById(postId);
+        post.ifPresent(Post::setTransientProperties);
+        return post;
     }
 
     @Override
     public Page<Post> findByUserId(Long userId, Pageable pageable) {
-        return postDAO.findByUserInfo_IdOrderByPostTimeDesc(userId, pageable);
+        Page<Post> posts = postDAO.findByUserInfo_IdOrderByPostTimeDesc(userId, pageable);
+        for (Post post : posts.toList()) {
+            post.setTransientProperties();
+        }
+        return posts;
     }
 
     @Override
     public Page<Post> findAll(Pageable pageable) {
-        return postDAO.findByOrderByPostTimeDesc(pageable);
+        Page<Post> posts = postDAO.findByOrderByPostTimeDesc(pageable);
+        for (Post post : posts.toList()) {
+            post.setTransientProperties();
+        }
+        return posts;
     }
 
     @Override
     public Page<Post> findByTag(PostTag tag, Pageable pageable) {
-        return postDAO.findByTagOrderByPostTimeDesc(tag, pageable);
+        Page<Post> posts = postDAO.findByTagOrderByPostTimeDesc(tag, pageable);
+        for (Post post : posts.toList()) {
+            post.setTransientProperties();
+        }
+        return posts;
     }
 
     @Override

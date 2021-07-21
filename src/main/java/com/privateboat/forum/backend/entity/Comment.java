@@ -25,21 +25,21 @@ public class Comment {
     private Long quoteId;
     @Length(max = 300)
     private String content;
-    Timestamp time;
-    Integer floor;
-    Integer approvalCount;
-    Integer disapprovalCount;
+    private Timestamp time;
+    private Integer floor;
+    private Integer approvalCount;
+    private Integer disapprovalCount;
 
     @ElementCollection
     @CollectionTable(name = "comment_image",
             joinColumns = @JoinColumn(name = "comment_id"))
     @Column(name = "image_url")
-    List<String> imageUrl = new ArrayList<>();
+    private List<String> imageUrl = new ArrayList<>();
 
     @Transient
-    ApprovalStatus approvalStatus;
+    private ApprovalStatus approvalStatus;
     @Transient
-    Boolean isStarred;
+    private Boolean isStarred;
     @Transient
-    QuoteDTO quoteDTO;
+    private QuoteDTO quoteDTO;
 }

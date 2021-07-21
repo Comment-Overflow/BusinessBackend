@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
     private final PostService postService;
 
-    @GetMapping(value = "/post")
+    @GetMapping(value = "/posts")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<PageDTO<Post>> getTaggedPosts(PostDTO postDTO) {
+    ResponseEntity<PageDTO<Post>> getPosts(PostDTO postDTO) {
         try {
             Page<Post> posts;
             if (postDTO.getTag() == null) {
