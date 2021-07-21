@@ -1,8 +1,10 @@
 package com.privateboat.forum.backend.entity;
 
+import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +18,9 @@ public class Post {
     private UserInfo userInfo;
     private String title;
     private Integer commentCount;
+    private Timestamp postTime;
+    @Enumerated(EnumType.STRING)
+    private PostTag tag;
 
     @OneToMany(cascade = CascadeType.REMOVE,
             targetEntity = Comment.class,
