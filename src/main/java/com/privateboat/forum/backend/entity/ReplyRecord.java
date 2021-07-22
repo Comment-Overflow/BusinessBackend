@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 @Entity
 @Data
 @Table
-public class StarNotification {
+public class ReplyRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,5 +23,7 @@ public class StarNotification {
 
     @OneToOne
     @JoinColumn
-    private Post post;
+    private Comment comment;
+
+    private Long quoteId;
 }

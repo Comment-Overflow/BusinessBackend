@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.repositoryimpl;
 import com.privateboat.forum.backend.dao.PostDAO;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.enumerate.PostTag;
+import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.PostRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -53,5 +54,14 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public Post save(Post post) {
         return postDAO.save(post);
+    }
+
+    @Override
+    public Post getByPostId(Long postId) throws PostException {
+        Post post = postDAO.getById(postId);
+        if(post != null){
+            return post;
+        }
+        else throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
     }
 }

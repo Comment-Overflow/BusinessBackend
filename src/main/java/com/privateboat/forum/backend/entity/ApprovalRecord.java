@@ -1,17 +1,24 @@
 package com.privateboat.forum.backend.entity;
 
-import lombok.Data;
+import com.privateboat.forum.backend.enumerate.ApprovalStatus;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table
-public class ReplyNotification {
+public class ApprovalRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    ApprovalStatus Status;
 
     @OneToOne
     @JoinColumn
@@ -24,6 +31,5 @@ public class ReplyNotification {
     @OneToOne
     @JoinColumn
     private Comment comment;
-
-    private Long quoteId;
+    // use comment.postId to get post Title
 }
