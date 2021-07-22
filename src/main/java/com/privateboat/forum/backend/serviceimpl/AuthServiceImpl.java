@@ -40,29 +40,29 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginDTO login(String email, String password) throws AuthException {
-        UserAuth verifiedUserAuth = verifyAuth(email, password);
+    public LoginDTO login(String email, String rawPassword) throws AuthException {
+        UserAuth verifiedUserAuth = verifyAuth(email, rawPassword);
 
-        return new LoginDTO(verifiedUserAuth.getUserId(), JWTUtil.getToken(verifiedUserAuth));
-    }
-
-    @Override
-    public void verifyAuth(Long userId, String password) throws AuthException {
-        UserAuth userAuth = userAuthRepository.getByUserId(userId);
-
-        if (!encoder.matches(password, userAuth.getPassword())) {
-            throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
-        }
+        return new LoginDTO(verifiedUserAuth.getUserId(), JWTUtil.getLoginToken(verifiedUserAuth));
     }
 
     @Override
     public LoginDTO refreshToken(Long userId) {
         UserAuth userAuth = userAuthRepository.getByUserId(userId);
 
-        return new LoginDTO(userId, JWTUtil.getToken(userAuth));
+        return new LoginDTO(userId, JWTUtil.getLoginToken(userAuth));
     }
 
-    private UserAuth verifyAuth(String email, String password) throws AuthException {
+    @Override
+    public void verifyAuth(Long userId, String encodedPassword) throws AuthException {
+        UserAuth userAuth = userAuthRepository.getByUserId(userId);
+
+        if (!encodedPassword.equals(userAuth.getPassword())) {
+            throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
+        }
+    }
+
+    private UserAuth verifyAuth(String email, String rawPassword) throws AuthException {
         Optional<UserAuth> optionalUserAuth = userAuthRepository.findByEmail(email);
 
         if (optionalUserAuth.isEmpty()) {
@@ -71,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserAuth userAuth = optionalUserAuth.get();
 
-        if (!encoder.matches(password, userAuth.getPassword())) {
+        if (!encoder.matches(rawPassword, userAuth.getPassword())) {
             throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
         }
 

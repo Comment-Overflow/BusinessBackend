@@ -37,13 +37,13 @@ public class JWTUtil {
         return jwt.getClaims();
     }
 
-    public static String getToken(UserAuth userAuth) {
+    public static String getLoginToken(UserAuth userAuth) {
         Map<String, Object> map = new HashMap<>();
         map.put("alg", "HS256");
         map.put("typ", "JWT");
 
         Date now = new Date();
-        // Default expire time is 1 month.
+        // Default login expire time is 1 month.
         Date expire = DateUtils.addMonths(new Date(), 1);
 
         return JWT.create()
@@ -51,6 +51,22 @@ public class JWTUtil {
                 .withClaim("userId", userAuth.getUserId())
                 .withClaim("password", userAuth.getPassword())
                 .withClaim("status", userAuth.getUserType().toString())
+                .withIssuedAt(now)
+                .withExpiresAt(expire)
+                .sign(Algorithm.HMAC256(SECRET));
+    }
+
+    public static String getEmailToken(String code) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("alg", "HS256");
+        map.put("typ", "JWT");
+
+        Date now = new Date();
+        // Default expire time is 1 month.
+        Date expire = DateUtils.addMinutes(new Date(), Constant.EMAIL_EXPIRE_MINUTES);
+        return JWT.create()
+                .withHeader(map)
+                .withClaim("code", code)
                 .withIssuedAt(now)
                 .withExpiresAt(expire)
                 .sign(Algorithm.HMAC256(SECRET));

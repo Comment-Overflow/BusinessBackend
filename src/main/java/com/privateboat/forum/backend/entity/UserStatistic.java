@@ -41,6 +41,7 @@ public class UserStatistic implements Serializable {
     public UserStatistic(UserInfo userInfo) {
         this.userInfo = userInfo;
         this.commentCount = 0;
+        this.postCount = 0;
         this.followingCount = 0;
         this.followerCount = 0;
         this.approvalCount = 0;

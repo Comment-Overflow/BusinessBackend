@@ -1,6 +1,7 @@
 package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.request.AuthDTO;
+import com.privateboat.forum.backend.dto.response.LoginDTO;
 import com.privateboat.forum.backend.exception.AuthException;
 import com.privateboat.forum.backend.service.AuthService;
 import com.privateboat.forum.backend.util.JWTUtil;
