@@ -21,11 +21,11 @@ public class JWTUtil {
     @Target({ElementType.METHOD})
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Authentication {
-        public AuthenticationType type() default AuthenticationType.PASS;
+        AuthenticationType type() default AuthenticationType.PASS;
     }
 
     public enum AuthenticationType {
-        PASS, ADMIN, USER
+        PASS, ADMIN, USER, BOTH
     }
 
     private static final String SECRET = "comment_overflow";
@@ -37,21 +37,36 @@ public class JWTUtil {
         return jwt.getClaims();
     }
 
-    public static String getToken(UserAuth userAuth) {
+    public static String getLoginToken(UserAuth userAuth) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("alg", "HS256");
+        map.put("typ", "JWT");
+
+        Date now = new Date();
+        // Default login expire time is 1 month.
+        Date expire = DateUtils.addMonths(new Date(), 1);
+
+        return JWT.create()
+                .withHeader(map)
+                .withClaim("userId", userAuth.getUserId())
+                .withClaim("password", userAuth.getPassword())
+                .withClaim("status", userAuth.getUserType().toString())
+                .withIssuedAt(now)
+                .withExpiresAt(expire)
+                .sign(Algorithm.HMAC256(SECRET));
+    }
+
+    public static String getEmailToken(String code) {
         Map<String, Object> map = new HashMap<>();
         map.put("alg", "HS256");
         map.put("typ", "JWT");
 
         Date now = new Date();
         // Default expire time is 1 month.
-        Date expire = DateUtils.addMonths(new Date(), 1);
-
+        Date expire = DateUtils.addMinutes(new Date(), Constant.EMAIL_EXPIRE_MINUTES);
         return JWT.create()
                 .withHeader(map)
-                .withClaim("userId", userAuth.getUserId())
-                .withClaim("userName", userAuth.getEmail())
-                .withClaim("password", userAuth.getPassword())
-                .withClaim("status", userAuth.getUserType().toString())
+                .withClaim("code", code)
                 .withIssuedAt(now)
                 .withExpiresAt(expire)
                 .sign(Algorithm.HMAC256(SECRET));

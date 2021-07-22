@@ -22,4 +22,9 @@ public class UserAuthRepositoryImpl implements UserAuthRepository {
     public Optional<UserAuth> findByEmail(String email) {
         return userAuthDAO.findByEmail(email);
     }
+
+    @Override
+    public UserAuth getByUserId(Long userId) {
+        return userAuthDAO.getById(userId);
+    }
 }

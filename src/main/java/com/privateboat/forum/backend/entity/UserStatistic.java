@@ -1,13 +1,15 @@
 package com.privateboat.forum.backend.entity;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class UserStatistic implements Serializable {
     @Id
@@ -40,6 +42,7 @@ public class UserStatistic implements Serializable {
         this.userInfo = userInfo;
         this.postCount = 0;
         this.commentCount = 0;
+        this.postCount = 0;
         this.followingCount = 0;
         this.followerCount = 0;
         this.approvalCount = 0;

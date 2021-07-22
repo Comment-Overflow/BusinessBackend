@@ -1,19 +1,23 @@
 package com.privateboat.forum.backend.serviceimpl;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.Claim;
+import com.privateboat.forum.backend.dto.response.LoginDTO;
 import com.privateboat.forum.backend.entity.UserAuth;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.exception.AuthException;
 import com.privateboat.forum.backend.repository.UserAuthRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
-import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import com.privateboat.forum.backend.service.AuthService;
+import com.privateboat.forum.backend.util.EmailUtil;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Map;
 import java.util.Optional;
 
 @Transactional
@@ -23,10 +27,32 @@ public class AuthServiceImpl implements AuthService {
     private final BCryptPasswordEncoder encoder;
     private final UserAuthRepository userAuthRepository;
     private final UserInfoRepository userInfoRepository;
-    private final UserStatisticRepository userStatisticRepository;
 
     @Override
-    public void register(String email, String password) throws AuthException {
+    public void register(String email, String password, String userCode, String emailToken) throws AuthException {
+        // Verify email confirmation code
+        Map<String, Claim> claims;
+        String actualCode;
+
+        // Token expired.
+        try {
+            claims = JWTUtil.getClaims(emailToken);
+            actualCode = claims.get("code").asString();
+        } catch (TokenExpiredException e) {
+            throw new AuthException(AuthException.AuthExceptionType.EXPIRED_EMAIL_TOKEN);
+        }
+
+        // Token does not exist.
+        if (emailToken == null || actualCode == null) {
+            throw new AuthException(AuthException.AuthExceptionType.EXPIRED_EMAIL_TOKEN);
+        }
+
+        // Confirmation code does not match.
+        if (userCode == null || !userCode.equals(actualCode)) {
+            throw new AuthException(AuthException.AuthExceptionType.WRONG_EMAIL_TOKEN);
+        }
+
+        // Check duplicate user.
         if (userAuthRepository.existsByEmail(email)) {
             throw new AuthException(AuthException.AuthExceptionType.DUPLICATE_EMAIL);
         }
@@ -41,13 +67,36 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(String email, String password) throws AuthException {
-        UserAuth verifiedUserAuth = verifyAuth(email, password);
+    public LoginDTO login(String email, String rawPassword) throws AuthException {
+        UserAuth verifiedUserAuth = verifyAuth(email, rawPassword);
 
-        return JWTUtil.getToken(verifiedUserAuth);
+        return new LoginDTO(verifiedUserAuth.getUserId(), JWTUtil.getLoginToken(verifiedUserAuth));
     }
 
-    private UserAuth verifyAuth(String email, String password) throws AuthException {
+    @Override
+    public LoginDTO refreshToken(Long userId) {
+        UserAuth userAuth = userAuthRepository.getByUserId(userId);
+
+        return new LoginDTO(userId, JWTUtil.getLoginToken(userAuth));
+    }
+
+    @Override
+    public String sendEmail(String email) {
+        String confirmationCode = EmailUtil.sendEmail(email);
+
+        return JWTUtil.getEmailToken(confirmationCode);
+    }
+
+    @Override
+    public void verifyAuth(Long userId, String encodedPassword) throws AuthException {
+        UserAuth userAuth = userAuthRepository.getByUserId(userId);
+
+        if (!encodedPassword.equals(userAuth.getPassword())) {
+            throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
+        }
+    }
+
+    private UserAuth verifyAuth(String email, String rawPassword) throws AuthException {
         Optional<UserAuth> optionalUserAuth = userAuthRepository.findByEmail(email);
 
         if (optionalUserAuth.isEmpty()) {
@@ -56,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserAuth userAuth = optionalUserAuth.get();
 
-        if (!encoder.matches(password, userAuth.getPassword())) {
+        if (!encoder.matches(rawPassword, userAuth.getPassword())) {
             throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
         }
 

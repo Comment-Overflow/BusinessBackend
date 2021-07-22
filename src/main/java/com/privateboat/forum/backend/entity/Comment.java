@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class Comment {
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
+    @JsonIgnore
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
