@@ -1,7 +1,10 @@
 package com.privateboat.forum.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
@@ -11,26 +14,48 @@ import java.util.List;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    Long postId;
+    private Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    @JsonIgnore
+    private Post post;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserInfo userInfo;
+    private Long quoteId;
     @Length(max = 300)
-    String content;
-    Timestamp time;
-    Integer floor;
-    Integer approvalCount;
-    Integer disapprovalCount;
+    private String content;
+    private Timestamp time;
+    private Integer floor;
+    private Integer approvalCount;
+    private Integer disapprovalCount;
 
     @ElementCollection
     @CollectionTable(name = "comment_image",
             joinColumns = @JoinColumn(name = "comment_id"))
     @Column(name = "image_url")
-    List<String> imageUrl = new ArrayList<>();
+    private List<String> imageUrl;
 
     @Transient
-    ApprovalStatus approvalStatus;
+    private ApprovalStatus approvalStatus;
     @Transient
-    Boolean isStarred;
+    private Boolean isStarred;
+    @Transient
+    private QuoteDTO quoteDTO;
+
+    public Comment(Post post, UserInfo userInfo, Long quoteId, String content) {
+        this.post = post;
+        this.userInfo = userInfo;
+        this.quoteId = quoteId;
+        this.content = content;
+        this.time = new Timestamp(System.currentTimeMillis());
+        this.floor = post.getCommentCount();
+        this.approvalCount = 0;
+        this.disapprovalCount = 0;
+        this.imageUrl = new ArrayList<>();
+    }
 }

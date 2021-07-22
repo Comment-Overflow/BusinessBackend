@@ -1,7 +1,7 @@
 package com.privateboat.forum.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.privateboat.forum.backend.enumerate.Gender;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -26,10 +26,14 @@ public class UserInfo implements Serializable {
     private String brief;
     private String avatarUrl;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo", cascade = CascadeType.PERSIST)
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo",
+            cascade = CascadeType.PERSIST)
     UserAuth userAuth;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo", cascade = CascadeType.PERSIST)
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "userInfo",
+            cascade = CascadeType.PERSIST)
     UserStatistic userStatistic;
 
     public UserInfo() {

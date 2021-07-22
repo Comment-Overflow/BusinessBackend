@@ -1,7 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
 import com.privateboat.forum.backend.enumerate.UserType;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

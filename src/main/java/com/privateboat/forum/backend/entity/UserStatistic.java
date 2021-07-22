@@ -1,6 +1,5 @@
 package com.privateboat.forum.backend.entity;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +16,8 @@ public class UserStatistic implements Serializable {
     private Long userId;
     @Column(nullable = false)
     private Integer commentCount;
+    @Column(nullable = false)
+    private Integer postCount;
     @Column(nullable = false)
     private Integer followingCount;
     @Column(nullable = false)
