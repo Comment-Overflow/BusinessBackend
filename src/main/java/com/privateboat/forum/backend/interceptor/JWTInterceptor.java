@@ -65,7 +65,6 @@ public class JWTInterceptor implements HandlerInterceptor {
         } catch (AuthException e) {
             return false;
         }
-
         return true;
     }
 
