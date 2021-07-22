@@ -25,7 +25,9 @@ public class AuthServiceImpl implements AuthService {
     private final UserInfoRepository userInfoRepository;
 
     @Override
-    public void register(String email, String password) throws AuthException {
+    public void register(String email, String password, String emailToken) throws AuthException {
+        // TODO: validate email
+
         if (userAuthRepository.existsByEmail(email)) {
             throw new AuthException(AuthException.AuthExceptionType.DUPLICATE_EMAIL);
         }
@@ -51,6 +53,13 @@ public class AuthServiceImpl implements AuthService {
         UserAuth userAuth = userAuthRepository.getByUserId(userId);
 
         return new LoginDTO(userId, JWTUtil.getLoginToken(userAuth));
+    }
+
+    @Override
+    public String sendEmail(String email) {
+        String confirmationCode = sendEmail(email);
+
+        return confirmationCode;
     }
 
     @Override
