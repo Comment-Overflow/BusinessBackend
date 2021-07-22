@@ -7,6 +7,7 @@ import org.springframework.lang.Nullable;
 public class RegisterDTO {
     String email;
     String password;
+    String userCode;
     @Nullable
     String emailToken;
 }

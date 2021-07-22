@@ -1,61 +1,64 @@
 package com.privateboat.forum.backend.util;
 
-import lombok.AllArgsConstructor;
+import com.tencentcloudapi.common.Credential;
+import com.tencentcloudapi.common.exception.TencentCloudSDKException;
+import com.tencentcloudapi.common.profile.ClientProfile;
+import com.tencentcloudapi.common.profile.HttpProfile;
+import org.apache.commons.lang3.RandomStringUtils;
+import com.tencentcloudapi.ses.v20201002.SesClient;
+import com.tencentcloudapi.ses.v20201002.models.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import static com.privateboat.forum.backend.util.Constant.SECRET_ID;
+import static com.privateboat.forum.backend.util.Constant.SECRET_KEY;
 
 public class EmailUtil {
-    @AllArgsConstructor
-    private static class Template {
-        Integer templateId;
-        Map<String, Object> templateData;
-    }
-
     private static final String URL = "ses.tencentcloudapi.com";
+    private static final String REGION = "ap-hongkong";
+    private static final String SUBJECT = "有可奉告论坛注册";
+    private static final String FROM_EMAIL_ADDRESS = "私有船开发团队 <comment_overflow@gun9nir.me>";
 
-    private static final Map<String, String> map = new HashMap<>() {{
-        put("Action", "SendEmail");
-        put("Version", "2020-10-02");
-        put("Region", "ap-hongkong!");
-        put("FromEmailAddress", "私有船开发团队 <comment_overflow@gun9nir.me>");
-        put("Subject", "有可奉告论坛注册");
-    }};
-
-    private final Integer templateId = 17300;
+    private static final Long TEMPLATE_ID = 17300L;
 
     public static String sendEmail(String email) {
+        String confirmationCode = RandomStringUtils.randomNumeric(6);
+
         try{
-            // 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
-            // 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
-            Credential cred = new Credential("SecretId", "SecretKey");
-            // 实例化一个http选项，可选的，没有特殊需求可以跳过
+            Credential cred = new Credential(SECRET_ID, SECRET_KEY);
+
             HttpProfile httpProfile = new HttpProfile();
-            httpProfile.setEndpoint("ses.tencentcloudapi.com");
-            // 实例化一个client选项，可选的，没有特殊需求可以跳过
+            httpProfile.setEndpoint(URL);
+
             ClientProfile clientProfile = new ClientProfile();
             clientProfile.setHttpProfile(httpProfile);
-            // 实例化要请求产品的client对象,clientProfile是可选的
-            SesClient client = new SesClient(cred, "ap-hongkong", clientProfile);
-            // 实例化一个请求对象,每个接口都会对应一个request对象
+
+            SesClient client = new SesClient(cred, REGION, clientProfile);
+            // Instantiate request object.
             SendEmailRequest req = new SendEmailRequest();
-            req.setFromEmailAddress("私有船开发团队 <comment_overflow@gun9nir.me>");
+            req.setFromEmailAddress(FROM_EMAIL_ADDRESS);
 
-            String[] destination1 = {"gungnir_guo@sjtu.edu.cn"};
-            req.setDestination(destination1);
+            String[] destination = {email};
+            req.setDestination(destination);
 
-            Template template1 = new Template();
-            template1.setTemplateID(17300L);
-            template1.setTemplateData("{\"\": \"\", \"\": \"\"}");
-            req.setTemplate(template1);
+            Template template = new Template();
+            template.setTemplateID(TEMPLATE_ID);
+            template.setTemplateData(
+                    String.format(
+                            "{\"code\": \"%s\", \"expireMinutes\": \"%d\"}",
+                            confirmationCode,
+                            Constant.EMAIL_EXPIRE_MINUTES
+                    )
+            );
+            req.setTemplate(template);
 
-            req.setSubject("有可奉告论坛注册");
-            // 返回的resp是一个SendEmailResponse的实例，与请求对象对应
+            req.setSubject(SUBJECT);
+
             SendEmailResponse resp = client.SendEmail(req);
-            // 输出json格式的字符串回包
             System.out.println(SendEmailResponse.toJsonString(resp));
         } catch (TencentCloudSDKException e) {
-            System.out.println(e.toString());
+            e.printStackTrace();
+            // TODO: Handle error if gzd has time.
         }
+
+        return confirmationCode;
     }
 }

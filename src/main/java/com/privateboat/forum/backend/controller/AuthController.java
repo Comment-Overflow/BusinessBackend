@@ -19,12 +19,16 @@ public class AuthController {
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
     ResponseEntity<?> register(@RequestBody RegisterDTO registerDTO) {
         try {
-            authService.register(registerDTO.getEmail(), registerDTO.getPassword(), registerDTO.getEmailToken());
+            authService.register(
+                    registerDTO.getEmail(),
+                    registerDTO.getPassword(),
+                    registerDTO.getUserCode(),
+                    registerDTO.getEmailToken()
+            );
             return ResponseEntity.ok().build();
         } catch (AuthException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
-
     }
 
     @PostMapping(value = "/sessions")
@@ -46,8 +50,7 @@ public class AuthController {
 
     @PostMapping(value = "/emails")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<?> sendEmail(String email) {
-        authService.sendEmail(email);
-        return ResponseEntity.ok().build();
+    ResponseEntity<?> sendEmail(@RequestBody String email) {
+        return ResponseEntity.ok(authService.sendEmail(email));
     }
 }
