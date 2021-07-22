@@ -8,4 +8,6 @@ public interface UserAuthRepository {
     Boolean existsByEmail(String email);
 
     Optional<UserAuth> findByEmail(String email);
+
+    UserAuth getByUserId(Long userId);
 }

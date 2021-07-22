@@ -1,7 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.privateboat.forum.backend.enumerate.Gender;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +12,6 @@ import java.io.Serializable;
 @Entity
 @Getter
 @Setter
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserInfo implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

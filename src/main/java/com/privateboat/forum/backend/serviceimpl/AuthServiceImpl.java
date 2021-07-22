@@ -1,12 +1,12 @@
 package com.privateboat.forum.backend.serviceimpl;
 
+import com.privateboat.forum.backend.dto.response.LoginDTO;
 import com.privateboat.forum.backend.entity.UserAuth;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.exception.AuthException;
 import com.privateboat.forum.backend.repository.UserAuthRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
-import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import com.privateboat.forum.backend.service.AuthService;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
@@ -23,7 +23,6 @@ public class AuthServiceImpl implements AuthService {
     private final BCryptPasswordEncoder encoder;
     private final UserAuthRepository userAuthRepository;
     private final UserInfoRepository userInfoRepository;
-    private final UserStatisticRepository userStatisticRepository;
 
     @Override
     public void register(String email, String password) throws AuthException {
@@ -41,10 +40,26 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String login(String email, String password) throws AuthException {
+    public LoginDTO login(String email, String password) throws AuthException {
         UserAuth verifiedUserAuth = verifyAuth(email, password);
 
-        return JWTUtil.getToken(verifiedUserAuth);
+        return new LoginDTO(verifiedUserAuth.getUserId(), JWTUtil.getToken(verifiedUserAuth));
+    }
+
+    @Override
+    public void verifyAuth(Long userId, String password) throws AuthException {
+        UserAuth userAuth = userAuthRepository.getByUserId(userId);
+
+        if (!encoder.matches(password, userAuth.getPassword())) {
+            throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
+        }
+    }
+
+    @Override
+    public LoginDTO refreshToken(Long userId) {
+        UserAuth userAuth = userAuthRepository.getByUserId(userId);
+
+        return new LoginDTO(userId, JWTUtil.getToken(userAuth));
     }
 
     private UserAuth verifyAuth(String email, String password) throws AuthException {
