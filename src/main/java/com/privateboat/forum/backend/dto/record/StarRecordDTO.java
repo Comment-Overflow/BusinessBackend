@@ -1,11 +1,11 @@
-package com.privateboat.forum.backend.dto;
+package com.privateboat.forum.backend.dto.record;
 
 import java.sql.Timestamp;
 
-public class StarNotificationDTO {
+public class StarRecordDTO {
     private Timestamp timestamp;
 
-    private String userName;
+    private String username;
     private String avatarUrl;
 
     private String postTitle;

@@ -15,6 +15,8 @@ public class UserStatistic implements Serializable {
     @Column(nullable = false)
     private Integer commentCount;
     @Column(nullable = false)
+    private Integer postCount;
+    @Column(nullable = false)
     private Integer followingCount;
     @Column(nullable = false)
     private Integer followerCount;

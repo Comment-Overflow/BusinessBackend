@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
+import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,10 +11,14 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @Table
-public class ApprovalNotification {
+public class ApprovalRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    ApprovalStatus Status;
 
     @OneToOne
     @JoinColumn
