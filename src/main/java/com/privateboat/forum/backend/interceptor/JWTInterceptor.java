@@ -2,8 +2,10 @@ package com.privateboat.forum.backend.interceptor;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
+import com.privateboat.forum.backend.exception.AuthException;
+import com.privateboat.forum.backend.service.AuthService;
 import com.privateboat.forum.backend.util.JWTUtil;
-import org.springframework.context.annotation.Configuration;
+import lombok.AllArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -17,7 +19,10 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 @Component
+@AllArgsConstructor
 public class JWTInterceptor implements HandlerInterceptor {
+    private final AuthService authService;
+
     public boolean preHandle(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
@@ -54,7 +59,13 @@ public class JWTInterceptor implements HandlerInterceptor {
         Long userId = claims.get("userId").asLong();
         request.setAttribute("userId", userId);
 
-        // TODO: Verify permission and password
+        String password = claims.get("password").asString();
+        try {
+            authService.verifyAuth(userId, password);
+        } catch (AuthException e) {
+            return false;
+        }
+
         return true;
     }
 

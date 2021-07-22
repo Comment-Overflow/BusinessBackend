@@ -21,11 +21,11 @@ public class JWTUtil {
     @Target({ElementType.METHOD})
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Authentication {
-        public AuthenticationType type() default AuthenticationType.PASS;
+        AuthenticationType type() default AuthenticationType.PASS;
     }
 
     public enum AuthenticationType {
-        PASS, ADMIN, USER
+        PASS, ADMIN, USER, BOTH
     }
 
     private static final String SECRET = "comment_overflow";
@@ -49,7 +49,6 @@ public class JWTUtil {
         return JWT.create()
                 .withHeader(map)
                 .withClaim("userId", userAuth.getUserId())
-                .withClaim("userName", userAuth.getEmail())
                 .withClaim("password", userAuth.getPassword())
                 .withClaim("status", userAuth.getUserType().toString())
                 .withIssuedAt(now)
