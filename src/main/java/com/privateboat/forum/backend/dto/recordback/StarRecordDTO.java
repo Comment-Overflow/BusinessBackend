@@ -1,9 +1,10 @@
-package com.privateboat.forum.backend.dto.record;
+package com.privateboat.forum.backend.dto.recordback;
 
-import java.sql.Timestamp;
+import lombok.Data;
 
+@Data
 public class StarRecordDTO {
-    private Timestamp timestamp;
+    private Long timestamp;
 
     private String username;
     private String avatarUrl;
