@@ -3,7 +3,7 @@ package com.privateboat.forum.backend.exception;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PostException extends Exception {
+public class PostException extends RuntimeException {
     public enum PostExceptionType {
         POST_NOT_EXIST, POST_DELETED, PAGE_OUT_OF_BOUND, POSTER_NOT_EXIST, UPLOAD_IMAGE_FAILED
     }

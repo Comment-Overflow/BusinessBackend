@@ -1,6 +1,8 @@
 package com.privateboat.forum.backend.serviceimpl;
 
+import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.StarRecord;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.PostRepository;
@@ -34,5 +36,12 @@ public class StarRecordServiceImpl implements StarRecordService {
         newStarRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
         newStarRecord.setPost(postRepository.getByPostId(postId));
         starRecordRepository.postStarRecord(newStarRecord);
+    }
+
+    @Override
+    public Boolean checkIfHaveStarred(Long userId, Long postId) throws PostException, UserInfoException {
+        UserInfo userInfo = userInfoRepository.getById(userId);
+        Post post = postRepository.getByPostId(postId);
+        return starRecordRepository.checkIfHaveStarred(userInfo, post);
     }
 }
