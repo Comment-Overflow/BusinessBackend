@@ -5,6 +5,8 @@ import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
@@ -39,6 +41,7 @@ public class Comment {
             joinColumns = {@JoinColumn(name = "comment_id" ,referencedColumnName = "id")},
             uniqueConstraints =  {@UniqueConstraint(columnNames={"comment_id", "image_url"})})
     @Column(name = "image_url")
+    @Fetch(value = FetchMode.SELECT)
     private List<String> imageUrl;
 
     @Transient
