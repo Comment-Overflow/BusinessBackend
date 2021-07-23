@@ -1,7 +1,9 @@
 package com.privateboat.forum.backend.repositoryimpl;
 
 import com.privateboat.forum.backend.dao.StarRecordDAO;
+import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.StarRecord;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.repository.StarRecordRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,11 +17,20 @@ public class StarRecordRepositoryImpl implements StarRecordRepository {
 
     @Override
     public Page<StarRecord> getStarRecords(Long userId, Pageable pageable) {
-        return starRecordDAO.findByToUserId(userId, pageable);
+        Page<StarRecord> starRecords = starRecordDAO.findByToUserId(userId, pageable);
+        starRecords.forEach((starRecord) -> {
+            starRecord.getPost().setTransientProperties();
+        });
+        return starRecords;
     }
 
     @Override
     public void postStarRecord(StarRecord newStarRecord) {
         starRecordDAO.saveAndFlush(newStarRecord);
+    }
+
+    @Override
+    public Boolean checkIfHaveStarred(UserInfo userInfo, Post post) {
+        return starRecordDAO.existsByFromUserAndPost(userInfo, post);
     }
 }

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-public class AuthException extends Exception {
+public class AuthException extends RuntimeException {
     public enum AuthExceptionType {
         DUPLICATE_EMAIL, WRONG_EMAIL, WRONG_PASSWORD, EXPIRED_EMAIL_TOKEN, WRONG_EMAIL_TOKEN
     }
