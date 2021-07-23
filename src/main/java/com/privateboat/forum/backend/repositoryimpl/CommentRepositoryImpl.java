@@ -2,16 +2,17 @@ package com.privateboat.forum.backend.repositoryimpl;
 
 import com.privateboat.forum.backend.dao.CommentDAO;
 import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Component
+@Repository
 @AllArgsConstructor
 public class CommentRepositoryImpl implements CommentRepository  {
     private final CommentDAO commentDAO;
@@ -38,5 +39,15 @@ public class CommentRepositoryImpl implements CommentRepository  {
             return comment;
         }
         else throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+    }
+
+    @Override
+    public Page<Comment> searchAll(String searchKey, Pageable pageable) {
+        return commentDAO.findByContentContainingOrPostTitleContaining(searchKey, pageable);
+    }
+
+    @Override
+    public Page<Comment> searchByTag(PostTag postTag, String searchKey, Pageable pageable) {
+        return commentDAO.findByPostTagAndContentContainingOrPostTitleContaining(postTag, searchKey, pageable);
     }
 }

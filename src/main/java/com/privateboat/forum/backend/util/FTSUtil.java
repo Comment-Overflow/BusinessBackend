@@ -13,7 +13,7 @@ public class FTSUtil {
 
     public static List<String> segment(String text) {
         JiebaSegmenter segmenter = new JiebaSegmenter();
-        List<SegToken> tokens = segmenter.process(text, JiebaSegmenter.SegMode.INDEX);
+        List<SegToken> tokens = segmenter.process(text, JiebaSegmenter.SegMode.SEARCH);
 
         return tokens.stream()
                 .map(token -> token.word)

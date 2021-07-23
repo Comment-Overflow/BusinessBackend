@@ -35,9 +35,6 @@ public class Post {
     @JsonIgnore
     private List<Comment> comments;
 
-    @JsonIgnore
-    private String titleForTSVector;
-
     @Transient
     private Comment hostComment;
 
@@ -45,7 +42,6 @@ public class Post {
         this.title = title;
         this.tag = tag;
         this.commentCount = 0;
-        this.titleForTSVector = StringUtils.join(FTSUtil.segment(title), " ");
         postTime = new Timestamp(System.currentTimeMillis());
         comments = new ArrayList<>();
     }
