@@ -19,7 +19,7 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private UserInfo userInfo;
     private String title;
     private Integer commentCount;
@@ -28,7 +28,7 @@ public class Post {
     private PostTag tag;
 
     @OneToMany(cascade = CascadeType.REMOVE,
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             mappedBy = "post")
     @JsonIgnore
     private List<Comment> comments;

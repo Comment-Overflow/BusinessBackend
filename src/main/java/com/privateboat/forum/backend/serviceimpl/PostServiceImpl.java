@@ -19,8 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 
+@Transactional
 @Component
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {

@@ -1,6 +1,7 @@
 package com.privateboat.forum.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Data;
@@ -17,6 +18,7 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +38,7 @@ public class Comment {
     private Integer approvalCount;
     private Integer disapprovalCount;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "comment_image",
             joinColumns = {@JoinColumn(name = "comment_id" ,referencedColumnName = "id")},
             uniqueConstraints =  {@UniqueConstraint(columnNames={"comment_id", "image_url"})})
