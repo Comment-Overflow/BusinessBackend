@@ -1,6 +1,8 @@
 package com.privateboat.forum.backend.serviceimpl;
 
+import com.privateboat.forum.backend.dto.recordreceive.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.ApprovalRecord;
+import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.ApprovalRecordRepository;
@@ -27,14 +29,16 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
     }
 
     @Override
-    public void postApprovalRecord(Long fromUserId, Long toUserId, Long quoteId) throws UserInfoException, PostException {
+    public void postApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
         ApprovalRecord newApprovalRecord = new ApprovalRecord();
 
+        Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
         newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
-        newApprovalRecord.setToUserId(toUserId);
+        newApprovalRecord.setToUserId(approvalRecordReceiveDTO.getToUserId());
         newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
+        newApprovalRecord.setComment(newComment);
+        newApprovalRecord.setApprovalStatus(approvalRecordReceiveDTO.getStatus());
 
-        newApprovalRecord.setComment(commentRepository.getById(fromUserId));
         approvalRecordRepository.postApprovalRecord(newApprovalRecord);
     }
 }

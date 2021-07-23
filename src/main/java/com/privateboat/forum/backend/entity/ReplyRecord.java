@@ -1,12 +1,14 @@
 package com.privateboat.forum.backend.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table
 public class ReplyRecord {
     @Id
@@ -25,5 +27,8 @@ public class ReplyRecord {
     @JoinColumn
     private Comment comment;
 
-    private Long quoteId;
+    @OneToOne
+    @JoinColumn
+    private Post post;
+    //comment being replied belongs to which post
 }
