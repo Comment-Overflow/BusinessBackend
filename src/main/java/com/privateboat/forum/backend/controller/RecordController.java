@@ -3,7 +3,7 @@ package com.privateboat.forum.backend.controller;
 import com.privateboat.forum.backend.dto.recordback.*;
 import com.privateboat.forum.backend.dto.recordreceive.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.recordreceive.ReplyRecordReceiveDTO;
-import com.privateboat.forum.backend.entity.ReplyRecord;
+import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
@@ -49,6 +49,13 @@ public class RecordController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping(value = "/records/approvals")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<ApprovalStatus> checkIfHaveApproved(@RequestAttribute Long userId,
+                                                       @RequestParam Long commentId) throws UserInfoException, PostException {
+        return ResponseEntity.ok(approvalRecordService.checkIfHaveApproved(userId, commentId));
+    }
+
     @GetMapping(value = "/notifications/stars")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<List<StarRecordDTO>> getStarRecords(@RequestAttribute Long userId,
@@ -67,6 +74,13 @@ public class RecordController {
                                           @RequestParam Long postId) throws UserInfoException, PostException {
         starRecordService.postStarRecord(userId, toUserId, postId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/records/stars")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
+    ResponseEntity<Boolean> checkIfHaveStarred(@RequestParam Long userId,
+                                               @RequestParam Long postId){
+        return ResponseEntity.ok(starRecordService.checkIfHaveStarred(userId, postId));
     }
 
     @GetMapping(value = "/notifications/replies")

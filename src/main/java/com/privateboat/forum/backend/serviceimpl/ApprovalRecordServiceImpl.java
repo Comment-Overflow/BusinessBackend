@@ -3,6 +3,8 @@ package com.privateboat.forum.backend.serviceimpl;
 import com.privateboat.forum.backend.dto.recordreceive.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.ApprovalRecord;
 import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.ApprovalRecordRepository;
@@ -40,5 +42,12 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         newApprovalRecord.setApprovalStatus(approvalRecordReceiveDTO.getStatus());
 
         approvalRecordRepository.postApprovalRecord(newApprovalRecord);
+    }
+
+    @Override
+    public ApprovalStatus checkIfHaveApproved(Long userId, Long commentId) throws UserInfoException, PostException {
+        UserInfo userInfo = userInfoRepository.getById(userId);
+        Comment comment = commentRepository.getById(commentId);
+        return approvalRecordRepository.checkIfHaveApproved(userInfo, comment);
     }
 }
