@@ -1,7 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,7 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private UserInfo userInfo;
     private String title;
     private Integer commentCount;
@@ -29,7 +28,7 @@ public class Post {
     private PostTag tag;
 
     @OneToMany(cascade = CascadeType.REMOVE,
-            fetch = FetchType.LAZY,
+            fetch = FetchType.EAGER,
             mappedBy = "post")
     @JsonIgnore
     private List<Comment> comments;
@@ -55,7 +54,7 @@ public class Post {
         commentCount++;
     }
 
-    public void setTransientProperties() {
-        hostComment = comments.get(0);
+    public Comment getHostComment() {
+        return comments.get(0);
     }
 }

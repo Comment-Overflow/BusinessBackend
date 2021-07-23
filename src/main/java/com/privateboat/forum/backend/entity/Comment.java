@@ -34,9 +34,10 @@ public class Comment {
     private Integer approvalCount;
     private Integer disapprovalCount;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "comment_image",
-            joinColumns = @JoinColumn(name = "comment_id"))
+            joinColumns = {@JoinColumn(name = "comment_id" ,referencedColumnName = "id")},
+            uniqueConstraints =  {@UniqueConstraint(columnNames={"comment_id", "image_url"})})
     @Column(name = "image_url")
     private List<String> imageUrl;
 
