@@ -75,12 +75,6 @@ public class ImageUtil {
         try {
             // Get the image in the form of byte stream.
             byte[] res = cosObjectInput.readAllBytes();
-
-            // Debug: save to local file.
-            FileOutputStream fos = new FileOutputStream("/Users/david/Desktop/testDownload.jpeg");
-            fos.write(res);
-            cosObjectInput.close();
-
             cosClient.shutdown();
             return res;
         } catch (IOException e) {
