@@ -1,15 +1,14 @@
 package com.privateboat.forum.backend.controller;
 
-import com.privateboat.forum.backend.dto.recordback.ApprovalRecordDTO;
-import com.privateboat.forum.backend.dto.recordback.FollowNotificationDTO;
-import com.privateboat.forum.backend.dto.recordback.MyFollowRecordDTO;
-import com.privateboat.forum.backend.dto.recordback.StarRecordDTO;
+import com.privateboat.forum.backend.dto.recordback.*;
 import com.privateboat.forum.backend.dto.recordreceive.ApprovalRecordReceiveDTO;
-import com.privateboat.forum.backend.entity.ApprovalRecord;
+import com.privateboat.forum.backend.dto.recordreceive.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.entity.ReplyRecord;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.service.FollowRecordService;
+import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.service.StarRecordService;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
@@ -28,7 +27,7 @@ public class RecordController {
 
     ApprovalRecordService approvalRecordService;
     StarRecordService starRecordService;
-//    ReplyNotificationService replyRecordService;
+    ReplyRecordService replyRecordService;
     FollowRecordService followRecordService;
 
     @GetMapping(value = "/notifications/approvals")
@@ -52,13 +51,13 @@ public class RecordController {
 
     @GetMapping(value = "/notifications/stars")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Page<StarRecordDTO>> getStarRecords(@RequestAttribute Long userId,
+    ResponseEntity<List<StarRecordDTO>> getStarRecords(@RequestAttribute Long userId,
                                                        @RequestParam int page,
                                                        @RequestParam int pageSize){
         Page<StarRecordDTO> ret = starRecordService.getStarRecords(userId, PageRequest.of(page, pageSize)).map(
                 starNotification -> modelMapper.map(starNotification, StarRecordDTO.class)
         );
-        return ResponseEntity.ok(ret);
+        return ResponseEntity.ok(ret.getContent());
     }
 
     @PostMapping(value = "/records/stars")
@@ -70,46 +69,45 @@ public class RecordController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping(value = "/records/replies")
-//    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-//    ResponseEntity<Page<ReplyNotificationDTO>> getReplyNotifications(@RequestAttribute Long userId,
-//                                                                     @RequestParam int page,
-//                                                                     @RequestParam int pageSize){
-//        Page<ReplyNotificationDTO> ret = replyRecordService.getReplyNotifications(userId, PageRequest.of(page, pageSize)).map(
-//                replyNotification -> modelMapper.map(replyNotification, ReplyNotificationDTO.class)
-//        );
-//        return ResponseEntity.ok(ret);
-//    }
+    @GetMapping(value = "/notifications/replies")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<List<ReplyRecordDTO>> getReplyNotifications(@RequestAttribute Long userId,
+                                                               @RequestParam int page,
+                                                               @RequestParam int pageSize){
+        Page<ReplyRecordDTO> ret = replyRecordService.getReplyRecords(userId, PageRequest.of(page, pageSize)).map(
+                replyRecord -> modelMapper.map(replyRecord, ReplyRecordDTO.class)
+        );
+        return ResponseEntity.ok(ret.getContent());
+    }
 
-//    @PostMapping(value = "/records/replies")
-//    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-//    ResponseEntity<String> postReplyNotification(@RequestAttribute Long userId,
-//                                                 @RequestParam Long toUserId,
-//                                                 @RequestParam Long quoteId){
-//        replyRecordService.postReplyNotification(userId, toUserId, quoteId);
-//        return ResponseEntity.ok().build();
-//    }
+    @PostMapping(value = "/records/replies")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<String> postReplyRecord(@RequestAttribute Long userId,
+                                                 ReplyRecordReceiveDTO replyRecordReceiveDTO) throws UserInfoException, PostException {
+        replyRecordService.postReplyRecord(userId, replyRecordReceiveDTO);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping(value = "/records/followers")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Page<MyFollowRecordDTO>> getMyFollowRecord(@RequestAttribute Long userId,
-                                                            @RequestParam int page,
-                                                            @RequestParam int pageSize) throws UserInfoException {
+    ResponseEntity<List<MyFollowRecordDTO>> getMyFollowRecords(@RequestAttribute Long userId,
+                                                               @RequestParam int page,
+                                                               @RequestParam int pageSize) throws UserInfoException {
         Page<MyFollowRecordDTO> ret = followRecordService.getFollowRecords(userId, PageRequest.of(page, pageSize)).map(
                 followRecord -> modelMapper.map(followRecord, MyFollowRecordDTO.class)
         );
-        return ResponseEntity.ok(ret);
+        return ResponseEntity.ok(ret.getContent());
     }
 
-    @GetMapping(value = "/notifications/records")
+    @GetMapping(value = "/notifications/followers")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Page<FollowNotificationDTO>> getFollowNotifications(@RequestAttribute Long userId,
+    ResponseEntity<List<FollowNotificationDTO>> getFollowNotifications(@RequestAttribute Long userId,
                                                                        @RequestParam int page,
                                                                        @RequestParam int pageSize) throws UserInfoException {
         Page<FollowNotificationDTO> ret = followRecordService.getFollowRecords(userId, PageRequest.of(page, pageSize)).map(
                 followRecord -> modelMapper.map(followRecord, FollowNotificationDTO.class)
         );
-        return ResponseEntity.ok(ret);
+        return ResponseEntity.ok(ret.getContent());
     }
 
     @PostMapping(value = "/records/followers")

@@ -37,7 +37,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         newApprovalRecord.setToUserId(approvalRecordReceiveDTO.getToUserId());
         newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
         newApprovalRecord.setComment(newComment);
-        newApprovalRecord.setStatus(approvalRecordReceiveDTO.getStatus());
+        newApprovalRecord.setApprovalStatus(approvalRecordReceiveDTO.getStatus());
 
         approvalRecordRepository.postApprovalRecord(newApprovalRecord);
     }

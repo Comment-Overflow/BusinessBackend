@@ -7,5 +7,5 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ApprovalRecordDAO extends JpaRepository<ApprovalRecord, Long> {
-    Page<ApprovalRecord> findByToUserIdAndStatusIsNot(Long userId, ApprovalStatus status, Pageable pageable);
+    Page<ApprovalRecord> findByToUserIdAndApprovalStatus(Long userId, ApprovalStatus approvalStatus, Pageable pageable);
 }

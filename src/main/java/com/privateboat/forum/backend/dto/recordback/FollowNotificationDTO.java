@@ -1,10 +1,13 @@
 package com.privateboat.forum.backend.dto.recordback;
 
-import java.sql.Timestamp;
+import lombok.Data;
 
+@Data
 public class FollowNotificationDTO {
-    private String username;
-    private String avatarUrl;
-    private Timestamp timestamp;
-    Boolean isMutual;
+
+    private Long fromUserUserId;
+    private String fromUserUserName;
+    private String fromUserAvatarUrl;
+    private Long timestamp;
+    private Boolean isMutual;
 }
