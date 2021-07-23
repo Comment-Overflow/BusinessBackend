@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 public interface PostService {
     Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize) throws PostException;
     Page<Post> findAll(Integer pageNum, Integer pageSize) throws PostException;
+    Page<Post> searchByTag(String searchKey, PostTag tag, Integer pageNum, Integer pageSize) throws PostException;
+    Page<Post> searchAll(String searchKey, Integer pageNum, Integer pageSize) throws PostException;
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
     Post getPost(Long postId) throws PostException;

@@ -11,7 +11,9 @@ import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.PostRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.PostService;
+import com.privateboat.forum.backend.util.FTSUtil;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +46,16 @@ public class PostServiceImpl implements PostService {
             throw new PostException(PostException.PostExceptionType.PAGE_OUT_OF_BOUND);
         }
         return posts;
+    }
+
+    @Override
+    public Page<Post> searchByTag(String searchKey, PostTag tag, Integer pageNum, Integer pageSize) throws PostException {
+        return null;
+    }
+
+    @Override
+    public Page<Post> searchAll(String searchKey, Integer pageNum, Integer pageSize) throws PostException {
+        return null;
     }
 
     @Override
