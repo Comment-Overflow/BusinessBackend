@@ -62,10 +62,11 @@ public class PostController {
     }
 
     @GetMapping(value = "/post")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<PostContentDTO> getPost(@RequestParam Long postId) {
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<PostContentDTO> getPost(@RequestParam Long postId,
+                                           @RequestAttribute Long userId) {
         try {
-            Post post = postService.getPost(postId);
+            Post post = postService.getPost(postId, userId);
             return ResponseEntity.ok(new PostContentDTO(post));
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();

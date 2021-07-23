@@ -47,8 +47,6 @@ public class Comment {
     @Transient
     private ApprovalStatus approvalStatus;
     @Transient
-    private Boolean isStarred;
-    @Transient
     private QuoteDTO quoteDTO;
 
     public Comment(Post post, UserInfo userInfo, Long quoteId, String content) {

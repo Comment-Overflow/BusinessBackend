@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.serviceimpl;
 
+import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.entity.Comment;
@@ -7,9 +8,7 @@ import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
-import com.privateboat.forum.backend.repository.CommentRepository;
-import com.privateboat.forum.backend.repository.PostRepository;
-import com.privateboat.forum.backend.repository.UserInfoRepository;
+import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
@@ -28,6 +27,8 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserInfoRepository userInfoRepository;
+    private final ApprovalRecordRepository approvalRecordRepository;
+    private final StarRecordRepository starRecordRepository;
 
     private static final String baseUrl = "http://192.168.1.101:8088/images/";
 
@@ -92,11 +93,22 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Post getPost(Long postId) throws PostException {
+    public Post getPost(Long postId, Long userId) throws PostException {
         Optional<Post> post = postRepository.findByPostId(postId);
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
+        for (Comment comment : post.get().getComments()) {
+            comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
+            if (comment.getQuoteId() != 0) {
+                comment.setQuoteDTO(new QuoteDTO(commentRepository.getById(comment.getQuoteId())));
+            }
+        }
+        post.get().setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post.get()));
         return post.get();
     }
 

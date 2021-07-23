@@ -13,5 +13,5 @@ public interface PostService {
     Page<Post> findAll(Integer pageNum, Integer pageSize) throws PostException;
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
-    Post getPost(Long postId) throws PostException;
+    Post getPost(Long postId, Long userId) throws PostException;
 }
