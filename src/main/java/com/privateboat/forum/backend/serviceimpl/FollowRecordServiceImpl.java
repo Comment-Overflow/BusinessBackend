@@ -11,10 +11,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class FollowRecordServiceImpl implements FollowRecordService {
     private final FollowRecordRepository followRecordRepository;
     private final UserInfoRepository userInfoRepository;

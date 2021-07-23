@@ -1,8 +1,8 @@
 package com.privateboat.forum.backend.controller;
 
-import com.privateboat.forum.backend.dto.recordback.*;
-import com.privateboat.forum.backend.dto.recordreceive.ApprovalRecordReceiveDTO;
-import com.privateboat.forum.backend.dto.recordreceive.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.response.*;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
