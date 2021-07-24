@@ -19,36 +19,22 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Optional<Post> findByPostId(Long postId) {
-        Optional<Post> post = postDAO.findById(postId);
-        post.ifPresent(Post::setTransientProperties);
-        return post;
+        return postDAO.findById(postId);
     }
 
     @Override
     public Page<Post> findByUserId(Long userId, Pageable pageable) {
-        Page<Post> posts = postDAO.findByUserInfo_IdOrderByPostTimeDesc(userId, pageable);
-        for (Post post : posts.toList()) {
-            post.setTransientProperties();
-        }
-        return posts;
+        return postDAO.findByUserInfo_IdOrderByPostTimeDesc(userId, pageable);
     }
 
     @Override
     public Page<Post> findAll(Pageable pageable) {
-        Page<Post> posts = postDAO.findByOrderByPostTimeDesc(pageable);
-        for (Post post : posts.toList()) {
-            post.setTransientProperties();
-        }
-        return posts;
+        return postDAO.findByOrderByPostTimeDesc(pageable);
     }
 
     @Override
     public Page<Post> findByTag(PostTag tag, Pageable pageable) {
-        Page<Post> posts = postDAO.findByTagOrderByPostTimeDesc(tag, pageable);
-        for (Post post : posts.toList()) {
-            post.setTransientProperties();
-        }
-        return posts;
+        return postDAO.findByTagOrderByPostTimeDesc(tag, pageable);
     }
 
     @Override
@@ -58,10 +44,6 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Post getByPostId(Long postId) throws PostException {
-        Post post = postDAO.getById(postId);
-        if(post != null){
-            return post;
-        }
-        else throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+        return postDAO.getById(postId);
     }
 }
