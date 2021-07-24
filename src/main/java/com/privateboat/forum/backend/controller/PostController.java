@@ -54,7 +54,7 @@ public class PostController {
 
     @PostMapping(value = "/comment")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Long> postComment(@RequestBody NewCommentDTO newCommentDTO,
+    ResponseEntity<Long> postComment(NewCommentDTO newCommentDTO,
                                      @RequestAttribute Long userId) {
         try {
             Comment comment = postService.postComment(userId, newCommentDTO);

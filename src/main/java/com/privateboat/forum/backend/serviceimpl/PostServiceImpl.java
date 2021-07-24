@@ -81,6 +81,7 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         post.setHostComment(hostComment);
         post.addComment(hostComment);
+
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
             String newName = getNewImageName(imageFile);
             if (!ImageUtil.uploadImage(imageFile, newName)) {
@@ -89,6 +90,7 @@ public class PostServiceImpl implements PostService {
             hostComment.getImageUrl().add(baseUrl + newName);
             System.out.println(baseUrl + newName);
         }
+
         postRepository.save(post);
         commentRepository.save(hostComment);
         return post;
@@ -107,6 +109,15 @@ public class PostServiceImpl implements PostService {
         Comment comment = new Comment(post.get(), userInfo.get(),
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.get().addComment(comment);
+
+        for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
+            String newName = getNewImageName(imageFile);
+            if (!ImageUtil.uploadImage(imageFile, newName)) {
+                throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
+            }
+            comment.getImageUrl().add(baseUrl + newName);
+        }
+
         commentRepository.save(comment);
         return comment;
     }
