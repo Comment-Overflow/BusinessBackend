@@ -2,11 +2,11 @@ package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
-import com.privateboat.forum.backend.dto.request.PostListDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
-import com.privateboat.forum.backend.dto.response.PostContentDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
+import com.privateboat.forum.backend.enumerate.PostTag;
+import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.util.JWTUtil;
@@ -22,14 +22,17 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping(value = "/posts")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<PageDTO<Post>> getPosts(PostListDTO postListDTO) {
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<PageDTO<Post>> getPosts(@RequestParam("tag") PostTag tag,
+                                           @RequestParam("pageNum") Integer pageNum,
+                                           @RequestParam("pageSize") Integer pageSize,
+                                           @RequestAttribute Long userId) {
         try {
             Page<Post> posts;
-            if (postListDTO.getTag() == null) {
-                posts = postService.findAll(postListDTO.getPageNum(), postListDTO.getPageSize());
+            if (tag == null) {
+                posts = postService.findAll(pageNum, pageSize, userId);
             } else {
-                posts = postService.findByTag(postListDTO.getTag(), postListDTO.getPageNum(), postListDTO.getPageSize());
+                posts = postService.findByTag(tag, pageNum, pageSize, userId);
             }
             return ResponseEntity.ok(new PageDTO<>(posts));
         } catch (PostException e) {
@@ -63,13 +66,20 @@ public class PostController {
 
     @GetMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PostContentDTO> getPost(@RequestParam Long postId,
-                                           @RequestAttribute Long userId) {
+    ResponseEntity<PageDTO<Comment>> getPost(@RequestParam("postId") Long postId,
+                                             @RequestParam("policy") SortPolicy policy,
+                                             @RequestParam("pageNum") Integer pageNum,
+                                             @RequestParam("pageSize") Integer pageSize,
+                                             @RequestAttribute Long userId) {
         try {
-            Post post = postService.getPost(postId, userId);
-            return ResponseEntity.ok(new PostContentDTO(post));
+            PageDTO<Comment> comments = postService.findByPostIdOrderByPolicy(
+                    postId, policy, pageNum, pageSize, userId
+            );
+            return ResponseEntity.ok(comments);
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
+
+
 }
