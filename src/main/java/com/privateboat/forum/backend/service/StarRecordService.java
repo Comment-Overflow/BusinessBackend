@@ -10,4 +10,6 @@ public interface StarRecordService {
     Page<StarRecord> getStarRecords(Long userId, Pageable pageable);
 
     void postStarRecord(Long fromUserId, Long toUserId, Long postId) throws UserInfoException, PostException;
+
+    Boolean checkIfHaveStarred(Long userId, Long postId) throws PostException;
 }

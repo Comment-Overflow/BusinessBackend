@@ -18,7 +18,7 @@ public class ApprovalRecord {
 
     @Column
     @Enumerated(EnumType.STRING)
-    ApprovalStatus Status;
+    ApprovalStatus approvalStatus;
 
     @OneToOne
     @JoinColumn

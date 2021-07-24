@@ -4,7 +4,7 @@ package com.privateboat.forum.backend.exception;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserInfoException extends Exception {
+public class UserInfoException extends RuntimeException {
     public enum UserInfoExceptionType {
         USER_NOT_EXIST
     }

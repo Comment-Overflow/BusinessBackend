@@ -1,4 +1,4 @@
-package com.privateboat.forum.backend.dto.record;
+package com.privateboat.forum.backend.dto.recordback;
 
 public class MyFollowRecordDTO {
     private String username;
