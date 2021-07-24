@@ -10,13 +10,14 @@ import java.sql.Timestamp;
 @Data
 public class Message {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @OneToOne(targetEntity = UserInfo.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
     private UserInfo sender;
 
     @OneToOne(targetEntity = UserInfo.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id")
     private UserInfo receiver;
 
     private Timestamp time;

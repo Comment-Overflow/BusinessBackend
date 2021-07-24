@@ -5,10 +5,11 @@ import com.privateboat.forum.backend.entity.UserAuth;
 import com.privateboat.forum.backend.repository.UserAuthRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Component
+@Repository
 @AllArgsConstructor
 public class UserAuthRepositoryImpl implements UserAuthRepository {
     private final UserAuthDAO userAuthDAO;
