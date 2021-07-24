@@ -27,7 +27,7 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
     @Override
     public UserInfo getById(Long userId) throws UserInfoException {
         UserInfo userInfo = userInfoDao.getById(userId);
-        if(userInfo.equals(null)){
+        if(userInfo != null){
             return userInfo;
         }
         else throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);

@@ -39,7 +39,7 @@ public class PostController {
 
     @PostMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Long> postPost(@RequestBody NewPostDTO newPostDTO,
+    ResponseEntity<Long> postPost(NewPostDTO newPostDTO,
                                   @RequestAttribute Long userId) {
         try {
             Post post = postService.postPost(userId, newPostDTO);

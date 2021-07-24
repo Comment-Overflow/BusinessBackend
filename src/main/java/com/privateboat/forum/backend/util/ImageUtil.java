@@ -33,7 +33,7 @@ public class ImageUtil {
         BUCKET_NAME = "comment-overflow-1306578009";
     }
 
-    Boolean uploadImage(MultipartFile file, String fileName) {
+    static public Boolean uploadImage(MultipartFile file, String fileName) {
         // Convert multipart file to InputStream.
         InputStream inputStream;
         try {
@@ -63,7 +63,7 @@ public class ImageUtil {
         }
     }
 
-    byte[] downloadImage(String fileName) throws RuntimeException {
+    static public byte[] downloadImage(String fileName) throws RuntimeException {
         // Specify the path to store on COS. File name should include extension.
         String key = BASE_KEY + fileName;
         // Acquire download input steam.
@@ -75,12 +75,6 @@ public class ImageUtil {
         try {
             // Get the image in the form of byte stream.
             byte[] res = cosObjectInput.readAllBytes();
-
-            // Debug: save to local file.
-            FileOutputStream fos = new FileOutputStream("/Users/david/Desktop/testDownload.jpeg");
-            fos.write(res);
-            cosObjectInput.close();
-
             cosClient.shutdown();
             return res;
         } catch (IOException e) {
