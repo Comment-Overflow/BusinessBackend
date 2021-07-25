@@ -1,13 +1,17 @@
 package com.privateboat.forum.backend.entity;
 
 import com.privateboat.forum.backend.enumerate.MessageType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Message {
     @Id
     private String id;

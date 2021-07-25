@@ -27,10 +27,15 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 
     @Override
     public UserInfo getById(Long userId) throws UserInfoException {
-        UserInfo userInfo = userInfoDao.getById(userId);
-        if(userInfo != null){
-            return userInfo;
+        Optional<UserInfo> userInfo = userInfoDao.findById(userId);
+        if(userInfo.isPresent()){
+            return userInfo.get();
         }
         else throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+    }
+
+    @Override
+    public <T> Optional<T> findOneProjectionById(Long id, Class<T> type) {
+        return userInfoDao.findOneProjectionById(id, type);
     }
 }

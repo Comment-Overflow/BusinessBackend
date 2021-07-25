@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MessageDAO extends JpaRepository<Message, Long> {
     Page<Message> findBySender_IdOrReceiver_IdOrderByTimeDesc(Long senderId, Long receiverId, Pageable pageable);
+
 }

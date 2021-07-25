@@ -9,4 +9,5 @@ public interface UserInfoRepository {
     UserInfo save(UserInfo userInfo);
     Optional<UserInfo> findByUserId(Long userId);
     UserInfo getById(Long userId) throws UserInfoException;
+    <T> Optional<T> findOneProjectionById(Long id, Class<T> type);
 }
