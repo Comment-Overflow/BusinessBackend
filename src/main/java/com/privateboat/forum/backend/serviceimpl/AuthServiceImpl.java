@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserAuth userAuth = optionalUserAuth.get();
 
-        if (!encoder.matches(rawPassword, userAuth.getPassword())) {
+        if (!rawPassword.equals(userAuth.getPassword())) {
             throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
         }
 

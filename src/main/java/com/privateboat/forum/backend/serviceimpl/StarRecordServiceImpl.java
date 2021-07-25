@@ -17,9 +17,9 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
-@Transactional
 @Service
 @AllArgsConstructor
+@Transactional
 public class StarRecordServiceImpl implements StarRecordService {
     private final UserInfoRepository userInfoRepository;
     private final StarRecordRepository starRecordRepository;
@@ -37,7 +37,7 @@ public class StarRecordServiceImpl implements StarRecordService {
         newStarRecord.setToUserId(toUserId);
         newStarRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
         newStarRecord.setPost(postRepository.getByPostId(postId));
-        starRecordRepository.postStarRecord(newStarRecord);
+        starRecordRepository.save(newStarRecord);
     }
 
     @Override

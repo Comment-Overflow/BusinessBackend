@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface StarRecordRepository {
     Page<StarRecord> getStarRecords(Long userId, Pageable pageable);
 
-    void postStarRecord(StarRecord starRecord);
+    void save(StarRecord starRecord);
 
     Boolean checkIfHaveStarred(UserInfo userInfo, Post post);
 }

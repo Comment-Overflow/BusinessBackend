@@ -23,7 +23,7 @@ public class ReplyRecordRepositoryImpl implements ReplyRecordRepository {
     }
 
     @Override
-    public void postReplyRecord(ReplyRecord replyRecord){
+    public void save(ReplyRecord replyRecord){
         replyRecordDAO.saveAndFlush(replyRecord);
     }
 }
