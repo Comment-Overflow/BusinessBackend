@@ -41,5 +41,6 @@ public class ReplyRecordServiceImpl implements ReplyRecordService {
         replyRecord.setPost(post);
         Comment comment = post.getComments().get(replyRecordReceiveDTO.getFloor());
         replyRecord.setComment(comment);
+        replyRecordRepository.save(replyRecord);
     }
 }

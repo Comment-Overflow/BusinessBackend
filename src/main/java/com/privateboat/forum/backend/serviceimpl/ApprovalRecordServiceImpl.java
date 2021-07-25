@@ -43,7 +43,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         newApprovalRecord.setComment(newComment);
         newApprovalRecord.setApprovalStatus(approvalRecordReceiveDTO.getStatus());
 
-        approvalRecordRepository.postApprovalRecord(newApprovalRecord);
+        approvalRecordRepository.save(newApprovalRecord);
     }
 
     @Override

@@ -37,7 +37,7 @@ public class StarRecordServiceImpl implements StarRecordService {
         newStarRecord.setToUserId(toUserId);
         newStarRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
         newStarRecord.setPost(postRepository.getByPostId(postId));
-        starRecordRepository.postStarRecord(newStarRecord);
+        starRecordRepository.save(newStarRecord);
     }
 
     @Override

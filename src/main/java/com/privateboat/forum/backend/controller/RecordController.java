@@ -23,6 +23,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 public class RecordController {
+    // TODO: wxp: handle error,choose appropriate HTTP status
     private final ModelMapper modelMapper;
 
     ApprovalRecordService approvalRecordService;
