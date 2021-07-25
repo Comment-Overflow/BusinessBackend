@@ -8,10 +8,15 @@ import java.util.List;
 @Data
 public class PageDTO<T> {
     List<T> content;
-    Integer size;
+    Long size;
 
     public PageDTO(Page<T> page) {
         content = page.getContent();
-        size = page.getNumberOfElements();
+        size = page.getTotalElements();
+    }
+
+    public PageDTO(List<T> content, Long size) {
+        this.content = content;
+        this.size = size;
     }
 }
