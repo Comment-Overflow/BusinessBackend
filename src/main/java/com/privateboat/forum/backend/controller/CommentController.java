@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @AllArgsConstructor
 public class CommentController {
@@ -24,19 +26,19 @@ public class CommentController {
 
     @GetMapping(value = "/comments")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
-    ResponseEntity<PageDTO<SearchedCommentDTO>> searchComments(
+    ResponseEntity<List<SearchedCommentDTO>> searchComments(
             @RequestAttribute Long userId,
             @RequestParam @Nullable PostTag postTag,
             @RequestParam String searchKey,
             @RequestParam Integer pageNum,
             @RequestParam Integer pageSize) {
 
-        Page<Comment> comments;
+        Page<Comment> commentsPage;
         if (postTag == null) {
-            comments = searchService.searchComments(searchKey,
+            commentsPage = searchService.searchComments(searchKey,
                     PageRequest.of(pageNum, pageSize));
         } else {
-            comments = searchService.searchCommentsByPostTag(postTag, searchKey,
+            commentsPage = searchService.searchCommentsByPostTag(postTag, searchKey,
                     PageRequest.of(pageNum, pageSize));
         }
 
@@ -44,9 +46,9 @@ public class CommentController {
         searchService.addSearchHistory(userId, searchKey);
         
         // Convert searched comments in to DTO.
-        Page<SearchedCommentDTO> searchedComments = comments.map(
+        List<SearchedCommentDTO> searchedComments = commentsPage.map(
                 comment -> new SearchedCommentDTO(comment.getPost().getId(), comment.getPost().getTitle(), comment)
-        );
-        return ResponseEntity.ok(new PageDTO<>(searchedComments));
+        ).getContent();
+        return ResponseEntity.ok(searchedComments);
     }
 }

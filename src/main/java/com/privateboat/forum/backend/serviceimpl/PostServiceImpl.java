@@ -29,7 +29,7 @@ public class PostServiceImpl implements PostService {
     private final CommentRepository commentRepository;
     private final UserInfoRepository userInfoRepository;
 
-    private static final String baseUrl = "http://192.168.1.101:8088/images/";
+    private static final String baseUrl = "http://192.168.1.92:8088/images/";
 
     @Override
     public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize) throws PostException {

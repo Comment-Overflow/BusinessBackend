@@ -12,14 +12,16 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
     Page<Comment> findByPostId(Long postId, Pageable pageable);
 
     @Query("select c from Comment c where " +
-            "c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%')")
+            "c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%') " +
+            "order by c.time desc")
     Page<Comment> findByContentContainingOrPostTitleContaining(
             @Param("searchKey") String searchKey,
             Pageable pageable);
 
     @Query("select c from Comment c where " +
             "c.post.tag = :postTag and " +
-            "(c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%'))")
+            "(c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%')) " +
+            "order by c.time desc")
     Page<Comment> findByPostTagAndContentContainingOrPostTitleContaining(
             @Param("postTag") PostTag postTag,
             @Param("searchKey") String searchKey,
