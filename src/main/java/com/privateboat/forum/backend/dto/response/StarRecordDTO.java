@@ -12,4 +12,6 @@ public class StarRecordDTO {
 
     private String postTitle;
     private String postHostCommentContent;
+    private Long postHostCommentId;
+    private Integer postHostCommentFloor;
 }

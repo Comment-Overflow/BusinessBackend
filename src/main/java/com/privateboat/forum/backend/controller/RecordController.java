@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,6 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 public class RecordController {
-    // TODO: wxp: handle error,choose appropriate HTTP status
     private final ModelMapper modelMapper;
 
     ApprovalRecordService approvalRecordService;
@@ -36,36 +36,57 @@ public class RecordController {
     ResponseEntity<List<ApprovalRecordDTO>> getApprovalRecords(@RequestAttribute Long userId,
                                                                @RequestParam int page,
                                                                @RequestParam int pageSize) {
-        Page<ApprovalRecordDTO> ret = approvalRecordService.getApprovalRecords(userId, PageRequest.of(page, pageSize)).map(
-                approvalNotification -> modelMapper.map(approvalNotification, ApprovalRecordDTO.class)
-        );
-        return ResponseEntity.ok(ret.getContent());
+        try{
+            Page<ApprovalRecordDTO> ret = approvalRecordService.getApprovalRecords(userId, PageRequest.of(page, pageSize)).map(
+                    approvalNotification -> modelMapper.map(approvalNotification, ApprovalRecordDTO.class)
+            );
+            return ResponseEntity.ok(ret.getContent());
+        } catch (RuntimeException e) {
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping(value = "/records/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<String> postApprovalRecord(@RequestAttribute Long fromUserId,
                                               ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
-        approvalRecordService.postApprovalRecord(fromUserId, approvalRecordReceiveDTO);
-        return ResponseEntity.ok().build();
+        try{
+            approvalRecordService.postApprovalRecord(fromUserId, approvalRecordReceiveDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e){
+            System.out.println(fromUserId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping(value = "/records/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<ApprovalStatus> checkIfHaveApproved(@RequestAttribute Long userId,
                                                        @RequestParam Long commentId) throws UserInfoException, PostException {
-        return ResponseEntity.ok(approvalRecordService.checkIfHaveApproved(userId, commentId));
+        try {
+            ApprovalStatus status = approvalRecordService.checkIfHaveApproved(userId, commentId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e){
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @GetMapping(value = "/notifications/stars")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<List<StarRecordDTO>> getStarRecords(@RequestAttribute Long userId,
                                                        @RequestParam int page,
-                                                       @RequestParam int pageSize){
-        Page<StarRecordDTO> ret = starRecordService.getStarRecords(userId, PageRequest.of(page, pageSize)).map(
-                starNotification -> modelMapper.map(starNotification, StarRecordDTO.class)
-        );
-        return ResponseEntity.ok(ret.getContent());
+                                                       @RequestParam int pageSize) {
+        try{
+            Page<StarRecordDTO> ret = starRecordService.getStarRecords(userId, PageRequest.of(page, pageSize)).map(
+                    starNotification -> modelMapper.map(starNotification, StarRecordDTO.class)
+            );
+            return ResponseEntity.ok(ret.getContent());
+        } catch (RuntimeException e) {
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping(value = "/records/stars")
@@ -73,34 +94,54 @@ public class RecordController {
     ResponseEntity<String> postStarRecord(@RequestAttribute Long userId,
                                           @RequestParam Long toUserId,
                                           @RequestParam Long postId) throws UserInfoException, PostException {
-        starRecordService.postStarRecord(userId, toUserId, postId);
-        return ResponseEntity.ok().build();
+        try{
+            starRecordService.postStarRecord(userId, toUserId, postId);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (RuntimeException e){
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping(value = "/records/stars")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
     ResponseEntity<Boolean> checkIfHaveStarred(@RequestParam Long userId,
-                                               @RequestParam Long postId){
-        return ResponseEntity.ok(starRecordService.checkIfHaveStarred(userId, postId));
+                                               @RequestParam Long postId) {
+        try {
+            return ResponseEntity.ok(starRecordService.checkIfHaveStarred(userId, postId));
+        } catch (RuntimeException e) {
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping(value = "/notifications/replies")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<List<ReplyRecordDTO>> getReplyNotifications(@RequestAttribute Long userId,
                                                                @RequestParam int page,
-                                                               @RequestParam int pageSize){
-        Page<ReplyRecordDTO> ret = replyRecordService.getReplyRecords(userId, PageRequest.of(page, pageSize)).map(
-                replyRecord -> modelMapper.map(replyRecord, ReplyRecordDTO.class)
-        );
-        return ResponseEntity.ok(ret.getContent());
+                                                               @RequestParam int pageSize) {
+        try {
+            Page<ReplyRecordDTO> ret = replyRecordService.getReplyRecords(userId, PageRequest.of(page, pageSize)).map(
+                    replyRecord -> modelMapper.map(replyRecord, ReplyRecordDTO.class)
+            );
+            return ResponseEntity.ok(ret.getContent());
+        } catch (RuntimeException e) {
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PostMapping(value = "/records/replies")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<String> postReplyRecord(@RequestAttribute Long userId,
                                                  ReplyRecordReceiveDTO replyRecordReceiveDTO) throws UserInfoException, PostException {
-        replyRecordService.postReplyRecord(userId, replyRecordReceiveDTO);
-        return ResponseEntity.ok().build();
+        try {
+            replyRecordService.postReplyRecord(userId, replyRecordReceiveDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (RuntimeException e){
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping(value = "/records/followers")
@@ -108,10 +149,15 @@ public class RecordController {
     ResponseEntity<List<MyFollowRecordDTO>> getMyFollowRecords(@RequestAttribute Long userId,
                                                                @RequestParam int page,
                                                                @RequestParam int pageSize) throws UserInfoException {
-        Page<MyFollowRecordDTO> ret = followRecordService.getFollowRecords(userId, PageRequest.of(page, pageSize)).map(
-                followRecord -> modelMapper.map(followRecord, MyFollowRecordDTO.class)
-        );
-        return ResponseEntity.ok(ret.getContent());
+        try{
+            Page<MyFollowRecordDTO> ret = followRecordService.getFollowRecords(userId, PageRequest.of(page, pageSize)).map(
+                    followRecord -> modelMapper.map(followRecord, MyFollowRecordDTO.class)
+            );
+            return ResponseEntity.ok(ret.getContent());
+        } catch (RuntimeException e) {
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping(value = "/notifications/followers")
@@ -119,17 +165,28 @@ public class RecordController {
     ResponseEntity<List<FollowNotificationDTO>> getFollowNotifications(@RequestAttribute Long userId,
                                                                        @RequestParam int page,
                                                                        @RequestParam int pageSize) throws UserInfoException {
-        Page<FollowNotificationDTO> ret = followRecordService.getFollowRecords(userId, PageRequest.of(page, pageSize)).map(
-                followRecord -> modelMapper.map(followRecord, FollowNotificationDTO.class)
-        );
-        return ResponseEntity.ok(ret.getContent());
+        try {
+            Page<FollowNotificationDTO> ret = followRecordService.getFollowRecords(userId, PageRequest.of(page, pageSize)).map(
+                    followRecord -> modelMapper.map(followRecord, FollowNotificationDTO.class)
+            );
+            return ResponseEntity.ok(ret.getContent());
+        } catch (RuntimeException e) {
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
     }
 
     @PostMapping(value = "/records/followers")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
     ResponseEntity<String> postFollowRecord(@RequestAttribute Long userId,
                                             @RequestParam Long toUserId) throws UserInfoException {
-        followRecordService.postFollowRecord(userId, toUserId);
-        return ResponseEntity.ok().build();
+        try {
+            followRecordService.postFollowRecord(userId, toUserId);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (RuntimeException e){
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

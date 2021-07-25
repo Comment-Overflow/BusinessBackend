@@ -11,6 +11,8 @@ public class ApprovalRecordDTO {
     private String fromUserUserName;
     private String fromUserAvatarUrl;
     // comment transfer
+    private Long commentId;
     private String commentPostTitle;
     private String commentContent;
+    private Integer commentFloor;
 }

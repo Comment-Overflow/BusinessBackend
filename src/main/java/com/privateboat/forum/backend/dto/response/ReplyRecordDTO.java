@@ -11,6 +11,8 @@ public class ReplyRecordDTO {
     private Long timestamp;
 
     private String postTitle;
+    private Integer postHostCommentId;
     private String postHostCommentContent;
     private String commentContent;
+    private String postHostCommentFloor;
 }
