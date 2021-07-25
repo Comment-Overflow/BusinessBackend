@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
+@Transactional
 @Service
 @AllArgsConstructor
 @Transactional

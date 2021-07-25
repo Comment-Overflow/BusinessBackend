@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.repository;
 
+import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.exception.PostException;
 import org.springframework.data.domain.Page;
@@ -12,4 +13,5 @@ public interface CommentRepository {
     Comment save(Comment comment);
     Optional<Comment> findById(Long commentId);
     Comment getById(Long commentId) throws PostException;
+    QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
 }

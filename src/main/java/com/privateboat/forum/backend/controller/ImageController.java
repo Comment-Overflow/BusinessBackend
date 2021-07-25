@@ -13,7 +13,6 @@ public class ImageController {
     @GetMapping(value = "/images/{fileName}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
     ResponseEntity<byte[]> getImage(@PathVariable("fileName") String fileName) {
-        System.out.println(fileName);
         return ResponseEntity.ok(ImageUtil.downloadImage(fileName));
     }
 
