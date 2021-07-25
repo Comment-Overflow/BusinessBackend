@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.repository;
 
+import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
@@ -15,4 +16,5 @@ public interface CommentRepository {
     Comment getById(Long commentId) throws PostException;
     Page<Comment> searchAll(String searchKey, Pageable pageable);
     Page<Comment> searchByTag(PostTag tag, String searchKey, Pageable pageable);
+    QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
 }

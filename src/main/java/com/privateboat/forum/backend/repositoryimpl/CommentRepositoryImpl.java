@@ -1,6 +1,7 @@
 package com.privateboat.forum.backend.repositoryimpl;
 
 import com.privateboat.forum.backend.dao.CommentDAO;
+import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
@@ -38,7 +39,12 @@ public class CommentRepositoryImpl implements CommentRepository  {
         if(comment != null){
             return comment;
         }
-        else throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+        else throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
+    }
+
+    @Override
+    public QuoteDTO getCommentAsQuote(Long commentId) throws PostException {
+        return new QuoteDTO(getById(commentId));
     }
 
     @Override

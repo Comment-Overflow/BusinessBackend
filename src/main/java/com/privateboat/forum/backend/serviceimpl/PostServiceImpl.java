@@ -1,15 +1,16 @@
 package com.privateboat.forum.backend.serviceimpl;
 
+import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
+import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
+import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.exception.PostException;
-import com.privateboat.forum.backend.repository.CommentRepository;
-import com.privateboat.forum.backend.repository.PostRepository;
-import com.privateboat.forum.backend.repository.UserInfoRepository;
+import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
@@ -18,35 +19,54 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserInfoRepository userInfoRepository;
+    private final ApprovalRecordRepository approvalRecordRepository;
+    private final StarRecordRepository starRecordRepository;
 
     private static final String baseUrl = "http://192.168.1.92:8088/images/";
 
     @Override
-    public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize) throws PostException {
+    public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
+        }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findByTag(tag, pageable);
-        if (posts.getTotalPages() < pageNum) {
-            throw new PostException(PostException.PostExceptionType.PAGE_OUT_OF_BOUND);
+        for (Post post : posts.getContent()) {
+            Comment hostComment = post.getHostComment();
+            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), hostComment));
+            post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
         }
         return posts;
     }
 
     @Override
-    public Page<Post> findAll(Integer pageNum, Integer pageSize) throws PostException {
+    public Page<Post> findAll(Integer pageNum, Integer pageSize, Long userId) throws PostException {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
+        }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findAll(pageable);
-        if (posts.getTotalPages() < pageNum) {
-            throw new PostException(PostException.PostExceptionType.PAGE_OUT_OF_BOUND);
+        for (Post post : posts.getContent()) {
+            Comment hostComment = post.getHostComment();
+            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), hostComment));
+            post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
         }
         return posts;
     }
@@ -61,6 +81,7 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         post.setHostComment(hostComment);
         post.addComment(hostComment);
+
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
             String newName = getNewImageName(imageFile);
             if (!ImageUtil.uploadImage(imageFile, newName)) {
@@ -69,6 +90,7 @@ public class PostServiceImpl implements PostService {
             hostComment.getImageUrl().add(baseUrl + newName);
             System.out.println(baseUrl + newName);
         }
+
         postRepository.save(post);
         commentRepository.save(hostComment);
         return post;
@@ -87,17 +109,73 @@ public class PostServiceImpl implements PostService {
         Comment comment = new Comment(post.get(), userInfo.get(),
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.get().addComment(comment);
+
+        for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
+            String newName = getNewImageName(imageFile);
+            if (!ImageUtil.uploadImage(imageFile, newName)) {
+                throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
+            }
+            comment.getImageUrl().add(baseUrl + newName);
+        }
+
         commentRepository.save(comment);
         return comment;
     }
 
     @Override
-    public Post getPost(Long postId) throws PostException {
+    @Deprecated
+    public Post getPost(Long postId, Long userId) throws PostException {
         Optional<Post> post = postRepository.findByPostId(postId);
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
+        Comment host = new Comment();
+        for (Comment comment : post.get().getComments()) {
+            if (comment.getFloor() == 0) host = comment;
+            comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
+            if (comment.getQuoteId() != 0) {
+                comment.setQuoteDTO(new QuoteDTO(commentRepository.getById(comment.getQuoteId())));
+            }
+        }
+        if(post.get().getComments().remove(host)) {
+            post.get().getComments().add(0, host);
+        }
+        post.get().setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post.get()));
         return post.get();
+    }
+
+    @Override
+    public PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
+                                                   Integer pageNum, Integer pageSize, Long userId) {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
+        Sort.Direction direction = policy == SortPolicy.EARLIEST ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, "floor"));
+        Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
+
+        Comment host = null;
+        for (Comment comment : comments.getContent()) {
+            if (comment.getFloor() == 0) host = comment;
+            comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
+            if (comment.getQuoteId() != 0) {
+                comment.setQuoteDTO(new QuoteDTO(commentRepository.getById(comment.getQuoteId())));
+            }
+        }
+        if (host != null) {
+            List<Comment> commentList = new ArrayList<>(comments.getContent());
+            commentList.remove(host);
+            commentList.add(0, host);
+            return new PageDTO<>(commentList, comments.getTotalElements());
+        }
+
+
+        return new PageDTO<>(comments);
     }
 
     private String getNewImageName(MultipartFile file) {

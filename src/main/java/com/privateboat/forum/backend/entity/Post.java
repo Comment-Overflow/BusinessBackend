@@ -37,6 +37,8 @@ public class Post {
 
     @Transient
     private Comment hostComment;
+    @Transient
+    private Boolean isStarred;
 
     public Post(String title, PostTag tag) {
         this.title = title;
@@ -56,7 +58,11 @@ public class Post {
         commentCount++;
     }
 
+    public Comment getHostComment() {
+        return comments.get(0);
+    }
+
     public void setTransientProperties() {
-        hostComment = comments.get(0);
+        this.hostComment = comments.get(0);
     }
 }
