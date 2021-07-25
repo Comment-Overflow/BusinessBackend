@@ -19,6 +19,6 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     public Page<Message> findByUserIdOrChatterId(Long userId, Long chatterId, Pageable pageable) {
-        return messageDAO.findBySender_IdOrReceiver_IdOrderByTimeDesc(userId, chatterId, pageable);
+        return messageDAO.findBySender_IdAndReceiver_IdOrSender_IdAndReceiver_IdOrderByTimeDesc(userId, chatterId, chatterId, userId, pageable);
     }
 }

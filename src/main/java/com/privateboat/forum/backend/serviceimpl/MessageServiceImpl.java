@@ -79,4 +79,8 @@ public class MessageServiceImpl implements MessageService {
         ));
     }
 
+    @Override
+    public void updateSeenBy(Long userId, Long chatterId) {
+
+    }
 }

@@ -11,4 +11,6 @@ public interface MessageService {
 
     //    void sendImageMessage(String uuid, Long senderId, Long receiverId, )
     Page<MessageDTO> getChatHistory(Long userId, Long chatterId, Integer pageNum, Integer pageSize);
+
+    void updateSeenBy(Long userId, Long chatterId);
 }
