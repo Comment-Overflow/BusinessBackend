@@ -2,7 +2,6 @@ package com.privateboat.forum.backend.repositoryimpl;
 
 import com.privateboat.forum.backend.dao.FollowRecordDAO;
 import com.privateboat.forum.backend.entity.FollowRecord;
-import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,7 +24,9 @@ public class FollowRecordRepositoryImpl implements FollowRecordRepository {
     }
 
     @Override
-    public Boolean isMutualFollowed(Long userId, UserInfo userInfo){
-        return followRecordDAO.existsByToUserIdAndFromUser(userId, userInfo);
+    public Boolean isFollowing(Long fromUserId, Long toUserId) {
+        return followRecordDAO.existsByFromUser_IdAndToUserId(fromUserId, toUserId);
     }
+
+
 }

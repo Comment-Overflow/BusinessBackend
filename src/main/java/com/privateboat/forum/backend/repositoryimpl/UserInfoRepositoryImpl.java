@@ -5,11 +5,12 @@ import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
-@Component
+@Repository
 @AllArgsConstructor
 public class UserInfoRepositoryImpl implements UserInfoRepository {
     UserInfoDAO userInfoDao;
@@ -31,5 +32,10 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
             return userInfo;
         }
         else throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+    }
+
+    @Override
+    public List<UserInfo> findByUserNameContaining(String searchKey) {
+        return userInfoDao.findByUserNameContaining(searchKey);
     }
 }

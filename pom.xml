@@ -101,6 +101,11 @@
             <artifactId>tencentcloud-sdk-java</artifactId>
             <version>3.1.217</version>
         </dependency>
+        <dependency>
+            <groupId>com.huaban</groupId>
+            <artifactId>jieba-analysis</artifactId>
+            <version>1.0.2</version>
+        </dependency>
     </dependencies>
 
     <build>

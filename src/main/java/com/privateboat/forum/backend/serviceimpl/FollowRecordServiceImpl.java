@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.serviceimpl;
 
 import com.privateboat.forum.backend.entity.FollowRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
@@ -24,11 +25,26 @@ public class FollowRecordServiceImpl implements FollowRecordService {
     @Override
     public Page<FollowRecord> getFollowRecords(Long userId, Pageable pageable) throws UserInfoException {
         Page<FollowRecord> followRecords = followRecordRepository.getFollowRecords(userId, pageable);
-        UserInfo userInfo = userInfoRepository.getById(userId);
         followRecords.forEach((followRecord) -> {
-            followRecord.setIsMutual(followRecordRepository.isMutualFollowed(followRecord.getFromUser().getId(), userInfo));
+            followRecord.setIsMutual(followRecordRepository.isFollowing(userId, followRecord.getFromUser().getId()));
         });
         return followRecords;
+    }
+
+    @Override
+    public FollowStatus getFollowStatus(Long fromUserId, Long toUserId) {
+        Boolean meFollowing = followRecordRepository.isFollowing(fromUserId, toUserId);
+        Boolean meFollowed = followRecordRepository.isFollowing(fromUserId, toUserId);
+
+        if (meFollowed && meFollowing) {
+            return FollowStatus.BOTH;
+        } else if (!meFollowed && !meFollowing) {
+            return FollowStatus.NONE;
+        } else if (meFollowed) {
+            return FollowStatus.FOLLOWING_ME;
+        } else {
+            return FollowStatus.FOLLOWED_BY_ME;
+        }
     }
 
     @Override

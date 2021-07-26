@@ -5,7 +5,6 @@ import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
-import com.privateboat.forum.backend.dto.response.ReplyRecordDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
@@ -22,7 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -31,8 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Service
 @Transactional
-@Component
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
