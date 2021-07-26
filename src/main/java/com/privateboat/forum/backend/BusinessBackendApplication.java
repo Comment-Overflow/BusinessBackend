@@ -22,6 +22,6 @@ public class BusinessBackendApplication {
 
     @PostConstruct
     public void init(){
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC+08:00"));
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT+08:00"));
     }
 }

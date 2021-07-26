@@ -14,7 +14,8 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class Message {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(targetEntity = UserInfo.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id")
@@ -30,4 +31,12 @@ public class Message {
     private MessageType type;
 
     private String content;
+
+    public Message(UserInfo sender, UserInfo receiver, Timestamp time, MessageType type, String content) {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.time = time;
+        this.type = type;
+        this.content = content;
+    }
 }

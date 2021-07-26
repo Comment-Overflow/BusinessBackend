@@ -55,7 +55,10 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
                 messageType.equals("SUBSCRIBE") ||
                 // Client sends a message to another client.
                 (messageType.equals("MESSAGE") &&
-                        commandObj != null && commandObj.toString().equals("SEND"))
+                        commandObj != null && commandObj.toString().equals("SEND")) ||
+                // Client acknowledges receiving a message.
+                (messageType.equals("OTHER") &&
+                        commandObj != null && commandObj.toString().equals("ACK"))
         ) {
             // Extract token from the native headers.
             String nativeHeaders = Objects.requireNonNull(headers.get("nativeHeaders")).toString();

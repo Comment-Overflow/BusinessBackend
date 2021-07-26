@@ -23,14 +23,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableSimpleBroker("/", "/user");
-        registry.setApplicationDestinationPrefixes("/commentOverflow");
+        registry.setApplicationDestinationPrefixes("/comment-overflow");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/chat")
-                .setAllowedOrigins("*")
-                .addInterceptors(new IpHandshakeInterceptor());
+                .setAllowedOrigins("*");
     }
 
 
@@ -42,22 +41,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientOutboundChannel(ChannelRegistration registration) {
         registration.interceptors(jwtInterceptor);
-    }
-}
-
-class IpHandshakeInterceptor implements HandshakeInterceptor {
-
-    @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-
-        // Set ip attribute to WebSocket session
-        attributes.put("ip", request.getRemoteAddress());
-        return true;
-    }
-
-    @Override
-    public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                               WebSocketHandler wsHandler, Exception exception) {
     }
 }

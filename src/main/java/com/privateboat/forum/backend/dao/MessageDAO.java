@@ -5,8 +5,8 @@ import com.privateboat.forum.backend.entity.UserInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 public interface MessageDAO extends JpaRepository<Message, Long> {
-    Page<Message> findBySender_IdAndReceiver_IdOrSender_IdAndReceiver_IdOrderByTimeDesc(Long senderA, Long receiverA, Long senderB, Long receiverB, Pageable pageable);
+    Page<Message> findBySender_IdAndReceiver_IdOrSender_IdAndReceiver_IdOrderByTimeDesc(
+            Long senderA, Long receiverA, Long senderB, Long receiverB, Pageable pageable);
 }
