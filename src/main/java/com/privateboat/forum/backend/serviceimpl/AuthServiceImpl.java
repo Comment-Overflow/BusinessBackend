@@ -1,3 +1,5 @@
+
+
 package com.privateboat.forum.backend.serviceimpl;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
@@ -105,10 +107,11 @@ public class AuthServiceImpl implements AuthService {
 
         UserAuth userAuth = optionalUserAuth.get();
 
-        if (!rawPassword.equals(userAuth.getPassword())) {
+        if (!encoder.matches(rawPassword, userAuth.getPassword())) {
             throw new AuthException(AuthException.AuthExceptionType.WRONG_PASSWORD);
         }
 
         return userAuth;
     }
 }
+
