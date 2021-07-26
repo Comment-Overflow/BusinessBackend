@@ -1,6 +1,6 @@
 package com.privateboat.forum.backend.serviceimpl;
 
-import com.privateboat.forum.backend.dto.recordreceive.ApprovalRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.ApprovalRecord;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.UserInfo;
@@ -19,9 +19,9 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
-@Transactional
 @Service
 @AllArgsConstructor
+@Transactional
 public class ApprovalRecordServiceImpl implements ApprovalRecordService {
     private final UserInfoRepository userInfoRepository;
     private final ApprovalRecordRepository approvalRecordRepository;
@@ -43,7 +43,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         newApprovalRecord.setComment(newComment);
         newApprovalRecord.setApprovalStatus(approvalRecordReceiveDTO.getStatus());
 
-        approvalRecordRepository.postApprovalRecord(newApprovalRecord);
+        approvalRecordRepository.save(newApprovalRecord);
     }
 
     @Override

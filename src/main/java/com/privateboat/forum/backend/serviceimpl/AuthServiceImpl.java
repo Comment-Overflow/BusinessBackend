@@ -1,3 +1,5 @@
+
+
 package com.privateboat.forum.backend.serviceimpl;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
@@ -112,3 +114,4 @@ public class AuthServiceImpl implements AuthService {
         return userAuth;
     }
 }
+

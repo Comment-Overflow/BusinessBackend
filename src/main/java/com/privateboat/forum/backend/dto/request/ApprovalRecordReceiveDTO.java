@@ -1,4 +1,4 @@
-package com.privateboat.forum.backend.dto.recordreceive;
+package com.privateboat.forum.backend.dto.request;
 
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import lombok.Data;

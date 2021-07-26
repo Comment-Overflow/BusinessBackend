@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface ReplyRecordRepository {
     Page<ReplyRecord> getReplyRecords(Long toUserId, Pageable pageable);
-    void postReplyRecord(ReplyRecord replyRecord);
+    void save(ReplyRecord replyRecord);
 }
