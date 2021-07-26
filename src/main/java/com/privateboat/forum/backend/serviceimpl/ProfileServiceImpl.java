@@ -4,6 +4,7 @@ import com.privateboat.forum.backend.dto.request.ProfileSettingDTO;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.Gender;
 import com.privateboat.forum.backend.exception.ProfileException;
+import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ProfileService;
 import com.privateboat.forum.backend.util.Constant;
@@ -49,11 +50,11 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public UserInfo getProfile(Long userId) throws ProfileException{
+    public UserInfo getProfile(Long userId) throws ProfileException, UserInfoException{
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if(userInfo.isPresent()){
             return userInfo.get();
         }
-        else throw new ProfileException(ProfileException.ProfileExceptionType.USER_NOT_FOUND);
+        else throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
     }
 }

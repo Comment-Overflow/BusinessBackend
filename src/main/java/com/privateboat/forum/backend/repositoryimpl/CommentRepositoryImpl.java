@@ -34,11 +34,11 @@ public class CommentRepositoryImpl implements CommentRepository  {
 
     @Override
     public Comment getById(Long id) throws PostException {
-        Comment comment = commentDAO.getById(id);
-        if(comment != null){
-            return comment;
+        try {
+            return commentDAO.getById(id);
+        } catch (PostException e){
+            throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
         }
-        else throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
     }
 
     @Override

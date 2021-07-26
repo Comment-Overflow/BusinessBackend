@@ -7,6 +7,7 @@ import com.privateboat.forum.backend.repository.UserInfoRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 @Component
@@ -26,10 +27,10 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
 
     @Override
     public UserInfo getById(Long userId) throws UserInfoException {
-        UserInfo userInfo = userInfoDao.getById(userId);
-        if(userInfo != null){
-            return userInfo;
+        try {
+            return userInfoDao.getById(userId);
+        } catch (EntityNotFoundException e) {
+            throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         }
-        else throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
     }
 }

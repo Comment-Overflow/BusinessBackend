@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 public interface FollowRecordRepository {
     Page<FollowRecord> getFollowRecords(Long userId, Pageable pageable);
 
-    void postFollowRecord(FollowRecord followRecord);
+    void save(FollowRecord followRecord);
 
     Boolean isMutualFollowed(Long userId, UserInfo userInfo);
 }

@@ -3,13 +3,11 @@ package com.privateboat.forum.backend.controller;
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.*;
+import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
-import com.privateboat.forum.backend.service.ApprovalRecordService;
-import com.privateboat.forum.backend.service.FollowRecordService;
-import com.privateboat.forum.backend.service.ReplyRecordService;
-import com.privateboat.forum.backend.service.StarRecordService;
+import com.privateboat.forum.backend.service.*;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -30,13 +28,27 @@ public class RecordController {
     StarRecordService starRecordService;
     ReplyRecordService replyRecordService;
     FollowRecordService followRecordService;
+    UserStatisticService userStatisticService;
+
+
+    @GetMapping(value = "/notifications/new_records")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<NewlyRecordDTO> getNewlyRecords(@RequestAttribute Long userId) {
+        try {
+            UserStatistic userStatistic = userStatisticService.getNewlyRecords(userId);
+            return ResponseEntity.ok(modelMapper.map(userStatistic, NewlyRecordDTO.class));
+        } catch (RuntimeException e) {
+            System.out.println(userId.toString() + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
     @GetMapping(value = "/notifications/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<List<ApprovalRecordDTO>> getApprovalRecords(@RequestAttribute Long userId,
                                                                @RequestParam int page,
                                                                @RequestParam int pageSize) {
-        try{
+        try {
             Page<ApprovalRecordDTO> ret = approvalRecordService.getApprovalRecords(userId, PageRequest.of(page, pageSize)).map(
                     approvalNotification -> modelMapper.map(approvalNotification, ApprovalRecordDTO.class)
             );
@@ -48,8 +60,8 @@ public class RecordController {
     }
 
     @PostMapping(value = "/records/approvals")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<String> postApprovalRecord(@RequestAttribute Long fromUserId,
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
+    ResponseEntity<String> postApprovalRecord(@RequestParam Long fromUserId,
                                               ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
         try{
             approvalRecordService.postApprovalRecord(fromUserId, approvalRecordReceiveDTO);
@@ -66,8 +78,8 @@ public class RecordController {
                                                        @RequestParam Long commentId) throws UserInfoException, PostException {
         try {
             ApprovalStatus status = approvalRecordService.checkIfHaveApproved(userId, commentId);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e){
+            return ResponseEntity.ok(status);
+        } catch (RuntimeException e) {
             System.out.println(userId.toString() + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -78,7 +90,7 @@ public class RecordController {
     ResponseEntity<List<StarRecordDTO>> getStarRecords(@RequestAttribute Long userId,
                                                        @RequestParam int page,
                                                        @RequestParam int pageSize) {
-        try{
+        try {
             Page<StarRecordDTO> ret = starRecordService.getStarRecords(userId, PageRequest.of(page, pageSize)).map(
                     starNotification -> modelMapper.map(starNotification, StarRecordDTO.class)
             );
@@ -138,7 +150,7 @@ public class RecordController {
         try {
             replyRecordService.postReplyRecord(userId, replyRecordReceiveDTO);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             System.out.println(userId.toString() + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

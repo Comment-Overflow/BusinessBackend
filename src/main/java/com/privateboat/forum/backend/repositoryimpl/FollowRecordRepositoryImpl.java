@@ -20,7 +20,7 @@ public class FollowRecordRepositoryImpl implements FollowRecordRepository {
     }
 
     @Override
-    public void postFollowRecord(FollowRecord followRecord) {
+    public void save(FollowRecord followRecord) {
         followRecordDAO.saveAndFlush(followRecord);
     }
 

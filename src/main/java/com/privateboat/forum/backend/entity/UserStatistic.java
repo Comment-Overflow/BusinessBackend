@@ -51,4 +51,17 @@ public class UserStatistic implements Serializable {
         this.isNewlyReplied = false;
         this.isNewlyStarred = false;
     }
+
+    public void addPost(){
+        postCount++;
+    }
+    public void addFollowing(){
+        followingCount++;
+    }
+    public void addFollower(){
+        followerCount++;
+    }
+    public void addApproval(){
+        approvalCount++;
+    }
 }
