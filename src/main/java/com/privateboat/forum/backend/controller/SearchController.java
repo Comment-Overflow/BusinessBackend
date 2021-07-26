@@ -1,8 +1,8 @@
 package com.privateboat.forum.backend.controller;
 
-import com.privateboat.forum.backend.dto.response.PageDTO;
-import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
+import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
 import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.JWTUtil;
@@ -20,19 +20,20 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-public class CommentController {
+public class SearchController {
 
     private final SearchService searchService;
 
     @GetMapping(value = "/comments")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
-    ResponseEntity<List<SearchedCommentDTO>> searchComments(
+    ResponseEntity<List<Post>> searchComments(
             @RequestAttribute Long userId,
-            @RequestParam @Nullable PostTag postTag,
+            @RequestParam @Nullable String postTagStr,
             @RequestParam String searchKey,
             @RequestParam Integer pageNum,
             @RequestParam Integer pageSize) {
 
+        PostTag postTag = postTagStr == null ? null : PostTag.toPostTag(postTagStr);
         Page<Comment> commentsPage;
         if (postTag == null) {
             commentsPage = searchService.searchComments(searchKey,
@@ -43,12 +44,20 @@ public class CommentController {
         }
 
         // Record the time and search key of this search.
-        searchService.addSearchHistory(userId, searchKey);
-        
-        // Convert searched comments in to DTO.
-        List<SearchedCommentDTO> searchedComments = commentsPage.map(
-                comment -> new SearchedCommentDTO(comment.getPost().getId(), comment.getPost().getTitle(), comment)
-        ).getContent();
-        return ResponseEntity.ok(searchedComments);
+        searchService.addSearchHistory(userId, searchKey, postTag);
+
+        // Get the content of the page.
+        List<Comment> commentsList = commentsPage.getContent();
+        List<Post> postsContainingTheComment = searchService.wrappedSearchedCommentsWithPost(userId, commentsList);
+
+        return ResponseEntity.ok(postsContainingTheComment);
+    }
+
+    @GetMapping(value = "/users")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
+    ResponseEntity<List<UserCardInfoDTO>> searchUsers(
+            @RequestAttribute Long userId,
+            @RequestParam String searchKey) {
+        return ResponseEntity.ok(searchService.searchUsers(userId, searchKey));
     }
 }
