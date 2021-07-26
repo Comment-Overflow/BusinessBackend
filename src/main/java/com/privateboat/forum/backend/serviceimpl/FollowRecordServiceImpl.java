@@ -24,9 +24,8 @@ public class FollowRecordServiceImpl implements FollowRecordService {
     @Override
     public Page<FollowRecord> getFollowRecords(Long userId, Pageable pageable) throws UserInfoException {
         Page<FollowRecord> followRecords = followRecordRepository.getFollowRecords(userId, pageable);
-        UserInfo userInfo = userInfoRepository.getById(userId);
         followRecords.forEach((followRecord) -> {
-            followRecord.setIsMutual(followRecordRepository.isMutualFollowed(followRecord.getFromUser().getId(), userInfo));
+            followRecord.setIsMutual(followRecordRepository.isFollowing(userId, followRecord.getFromUser().getId()));
         });
         return followRecords;
     }
