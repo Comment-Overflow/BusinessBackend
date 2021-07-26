@@ -6,7 +6,6 @@ import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 

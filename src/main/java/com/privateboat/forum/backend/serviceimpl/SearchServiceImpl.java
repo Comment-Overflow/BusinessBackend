@@ -5,6 +5,7 @@ import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.repository.*;
+import com.privateboat.forum.backend.service.FollowRecordService;
 import com.privateboat.forum.backend.service.SearchService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class SearchServiceImpl implements SearchService {
+
+    private final FollowRecordService followRecordService;
 
     private final CommentRepository commentRepository;
     private final StarRecordRepository starRecordRepository;
@@ -57,20 +60,7 @@ public class SearchServiceImpl implements SearchService {
         List<UserInfo> searchedUserInfo = userInfoRepository.findByUserNameContaining(searchKey);
 
         return searchedUserInfo.stream().map(userInfo -> {
-            Boolean meFollowing = followRecordRepository.isFollowing(userId, userInfo.getId());
-            Boolean meFollowed = followRecordRepository.isFollowing(userInfo.getId(), userId);
-            FollowStatus followStatus;
-
-            if (meFollowed && meFollowing) {
-                followStatus = FollowStatus.BOTH;
-            } else if (!meFollowed && !meFollowing) {
-                followStatus = FollowStatus.NONE;
-            } else if (meFollowed) {
-                followStatus = FollowStatus.FOLLOWING_ME;
-            } else {
-                followStatus = FollowStatus.FOLLOWED_BY_ME;
-            }
-
+            FollowStatus followStatus = followRecordService.getFollowStatus(userId, userInfo.getId());
             UserStatistic userStatistic = userInfo.getUserStatistic();
             return new UserCardInfoDTO(
                     userInfo.getId(),
