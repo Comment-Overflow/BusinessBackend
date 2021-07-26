@@ -15,4 +15,5 @@ public interface PostRepository {
     Page<Post> findByTag(PostTag tag, Pageable pageable);
     Post save(Post post);
     Post getByPostId(Long postId) throws PostException;
+    void delete(Post post);
 }

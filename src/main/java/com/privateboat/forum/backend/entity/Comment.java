@@ -46,6 +46,9 @@ public class Comment {
     @Fetch(value = FetchMode.SELECT)
     private List<String> imageUrl;
 
+    @JsonIgnore
+    private Boolean isDeleted;
+
     @Transient
     private ApprovalStatus approvalStatus;
     @Transient
@@ -61,5 +64,6 @@ public class Comment {
         this.approvalCount = 0;
         this.disapprovalCount = 0;
         this.imageUrl = new ArrayList<>();
+        this.isDeleted = false;
     }
 }

@@ -19,7 +19,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
 
     @Override
     public Page<Comment> findByPostId(Long postId, Pageable pageable) {
-        return commentDAO.findByPostId(postId, pageable);
+        return commentDAO.findByPostIdAndIsDeleted(postId, false, pageable);
     }
 
     @Override
@@ -34,15 +34,17 @@ public class CommentRepositoryImpl implements CommentRepository  {
 
     @Override
     public Comment getById(Long id) throws PostException {
-        Comment comment = commentDAO.getById(id);
-        if(comment != null){
-            return comment;
-        }
-        else throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
+        return commentDAO.getById(id);
     }
 
     @Override
     public QuoteDTO getCommentAsQuote(Long commentId) throws PostException {
         return new QuoteDTO(getById(commentId));
+    }
+
+    @Override
+    public void delete(Comment comment) {
+        comment.setIsDeleted(true);
+        commentDAO.save(comment);
     }
 }

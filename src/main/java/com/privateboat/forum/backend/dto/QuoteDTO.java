@@ -11,7 +11,7 @@ public class QuoteDTO {
     private String content;
 
     public QuoteDTO(Comment comment) {
-        commentId = comment.getId();
+        commentId = comment.getIsDeleted() ? -1 : comment.getId();
         title = comment.getPost().getTitle();
         floor = comment.getFloor();
         content = comment.getContent();
