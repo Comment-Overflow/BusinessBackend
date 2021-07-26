@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.controller;
 
+import com.privateboat.forum.backend.dto.request.ImageMessageDTO;
 import com.privateboat.forum.backend.dto.request.TextMessageDTO;
 import com.privateboat.forum.backend.service.ChatService;
 import com.privateboat.forum.backend.util.JWTUtil;
@@ -9,8 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @AllArgsConstructor
@@ -24,18 +24,15 @@ public class ChatController {
         chatService.sendTextMessage(textMessageDTO.getUuid(), textMessageDTO.getSenderId(), textMessageDTO.getReceiverId(), textMessageDTO.getContent());
     }
 
-    @MessageMapping("/chat/image")
-    public void getImageMessage(
-            @Payload byte[] imgByteArray,
-            @Header("UUID") String uuid
-    ) {
-        System.out.println("image");
-        for (byte b : imgByteArray) {
-            System.out.print(b);
-            System.out.print(' ');
+    @PostMapping("/chat/image")
+    public ResponseEntity<?> sendImageMessage(
+            @RequestBody ImageMessageDTO imageMessageDTO,
+            @RequestAttribute Long senderId) {
+        try {
+            return ResponseEntity.ok(chatService.sendImageMessage(senderId, imageMessageDTO));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
         }
-        System.out.println();
-        simpMessagingTemplate.convertAndSend("/notify/" + uuid, "success");
     }
 
     @MessageMapping("/chat/update")

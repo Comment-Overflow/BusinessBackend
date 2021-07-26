@@ -2,16 +2,19 @@ package com.privateboat.forum.backend.serviceimpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.privateboat.forum.backend.dto.request.ImageMessageDTO;
 import com.privateboat.forum.backend.dto.response.ChatDTO;
 import com.privateboat.forum.backend.dto.response.MessageDTO;
 import com.privateboat.forum.backend.entity.Chat;
 import com.privateboat.forum.backend.entity.Message;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.MessageType;
+import com.privateboat.forum.backend.exception.ChatException;
 import com.privateboat.forum.backend.repository.ChatRepository;
 import com.privateboat.forum.backend.repository.MessageRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ChatService;
+import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
@@ -33,10 +37,13 @@ public class ChatServiceImpl implements ChatService {
 
     private final ObjectMapper objectMapper;
     private final ProjectionFactory projectionFactory;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
     private final UserInfoRepository userInfoRepository;
-    private final SimpMessagingTemplate simpMessagingTemplate;
+
+    static private final String imageFolderName = "chat/";
 
     @Override
     public void sendTextMessage(String uuid, Long senderId, Long receiverId, String content) {
@@ -96,6 +103,19 @@ public class ChatServiceImpl implements ChatService {
 
         // Send the success acknowledgment to the sender via socket.
         simpMessagingTemplate.convertAndSend(notifyChannel, time.toString());
+    }
+
+    @Override
+    public MessageDTO sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO) {
+        // Upload the image
+        MultipartFile imageFile = imageMessageDTO.getImageFile();
+        String newName = ImageUtil.getNewImageName(imageFile);
+        if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName))
+            throw new ChatException(ChatException.ChatExceptionType.SEND_IMAGE_FAILED);
+//        String imageFilePath =
+        Long receiverId = imageMessageDTO.getReceiverId();
+
+        return new MessageDTO();
     }
 
     @Override

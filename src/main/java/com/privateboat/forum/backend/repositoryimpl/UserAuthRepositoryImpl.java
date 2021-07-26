@@ -4,7 +4,6 @@ import com.privateboat.forum.backend.dao.UserAuthDAO;
 import com.privateboat.forum.backend.entity.UserAuth;
 import com.privateboat.forum.backend.repository.UserAuthRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;

@@ -5,9 +5,9 @@ import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -35,7 +35,7 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
     }
 
     @Override
-    public <T> Optional<T> findOneProjectionById(Long id, Class<T> type) {
-        return userInfoDao.findOneProjectionById(id, type);
+    public List<UserInfo> findByUserNameContaining(String searchKey) {
+        return userInfoDao.findByUserNameContaining(searchKey);
     }
 }
