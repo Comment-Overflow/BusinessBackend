@@ -7,11 +7,11 @@ import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.http.HttpProtocol;
 import com.qcloud.cos.model.*;
 import com.qcloud.cos.region.Region;
-import org.springframework.http.ResponseEntity;
+import com.sun.istack.Nullable;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -33,7 +33,7 @@ public class ImageUtil {
         BUCKET_NAME = "comment-overflow-1306578009";
     }
 
-    static public Boolean uploadImage(MultipartFile file, String fileName) {
+    static public Boolean uploadImage(MultipartFile file, String fileName, String folderName) {
         // Convert multipart file to InputStream.
         InputStream inputStream;
         try {
@@ -46,7 +46,9 @@ public class ImageUtil {
         COSClient cosClient = new COSClient(CRED, CLIENT_CONFIG);
 
         // Specify the path to store on COS. File name should include extension.
-        String key = BASE_KEY + fileName;
+        String key;
+        key = BASE_KEY + folderName + fileName;
+
         // Get object metadata.
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
@@ -63,9 +65,9 @@ public class ImageUtil {
         }
     }
 
-    static public byte[] downloadImage(String fileName) throws RuntimeException {
+    static public byte[] downloadImage(String fileName, String folderName) throws RuntimeException {
         // Specify the path to store on COS. File name should include extension.
-        String key = BASE_KEY + fileName;
+        String key = BASE_KEY + folderName + fileName;
         // Acquire download input steam.
         COSClient cosClient = new COSClient(CRED, CLIENT_CONFIG);
         GetObjectRequest getObjectRequest = new GetObjectRequest(BUCKET_NAME, key);
@@ -83,5 +85,11 @@ public class ImageUtil {
         }
     }
 
+    static public String getNewImageName(MultipartFile file) {
+        String originName = file.getOriginalFilename();
+        assert originName != null;
+        String suffix = originName.substring(originName.lastIndexOf("."));
+        return RandomStringUtils.randomAlphanumeric(12) + suffix;
+    }
 
 }

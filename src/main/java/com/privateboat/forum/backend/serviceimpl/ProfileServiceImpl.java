@@ -10,6 +10,7 @@ import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +23,19 @@ import java.util.Optional;
 public class ProfileServiceImpl implements ProfileService {
     private final UserInfoRepository userInfoRepository;
 
+    private final Environment environment;
+    static private final String imageFolderName = "personalInfo/";
+
     @Override
     public void putProfile(Long userId, ProfileSettingDTO profileSettingDTO) throws ProfileException{
         UserInfo userInfo = userInfoRepository.getById(userId);
         if(profileSettingDTO.getAvatar() != null) {
             String avatarFileName = String.format("%d_%s", userId, RandomStringUtils.randomAlphanumeric(6));
-            if (!ImageUtil.uploadImage(profileSettingDTO.getAvatar(), avatarFileName)) {
+            if (!ImageUtil.uploadImage(profileSettingDTO.getAvatar(), avatarFileName, imageFolderName)) {
                 throw new ProfileException(ProfileException.ProfileExceptionType.UPLOAD_IMAGE_FAILED);
             }
-            userInfo.setAvatarUrl(Constant.serverUrl + avatarFileName);
+            String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + avatarFileName;
+            userInfo.setAvatarUrl(imageUrl);
         }
         userInfo.setBrief(profileSettingDTO.getBrief());
         switch (profileSettingDTO.getGender()){
