@@ -42,7 +42,7 @@ public class AuthController {
     }
 
     @GetMapping(value = "/sessions")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
     ResponseEntity<?> autoLogin(@RequestAttribute Long userId) {
         // If request reaches here, token verification must have been successful. No need to validate again.
         return ResponseEntity.ok().body(authService.refreshToken(userId));
