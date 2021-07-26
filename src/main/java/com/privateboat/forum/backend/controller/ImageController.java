@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ImageController {
 
-    @GetMapping(value = "/images/{fileName}")
+    @GetMapping(value = "/images/{folderName}/{fileName}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<byte[]> getImage(@PathVariable("fileName") String fileName) {
-        return ResponseEntity.ok(ImageUtil.downloadImage(fileName));
+    ResponseEntity<byte[]> getImage(
+            @PathVariable("folderName") String folderNameWithoutSlash,
+            @PathVariable("fileName") String fileName) {
+        return ResponseEntity.ok(ImageUtil.downloadImage(fileName, folderNameWithoutSlash + "/"));
     }
 
 }

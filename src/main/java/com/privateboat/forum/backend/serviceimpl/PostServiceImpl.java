@@ -5,7 +5,6 @@ import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
-import com.privateboat.forum.backend.dto.response.ReplyRecordDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
@@ -43,7 +42,8 @@ public class PostServiceImpl implements PostService {
 
     private final ReplyRecordService replyRecordService;
 
-    private static final String baseUrl = "http://192.16.101:8088/images/";
+    private static final String imageFolderName = "comment/";
+    private static final String baseUrl = "http://192.168.0.101:8088/images/";
 
     @Override
     public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException {
@@ -90,11 +90,11 @@ public class PostServiceImpl implements PostService {
 
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
             String newName = getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName)) {
+            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
-            hostComment.getImageUrl().add(baseUrl + newName);
-            System.out.println(baseUrl + newName);
+            hostComment.getImageUrl().add(baseUrl + imageFolderName + newName);
+            System.out.println(baseUrl + imageFolderName + newName);
         }
 
         postRepository.save(post);
@@ -141,10 +141,10 @@ public class PostServiceImpl implements PostService {
 
         for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
             String newName = getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName)) {
+            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
-            comment.getImageUrl().add(baseUrl + newName);
+            comment.getImageUrl().add(baseUrl + imageFolderName + newName);
         }
 
         return comment;
