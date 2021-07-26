@@ -8,6 +8,7 @@ import com.qcloud.cos.http.HttpProtocol;
 import com.qcloud.cos.model.*;
 import com.qcloud.cos.region.Region;
 import com.sun.istack.Nullable;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,8 +48,8 @@ public class ImageUtil {
         // Specify the path to store on COS. File name should include extension.
         String key;
         key = BASE_KEY + folderName + fileName;
-        // Get object metadata.
 
+        // Get object metadata.
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
 
@@ -84,5 +85,11 @@ public class ImageUtil {
         }
     }
 
+    static public String getNewImageName(MultipartFile file) {
+        String originName = file.getOriginalFilename();
+        assert originName != null;
+        String suffix = originName.substring(originName.lastIndexOf("."));
+        return RandomStringUtils.randomAlphanumeric(12) + suffix;
+    }
 
 }
