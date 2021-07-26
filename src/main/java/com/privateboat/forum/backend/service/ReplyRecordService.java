@@ -1,6 +1,6 @@
 package com.privateboat.forum.backend.service;
 
-import com.privateboat.forum.backend.dto.recordreceive.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.ReplyRecord;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;

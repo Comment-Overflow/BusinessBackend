@@ -26,4 +26,6 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
             @Param("postTag") PostTag postTag,
             @Param("searchKey") String searchKey,
             Pageable pageable);
+
+    Page<Comment> findByPostIdAndIsDeleted(Long postId, Boolean isDeleted, Pageable pageable);
 }

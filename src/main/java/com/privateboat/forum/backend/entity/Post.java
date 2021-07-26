@@ -37,6 +37,9 @@ public class Post {
     @JsonIgnore
     private List<Comment> comments;
 
+    @JsonIgnore
+    private Boolean isDeleted;
+
     @Transient
     private Comment hostComment;
     @Transient
@@ -46,8 +49,9 @@ public class Post {
         this.title = title;
         this.tag = tag;
         this.commentCount = 0;
-        postTime = new Timestamp(System.currentTimeMillis());
-        comments = new ArrayList<>();
+        this.isDeleted = false;
+        this.postTime = new Timestamp(System.currentTimeMillis());
+        this.comments = new ArrayList<>();
     }
 
     public void setHostComment(Comment hostComment) {
@@ -58,6 +62,11 @@ public class Post {
     public void addComment(Comment comment) {
         comments.add(comment);
         commentCount++;
+    }
+
+    public void deleteComment(Comment comment) {
+        comments.remove(comment);
+        commentCount--;
     }
 
     public Comment getHostComment() {

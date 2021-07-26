@@ -25,7 +25,7 @@ public class StarRecordRepositoryImpl implements StarRecordRepository {
     }
 
     @Override
-    public void postStarRecord(StarRecord newStarRecord) {
+    public void save(StarRecord newStarRecord) {
         starRecordDAO.saveAndFlush(newStarRecord);
     }
 

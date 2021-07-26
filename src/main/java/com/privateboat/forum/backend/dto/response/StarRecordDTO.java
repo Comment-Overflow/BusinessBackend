@@ -1,16 +1,17 @@
-package com.privateboat.forum.backend.dto.recordback;
+package com.privateboat.forum.backend.dto.response;
 
 import lombok.Data;
 
 @Data
-public class ReplyRecordDTO {
+public class StarRecordDTO {
+    private Long timestamp;
+
     private Long fromUserUserId;
     private String fromUserUserName;
     private String fromUserAvatarUrl;
 
-    private Long timestamp;
-
     private String postTitle;
     private String postHostCommentContent;
-    private String commentContent;
+    private Long postHostCommentId;
+    private Integer postHostCommentFloor;
 }

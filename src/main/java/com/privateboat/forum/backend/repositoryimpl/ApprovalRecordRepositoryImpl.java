@@ -24,7 +24,7 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
     }
 
     @Override
-    public void postApprovalRecord(ApprovalRecord newApprovalRecord){
+    public void save(ApprovalRecord newApprovalRecord){
         approvalRecordDAO.saveAndFlush(newApprovalRecord);
     }
 

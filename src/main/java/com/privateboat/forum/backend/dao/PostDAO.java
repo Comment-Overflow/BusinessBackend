@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PostDAO extends JpaRepository<Post, Long> {
-    Page<Post> findByUserInfo_IdOrderByPostTimeDesc(Long userId, Pageable pageable);
-    Page<Post> findByOrderByPostTimeDesc(Pageable pageable);
-    Page<Post> findByTagOrderByPostTimeDesc(PostTag tag, Pageable pageable);
+    Page<Post> findByUserInfo_IdAndIsDeletedOrderByPostTimeDesc(Long userId, Boolean isDeleted, Pageable pageable);
+    Page<Post> findByIsDeletedOrderByPostTimeDesc(Boolean isDeleted, Pageable pageable);
+    Page<Post> findByTagAndIsDeletedOrderByPostTimeDesc(PostTag tag, Boolean isDeleted, Pageable pageable);
 }

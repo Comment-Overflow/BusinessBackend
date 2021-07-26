@@ -1,12 +1,11 @@
 package com.privateboat.forum.backend.serviceimpl;
 
-import com.privateboat.forum.backend.dto.recordreceive.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.ReplyRecord;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
-import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.PostRepository;
 import com.privateboat.forum.backend.repository.ReplyRecordRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
@@ -19,9 +18,9 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
-@Transactional
 @Service
 @AllArgsConstructor
+@Transactional
 public class ReplyRecordServiceImpl implements ReplyRecordService {
     private final ReplyRecordRepository replyRecordRepository;
     private final UserInfoRepository userInfoRepository;
@@ -42,5 +41,6 @@ public class ReplyRecordServiceImpl implements ReplyRecordService {
         replyRecord.setPost(post);
         Comment comment = post.getComments().get(replyRecordReceiveDTO.getFloor());
         replyRecord.setComment(comment);
+        replyRecordRepository.save(replyRecord);
     }
 }
