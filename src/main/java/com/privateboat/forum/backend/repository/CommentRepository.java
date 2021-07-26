@@ -14,4 +14,5 @@ public interface CommentRepository {
     Optional<Comment> findById(Long commentId);
     Comment getById(Long commentId) throws PostException;
     QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
+    void delete(Comment comment);
 }

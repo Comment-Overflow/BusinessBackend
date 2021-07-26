@@ -3,7 +3,9 @@ package com.privateboat.forum.backend.serviceimpl;
 import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
+import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
+import com.privateboat.forum.backend.dto.response.ReplyRecordDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
@@ -12,6 +14,7 @@ import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
+import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -26,6 +29,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @Component
@@ -37,7 +41,9 @@ public class PostServiceImpl implements PostService {
     private final ApprovalRecordRepository approvalRecordRepository;
     private final StarRecordRepository starRecordRepository;
 
-    private static final String baseUrl = "http://192.168.1.101:8088/images/";
+    private final ReplyRecordService replyRecordService;
+
+    private static final String baseUrl = "http://192.16.101:8088/images/";
 
     @Override
     public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException {
@@ -109,6 +115,29 @@ public class PostServiceImpl implements PostService {
         Comment comment = new Comment(post.get(), userInfo.get(),
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.get().addComment(comment);
+        commentRepository.save(comment);
+
+        Long postUserId = post.get().getUserInfo().getId();
+        if (!postUserId.equals(userId)) {
+            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), 0);
+            replyRecordService.postReplyRecord(userId, reply);
+        }
+        if (comment.getQuoteId() != 0) {
+            List<Comment> finder =
+                    post.get().getComments().stream().filter(
+                            c -> c.getId().equals(comment.getQuoteId())
+                    ).collect(Collectors.toList());
+            if (finder.size() != 1) throw new PostException(PostException.PostExceptionType.QUOTE_OUT_OF_BOUND);
+            Comment target = finder.get(0);
+            Long quoteUserId = target.getUserInfo().getId();
+            if (!quoteUserId.equals(userId)) {
+                ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(
+                        target.getUserInfo().getId(),
+                        commentDTO.getPostId(),
+                        target.getFloor());
+                replyRecordService.postReplyRecord(userId, reply);
+            }
+        }
 
         for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
             String newName = getNewImageName(imageFile);
@@ -118,7 +147,6 @@ public class PostServiceImpl implements PostService {
             comment.getImageUrl().add(baseUrl + newName);
         }
 
-        commentRepository.save(comment);
         return comment;
     }
 
@@ -176,6 +204,27 @@ public class PostServiceImpl implements PostService {
 
 
         return new PageDTO<>(comments);
+    }
+
+    @Override
+    public void deletePost(Long postId) throws PostException {
+        Optional<Post> post = postRepository.findByPostId(postId);
+        if (post.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+        }
+        postRepository.delete(post.get());
+    }
+
+    @Override
+    public void deleteComment(Long commentId) throws PostException {
+        Optional<Comment> comment = commentRepository.findById(commentId);
+        if (comment.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
+        }
+        Post post = comment.get().getPost();
+        post.deleteComment(comment.get());
+        postRepository.save(post);
+        commentRepository.delete(comment.get());
     }
 
     private String getNewImageName(MultipartFile file) {
