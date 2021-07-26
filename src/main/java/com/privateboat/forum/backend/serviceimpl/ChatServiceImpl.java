@@ -14,8 +14,10 @@ import com.privateboat.forum.backend.repository.ChatRepository;
 import com.privateboat.forum.backend.repository.MessageRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ChatService;
+import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,12 +45,13 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final UserInfoRepository userInfoRepository;
 
+    private final Environment environment;
     static private final String imageFolderName = "chat/";
+    static private final String receiverChannel = "/queue/private";
 
     @Override
     public void sendTextMessage(String uuid, Long senderId, Long receiverId, String content) {
 
-        String receiverChannel = "/queue/private";
         String notifyChannel = "/notify/" + uuid;
         Timestamp time = new Timestamp(System.currentTimeMillis());
         MessageType type = MessageType.TEXT;
@@ -62,29 +65,8 @@ public class ChatServiceImpl implements ChatService {
             Message message = new Message(senderInfo, receiverInfo, time, type, content);
             messageRepository.save(message);
 
-            // Update sender chat in database.
-            Optional<Chat> senderChatOpt = chatRepository.findByUserIdAndChatterId(senderId, receiverId);
-            if (senderChatOpt.isEmpty()) {
-                Chat newChat = new Chat(senderInfo, receiverInfo, message, 0);
-                chatRepository.save(newChat);
-            } else {
-                Chat chat = senderChatOpt.get();
-                chat.setLastMessage(message);
-                chat.setUnreadCount(0);
-                chatRepository.save(chat);
-            }
-
-            // Update receiver chat in database.
-            Optional<Chat> receiverChatOpt = chatRepository.findByUserIdAndChatterId(receiverId, senderId);
-            if (receiverChatOpt.isEmpty()) {
-                Chat newChat = new Chat(receiverInfo, senderInfo, message, 1);
-                chatRepository.save(newChat);
-            } else {
-                Chat chat = receiverChatOpt.get();
-                chat.setLastMessage(message);
-                chat.setUnreadCount(chat.getUnreadCount() + 1);
-                chatRepository.save(chat);
-            }
+            // Update chat in database.
+            updateChatOnNewMessage(message);
 
             // Send the message to the receiver via socket.
             messageToSend = new MessageDTO(
@@ -106,16 +88,36 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public MessageDTO sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO) {
-        // Upload the image
+    public MessageDTO sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO) throws JsonProcessingException {
+        System.out.println("enter sendImageMessage");
+        // Upload the image.
         MultipartFile imageFile = imageMessageDTO.getImageFile();
         String newName = ImageUtil.getNewImageName(imageFile);
         if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName))
             throw new ChatException(ChatException.ChatExceptionType.SEND_IMAGE_FAILED);
-//        String imageFilePath =
-        Long receiverId = imageMessageDTO.getReceiverId();
 
-        return new MessageDTO();
+        // Save message to the database.
+        String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
+        Long receiverId = imageMessageDTO.getReceiverId();
+        UserInfo senderInfo = userInfoRepository.getById(senderId);
+        UserInfo receiverInfo = userInfoRepository.getById(receiverId);
+        Timestamp time = new Timestamp(System.currentTimeMillis());
+        MessageType type = MessageType.IMAGE;
+        Message message = new Message(senderInfo, receiverInfo, time, type, imageUrl);
+        messageRepository.save(message);
+
+        // Update chat in database.
+        updateChatOnNewMessage(message);
+
+        // Send the message to the receiver via socket.
+        MessageDTO messageToSend = new MessageDTO(
+                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, senderInfo),
+                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, senderInfo),
+                time, type, imageUrl);
+        String jsonMessage = objectMapper.writeValueAsString(messageToSend);
+        simpMessagingTemplate.convertAndSendToUser(receiverId.toString(), receiverChannel, jsonMessage);
+
+        return messageToSend;
     }
 
     @Override
@@ -142,12 +144,45 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public List<ChatDTO> getRecentChats(Long userId) {
-        return chatRepository.findAllByUserId(userId).stream().map(chat ->
-                new ChatDTO(
-                        projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, chat.getChatter()),
-                        chat.getLastMessage().getContent(),
-                        chat.getLastMessage().getTime(),
-                        chat.getUnreadCount()
-                )).collect(Collectors.toList());
+        return chatRepository.findAllByUserId(userId).stream().map(chat -> {
+                    Message lastMessage = chat.getLastMessage();
+                    String content = lastMessage.getType() == MessageType.TEXT
+                            ? lastMessage.getContent() : Constant.IMAGE_STRING;
+                    return new ChatDTO(
+                            projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, chat.getChatter()),
+                            content, lastMessage.getTime(), chat.getUnreadCount());
+                }
+        ).collect(Collectors.toList());
+    }
+
+    private void updateChatOnNewMessage(Message message) {
+        UserInfo senderInfo = message.getSender();
+        UserInfo receiverInfo = message.getReceiver();
+        Long senderId = senderInfo.getId();
+        Long receiverId = receiverInfo.getId();
+
+        // Update sender chat in database.
+        Optional<Chat> senderChatOpt = chatRepository.findByUserIdAndChatterId(senderId, receiverId);
+        if (senderChatOpt.isEmpty()) {
+            Chat newChat = new Chat(senderInfo, receiverInfo, message, 0);
+            chatRepository.save(newChat);
+        } else {
+            Chat chat = senderChatOpt.get();
+            chat.setLastMessage(message);
+            chat.setUnreadCount(0);
+            chatRepository.save(chat);
+        }
+
+        // Update receiver chat in database.
+        Optional<Chat> receiverChatOpt = chatRepository.findByUserIdAndChatterId(receiverId, senderId);
+        if (receiverChatOpt.isEmpty()) {
+            Chat newChat = new Chat(receiverInfo, senderInfo, message, 1);
+            chatRepository.save(newChat);
+        } else {
+            Chat chat = receiverChatOpt.get();
+            chat.setLastMessage(message);
+            chat.setUnreadCount(chat.getUnreadCount() + 1);
+            chatRepository.save(chat);
+        }
     }
 }

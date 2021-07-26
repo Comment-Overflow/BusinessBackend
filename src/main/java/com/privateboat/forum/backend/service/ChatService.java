@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.privateboat.forum.backend.dto.request.ImageMessageDTO;
 import com.privateboat.forum.backend.dto.response.ChatDTO;
 import com.privateboat.forum.backend.dto.response.MessageDTO;
@@ -14,7 +15,7 @@ public interface ChatService {
 
     void sendTextMessage(String uuid, Long senderId, Long receiverId, String content);
 
-    MessageDTO sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO);
+    MessageDTO sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO) throws JsonProcessingException;
 
     Page<MessageDTO> getChatHistory(Long userId, Long chatterId, Integer pageNum, Integer pageSize);
 

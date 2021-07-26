@@ -25,11 +25,12 @@ public class ChatController {
     }
 
     @PostMapping("/chat/image")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     public ResponseEntity<?> sendImageMessage(
-            @RequestBody ImageMessageDTO imageMessageDTO,
-            @RequestAttribute Long senderId) {
+            ImageMessageDTO imageMessageDTO,
+            @RequestAttribute Long userId) {
         try {
-            return ResponseEntity.ok(chatService.sendImageMessage(senderId, imageMessageDTO));
+            return ResponseEntity.ok(chatService.sendImageMessage(userId, imageMessageDTO));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
