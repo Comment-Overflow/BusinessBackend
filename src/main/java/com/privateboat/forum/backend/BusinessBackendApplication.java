@@ -5,6 +5,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import javax.annotation.PostConstruct;
+import java.util.TimeZone;
+
 @SpringBootApplication
 public class BusinessBackendApplication {
 
@@ -17,4 +20,8 @@ public class BusinessBackendApplication {
         SpringApplication.run(BusinessBackendApplication.class, args);
     }
 
+    @PostConstruct
+    public void init(){
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT+08:00"));
+    }
 }
