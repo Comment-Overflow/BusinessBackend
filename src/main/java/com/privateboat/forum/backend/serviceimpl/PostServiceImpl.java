@@ -206,6 +206,27 @@ public class PostServiceImpl implements PostService {
         return new PageDTO<>(comments);
     }
 
+    @Override
+    public void deletePost(Long postId) throws PostException {
+        Optional<Post> post = postRepository.findByPostId(postId);
+        if (post.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+        }
+        postRepository.delete(post.get());
+    }
+
+    @Override
+    public void deleteComment(Long commentId) throws PostException {
+        Optional<Comment> comment = commentRepository.findById(commentId);
+        if (comment.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
+        }
+        Post post = comment.get().getPost();
+        post.deleteComment(comment.get());
+        postRepository.save(post);
+        commentRepository.delete(comment.get());
+    }
+
     private String getNewImageName(MultipartFile file) {
         String originName = file.getOriginalFilename();
         assert originName != null;

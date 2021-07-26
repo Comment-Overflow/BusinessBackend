@@ -24,17 +24,17 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findByUserId(Long userId, Pageable pageable) {
-        return postDAO.findByUserInfo_IdOrderByPostTimeDesc(userId, pageable);
+        return postDAO.findByUserInfo_IdAndIsDeletedOrderByPostTimeDesc(userId, false, pageable);
     }
 
     @Override
     public Page<Post> findAll(Pageable pageable) {
-        return postDAO.findByOrderByPostTimeDesc(pageable);
+        return postDAO.findByIsDeletedOrderByPostTimeDesc(false, pageable);
     }
 
     @Override
     public Page<Post> findByTag(PostTag tag, Pageable pageable) {
-        return postDAO.findByTagOrderByPostTimeDesc(tag, pageable);
+        return postDAO.findByTagAndIsDeletedOrderByPostTimeDesc(tag, false, pageable);
     }
 
     @Override
@@ -45,5 +45,11 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public Post getByPostId(Long postId) throws PostException {
         return postDAO.getById(postId);
+    }
+
+    @Override
+    public void delete(Post post) {
+        post.setIsDeleted(true);
+        postDAO.save(post);
     }
 }
