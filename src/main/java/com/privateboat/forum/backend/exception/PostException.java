@@ -6,7 +6,7 @@ import java.util.Map;
 public class PostException extends RuntimeException {
     public enum PostExceptionType {
         POST_NOT_EXIST, POST_DELETED, PAGE_OUT_OF_BOUND, POSTER_NOT_EXIST, UPLOAD_IMAGE_FAILED, COMMENT_NOT_EXIST,
-        VIEWER_NOT_EXIST
+        VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND
     }
 
     private static final Map<PostExceptionType, String> map = new HashMap<>() {{
@@ -17,6 +17,7 @@ public class PostException extends RuntimeException {
         put(PostExceptionType.POSTER_NOT_EXIST, "发贴用户不存在。");
         put(PostExceptionType.UPLOAD_IMAGE_FAILED, "上传图片失败。");
         put(PostExceptionType.VIEWER_NOT_EXIST, "访问用户不存在。");
+        put(PostExceptionType.QUOTE_OUT_OF_BOUND, "引用了不是本楼的回复！");
     }};
 
     public PostException(PostExceptionType postExceptionType) {
