@@ -12,7 +12,7 @@ public class QuoteDTO {
 
     public QuoteDTO(Comment comment) {
         commentId = comment.getId();
-        title = comment.getPost().getTitle();
+        title = comment.getUserInfo().getUserName();
         floor = comment.getFloor();
         content = comment.getContent();
     }
