@@ -52,6 +52,11 @@ public class StarRecordServiceImpl implements StarRecordService {
     }
 
     @Override
+    public void deleteStarRecord(Long fromUserId, Long postId) {
+        starRecordRepository.deleteStarRecord(fromUserId, postId);
+    }
+
+    @Override
     public Boolean checkIfHaveStarred(Long userId, Long postId) throws PostException, UserInfoException {
         UserInfo userInfo = userInfoRepository.getById(userId);
         Post post = postRepository.getByPostId(postId);

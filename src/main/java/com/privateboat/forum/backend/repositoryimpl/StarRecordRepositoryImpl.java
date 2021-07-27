@@ -30,6 +30,11 @@ public class StarRecordRepositoryImpl implements StarRecordRepository {
     }
 
     @Override
+    public void deleteStarRecord(Long fromUserId, Long postId) {
+        starRecordDAO.deleteByFromUserIdAndPostId(fromUserId, postId);
+    }
+
+    @Override
     public Boolean checkIfHaveStarred(UserInfo userInfo, Post post) {
         return starRecordDAO.existsByFromUserAndPost(userInfo, post);
     }

@@ -58,6 +58,11 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
     }
 
     @Override
+    public void deleteApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
+        approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
+    }
+
+    @Override
     public ApprovalStatus checkIfHaveApproved(Long userId, Long commentId) throws UserInfoException, PostException {
         UserInfo userInfo = userInfoRepository.getById(userId);
         Comment comment = commentRepository.getById(commentId);

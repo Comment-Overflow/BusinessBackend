@@ -1,9 +1,9 @@
 package com.privateboat.forum.backend.serviceimpl;
 
+import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
 import com.privateboat.forum.backend.entity.FollowRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.RecordType;
-import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
@@ -25,30 +25,67 @@ public class FollowRecordServiceImpl implements FollowRecordService {
     private final UserInfoRepository userInfoRepository;
     private final UserStatisticRepository userStatisticRepository;
 
+    private UserCardInfoDTO converter(FollowRecord followRecord) {
+        UserInfo userInfo = followRecord.getFromUser();
+        return new UserCardInfoDTO(
+                userInfo.getId(),
+                userInfo.getUserName(),
+                userInfo.getAvatarUrl(),
+                userInfo.getBrief(),
+                userInfo.getUserStatistic().getCommentCount(),
+                userInfo.getUserStatistic().getFollowerCount(),
+                followRecord.getFollowStatus()
+        );
+    }
+
     @Override
-    public Page<FollowRecord> getFollowRecords(Long userId, Pageable pageable) throws UserInfoException {
+    public Page<FollowRecord> getFollowingNotifications(Long userId, Pageable pageable) throws UserInfoException {
         userStatisticRepository.removeFlag(userId, RecordType.FOLLOW);
-        Page<FollowRecord> followRecords = followRecordRepository.getFollowRecords(userId, pageable);
+        Page<FollowRecord> followRecords = followRecordRepository.getFollowingRecords(userId, pageable);
         followRecords.forEach((followRecord) -> {
-            followRecord.setIsMutual(followRecordRepository.isFollowing(userId, followRecord.getFromUser().getId()));
+            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(userId, followRecord.getFromUser().getId()));
         });
         return followRecords;
     }
 
     @Override
-    public FollowStatus getFollowStatus(Long fromUserId, Long toUserId) {
-        Boolean meFollowing = followRecordRepository.isFollowing(fromUserId, toUserId);
-        Boolean meFollowed = followRecordRepository.isFollowing(fromUserId, toUserId);
+    public Page<UserCardInfoDTO> getFollowingRecords(Long userId, Pageable pageable) throws UserInfoException {
+        Page<FollowRecord> followRecords = followRecordRepository.getFollowingRecords(userId, pageable);
+        followRecords.forEach((followRecord) -> {
+            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(userId, followRecord.getFromUser().getId()));
+        });
+        return followRecords.map((followRecord -> {
+            UserInfo userInfo = followRecord.getFromUser();
+            return new UserCardInfoDTO(
+                    userInfo.getId(),
+                    userInfo.getUserName(),
+                    userInfo.getAvatarUrl(),
+                    userInfo.getBrief(),
+                    userInfo.getUserStatistic().getCommentCount(),
+                    userInfo.getUserStatistic().getFollowerCount(),
+                    followRecord.getFollowStatus()
+            );
+        }));
+    }
 
-        if (meFollowed && meFollowing) {
-            return FollowStatus.BOTH;
-        } else if (!meFollowed && !meFollowing) {
-            return FollowStatus.NONE;
-        } else if (meFollowed) {
-            return FollowStatus.FOLLOWING_ME;
-        } else {
-            return FollowStatus.FOLLOWED_BY_ME;
-        }
+    @Override
+    public Page<UserCardInfoDTO> getFollowedRecords(Long userId, Pageable pageable) throws UserInfoException {
+        Page<FollowRecord> followRecords = followRecordRepository.getFollowedRecords(userId, pageable);
+        followRecords.forEach((followRecord) -> {
+            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(followRecord.getToUserId(), userId));
+        });
+        return followRecords.map((followRecord -> {
+            UserInfo userInfo = userInfoRepository.getById(followRecord.getToUserId());
+            return new UserCardInfoDTO(
+                    userInfo.getId(),
+                    userInfo.getUserName(),
+                    userInfo.getAvatarUrl(),
+                    userInfo.getBrief(),
+                    userInfo.getUserStatistic().getCommentCount(),
+                    userInfo.getUserStatistic().getFollowerCount(),
+                    followRecord.getFollowStatus()
+            );
+        }));
     }
 
     @Override
@@ -67,5 +104,10 @@ public class FollowRecordServiceImpl implements FollowRecordService {
         userStatisticRepository.setFlag(toUserId, RecordType.FOLLOW);
 
         followRecordRepository.save(newFollowRecord);
+    }
+
+    @Override
+    public void deleteFollowRecord(Long fromUserId, Long toUserId) {
+        followRecordRepository.deleteFollowRecord(fromUserId, toUserId);
     }
 }

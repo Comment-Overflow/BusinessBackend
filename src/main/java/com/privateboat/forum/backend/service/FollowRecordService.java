@@ -1,15 +1,19 @@
 package com.privateboat.forum.backend.service;
 
+import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
 import com.privateboat.forum.backend.entity.FollowRecord;
-import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface FollowRecordService {
-    Page<FollowRecord> getFollowRecords(Long userId, Pageable pageable) throws UserInfoException;
+    Page<FollowRecord> getFollowingNotifications(Long userId, Pageable pageable) throws UserInfoException;
 
-    FollowStatus getFollowStatus(Long fromUserId, Long toUserId);
+    Page<UserCardInfoDTO> getFollowingRecords(Long userId, Pageable pageable) throws UserInfoException;
+
+    Page<UserCardInfoDTO> getFollowedRecords(Long userId, Pageable pageable) throws UserInfoException;
 
     void postFollowRecord(Long fromUserId, Long toUserId) throws UserInfoException;
+
+    void deleteFollowRecord(Long fromUserId, Long toUserId);
 }

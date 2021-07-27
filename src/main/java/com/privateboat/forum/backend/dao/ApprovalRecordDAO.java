@@ -12,5 +12,6 @@ import java.util.Optional;
 
 public interface ApprovalRecordDAO extends JpaRepository<ApprovalRecord, Long> {
     Page<ApprovalRecord> findByToUserIdAndApprovalStatus(Long userId, ApprovalStatus approvalStatus, Pageable pageable);
+    void deleteByToUserIdAndCommentId(Long userId, Long commentId);
     Optional<ApprovalRecord> findByFromUserAndComment(UserInfo userInfo, Comment comment);
 }
