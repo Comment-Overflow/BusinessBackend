@@ -11,5 +11,7 @@ public interface StarRecordRepository {
 
     void save(StarRecord starRecord);
 
+    void deleteStarRecord(Long fromUserId, Long postId);
+
     Boolean checkIfHaveStarred(UserInfo userInfo, Post post);
 }

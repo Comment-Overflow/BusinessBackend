@@ -7,4 +7,5 @@ import org.springframework.data.domain.Pageable;
 public interface ReplyRecordRepository {
     Page<ReplyRecord> getReplyRecords(Long toUserId, Pageable pageable);
     void save(ReplyRecord replyRecord);
+    void deleteReplyRecord(Long fromUserId, Long commentId);
 }
