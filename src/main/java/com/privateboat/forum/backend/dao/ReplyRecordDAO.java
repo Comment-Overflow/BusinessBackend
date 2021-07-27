@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReplyRecordDAO extends JpaRepository<ReplyRecord, Long> {
     Page<ReplyRecord> getByToUserId(Long toUserId, Pageable pageable);
+    void deleteByFromUserIdAndCommentId(Long fromUserId, Long commentId);
 }

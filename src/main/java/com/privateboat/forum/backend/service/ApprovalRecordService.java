@@ -13,5 +13,7 @@ public interface ApprovalRecordService {
 
     void postApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws PostException, UserInfoException;
 
+    void deleteApprovalRecord(Long userId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO);
+
     ApprovalStatus checkIfHaveApproved(Long userId, Long commentId) throws UserInfoException, PostException;
 }

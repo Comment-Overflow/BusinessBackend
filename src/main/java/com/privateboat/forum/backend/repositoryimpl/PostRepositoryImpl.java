@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 @Repository
@@ -45,7 +46,11 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Post getByPostId(Long postId) throws PostException {
-        return postDAO.getById(postId);
+        try {
+            return postDAO.getById(postId);
+        } catch (EntityNotFoundException e){
+            throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+        }
     }
 
     @Override

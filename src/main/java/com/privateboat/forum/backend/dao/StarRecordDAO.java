@@ -10,4 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface StarRecordDAO extends JpaRepository<StarRecord, Long> {
     Page<StarRecord> findByToUserId(Long userId, Pageable pageable);
     Boolean existsByFromUserAndPost(UserInfo userInfo, Post post);
+    void deleteByFromUserIdAndPostId(Long fromUserId, Long postId);
 }

@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
+import com.privateboat.forum.backend.enumerate.FollowStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,5 +25,5 @@ public class FollowRecord {
     private Timestamp timestamp;
 
     @Transient
-    private Boolean isMutual;
+    private FollowStatus followStatus;
 }

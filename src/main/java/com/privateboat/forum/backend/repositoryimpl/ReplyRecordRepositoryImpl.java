@@ -26,4 +26,9 @@ public class ReplyRecordRepositoryImpl implements ReplyRecordRepository {
     public void save(ReplyRecord replyRecord){
         replyRecordDAO.saveAndFlush(replyRecord);
     }
+
+    @Override
+    public void deleteReplyRecord(Long fromUserId, Long commentId) {
+        replyRecordDAO.deleteByFromUserIdAndCommentId(fromUserId, commentId);
+    }
 }

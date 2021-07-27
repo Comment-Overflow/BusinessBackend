@@ -24,6 +24,11 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
     }
 
     @Override
+    public void deleteApprovalRecord(Long userId, Long commentId) {
+        approvalRecordDAO.deleteByToUserIdAndCommentId(userId, commentId);
+    }
+
+    @Override
     public void save(ApprovalRecord newApprovalRecord){
         approvalRecordDAO.saveAndFlush(newApprovalRecord);
     }
