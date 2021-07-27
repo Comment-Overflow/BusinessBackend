@@ -26,7 +26,7 @@ public class FollowRecordServiceImpl implements FollowRecordService {
 
     @Override
     public Page<FollowRecord> getFollowRecords(Long userId, Pageable pageable) throws UserInfoException {
-        userStatisticRepository.setFlag(userId, RecordType.FOLLOW);
+        userStatisticRepository.removeFlag(userId, RecordType.FOLLOW);
         Page<FollowRecord> followRecords = followRecordRepository.getFollowRecords(userId, pageable);
         UserInfo userInfo = userInfoRepository.getById(userId);
         followRecords.forEach((followRecord) -> {

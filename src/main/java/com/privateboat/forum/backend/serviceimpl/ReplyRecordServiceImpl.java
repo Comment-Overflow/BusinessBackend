@@ -31,7 +31,7 @@ public class ReplyRecordServiceImpl implements ReplyRecordService {
 
     @Override
     public Page<ReplyRecord> getReplyRecords(Long toUserId, Pageable pageable) {
-        userStatisticRepository.setFlag(toUserId, RecordType.REPLY);
+        userStatisticRepository.removeFlag(toUserId, RecordType.REPLY);
         return replyRecordRepository.getReplyRecords(toUserId, pageable);
     }
 
