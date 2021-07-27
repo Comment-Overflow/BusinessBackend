@@ -1,3 +1,5 @@
+
+
 package com.privateboat.forum.backend.serviceimpl;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
@@ -34,6 +36,10 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Claim> claims;
         String actualCode;
 
+        if (emailToken == null) {
+            throw new AuthException(AuthException.AuthExceptionType.WRONG_EMAIL_TOKEN);
+        }
+
         // Token expired.
         try {
             claims = JWTUtil.getClaims(emailToken);
@@ -42,12 +48,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthException(AuthException.AuthExceptionType.EXPIRED_EMAIL_TOKEN);
         }
 
-        // Token does not exist.
-        if (emailToken == null || actualCode == null) {
-            throw new AuthException(AuthException.AuthExceptionType.EXPIRED_EMAIL_TOKEN);
-        }
-
-        // Confirmation code does not match.
+        // Email confirmation code does not exist or is wrong.
         if (userCode == null || !userCode.equals(actualCode)) {
             throw new AuthException(AuthException.AuthExceptionType.WRONG_EMAIL_TOKEN);
         }
@@ -112,3 +113,4 @@ public class AuthServiceImpl implements AuthService {
         return userAuth;
     }
 }
+

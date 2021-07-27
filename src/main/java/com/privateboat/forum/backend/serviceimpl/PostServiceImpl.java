@@ -5,7 +5,6 @@ import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
-import com.privateboat.forum.backend.dto.response.ReplyRecordDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
@@ -17,12 +16,12 @@ import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -31,8 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Service
 @Transactional
-@Component
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
@@ -40,10 +39,10 @@ public class PostServiceImpl implements PostService {
     private final UserInfoRepository userInfoRepository;
     private final ApprovalRecordRepository approvalRecordRepository;
     private final StarRecordRepository starRecordRepository;
-
     private final ReplyRecordService replyRecordService;
 
-    private static final String baseUrl = "http://192.168.1.101:8088/images/";
+    private final Environment environment;
+    private static final String imageFolderName = "comment/";
 
     @Override
     public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException {
@@ -89,12 +88,13 @@ public class PostServiceImpl implements PostService {
         post.addComment(hostComment);
 
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
-            String newName = getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName)) {
+            String newName = ImageUtil.getNewImageName(imageFile);
+            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
-            hostComment.getImageUrl().add(baseUrl + newName);
-            System.out.println(baseUrl + newName);
+            String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
+            hostComment.getImageUrl().add(imageUrl);
+            System.out.println(imageUrl);
         }
 
         postRepository.save(post);
@@ -140,11 +140,12 @@ public class PostServiceImpl implements PostService {
         }
 
         for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
-            String newName = getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName)) {
+            String newName = ImageUtil.getNewImageName(imageFile);
+            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
-            comment.getImageUrl().add(baseUrl + newName);
+            String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
+            comment.getImageUrl().add(imageUrl);
         }
 
         return comment;
@@ -169,7 +170,7 @@ public class PostServiceImpl implements PostService {
                 comment.setQuoteDTO(new QuoteDTO(commentRepository.getById(comment.getQuoteId())));
             }
         }
-        if(post.get().getComments().remove(host)) {
+        if (post.get().getComments().remove(host)) {
             post.get().getComments().add(0, host);
         }
         post.get().setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post.get()));
@@ -178,7 +179,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
-                                                   Integer pageNum, Integer pageSize, Long userId) {
+                                                      Integer pageNum, Integer pageSize, Long userId) {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
@@ -225,12 +226,5 @@ public class PostServiceImpl implements PostService {
         post.deleteComment(comment.get());
         postRepository.save(post);
         commentRepository.delete(comment.get());
-    }
-
-    private String getNewImageName(MultipartFile file) {
-        String originName = file.getOriginalFilename();
-        assert originName != null;
-        String suffix = originName.substring(originName.lastIndexOf("."));
-        return RandomStringUtils.randomAlphanumeric(12) + suffix;
     }
 }
