@@ -10,5 +10,5 @@ public interface FollowRecordRepository {
 
     void save(FollowRecord followRecord);
 
-    Boolean isMutualFollowed(Long userId, UserInfo userInfo);
+    Boolean isFollowing(Long fromUserId, Long toUserId);
 }

@@ -6,11 +6,11 @@ import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityNotFoundException;
 
-@Component
+@Repository
 @AllArgsConstructor
 public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     private final UserStatisticDAO userStatisticDAO;

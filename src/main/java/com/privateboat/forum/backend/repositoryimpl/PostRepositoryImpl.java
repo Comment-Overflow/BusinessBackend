@@ -9,11 +9,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
-@Component
+@Repository
 @AllArgsConstructor
 public class PostRepositoryImpl implements PostRepository {
     private final PostDAO postDAO;
@@ -25,17 +26,17 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findByUserId(Long userId, Pageable pageable) {
-        return postDAO.findByUserInfo_IdOrderByPostTimeDesc(userId, pageable);
+        return postDAO.findByUserInfo_IdAndIsDeletedOrderByPostTimeDesc(userId, false, pageable);
     }
 
     @Override
     public Page<Post> findAll(Pageable pageable) {
-        return postDAO.findByOrderByPostTimeDesc(pageable);
+        return postDAO.findByIsDeletedOrderByPostTimeDesc(false, pageable);
     }
 
     @Override
     public Page<Post> findByTag(PostTag tag, Pageable pageable) {
-        return postDAO.findByTagOrderByPostTimeDesc(tag, pageable);
+        return postDAO.findByTagAndIsDeletedOrderByPostTimeDesc(tag, false, pageable);
     }
 
     @Override
@@ -50,5 +51,11 @@ public class PostRepositoryImpl implements PostRepository {
         } catch (EntityNotFoundException e){
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+    }
+
+    @Override
+    public void delete(Post post) {
+        post.setIsDeleted(true);
+        postDAO.save(post);
     }
 }
