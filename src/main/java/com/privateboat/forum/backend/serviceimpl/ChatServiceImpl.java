@@ -156,14 +156,19 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public Integer getTotalUnreadCount(Long userId) {
+        Integer unreadCount = chatRepository.sumUnreadByUserId(userId);
+        return unreadCount == null ? 0 : unreadCount;
+    }
+
+    @Override
     public void deleteAllReadChat(Long userId) {
         chatRepository.deleteAllReadChatsByUserId(userId);
     }
 
     @Override
-    public Integer getTotalUnreadCount(Long userId) {
-        Integer unreadCount = chatRepository.sumUnreadByUserId(userId);
-        return unreadCount == null ? 0 : unreadCount;
+    public void deleteChat(Long userId, Long chatterId) {
+        chatRepository.deleteChatByUserIdAndChatterId(userId, chatterId);
     }
 
     private void updateChatOnNewMessage(Message message) {

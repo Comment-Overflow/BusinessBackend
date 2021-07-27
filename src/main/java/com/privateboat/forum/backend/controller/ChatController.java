@@ -45,7 +45,15 @@ public class ChatController {
         }
     }
 
-    @MessageMapping("/user/read-chats")
+    @MessageMapping("/chat/update")
+    public void updateChat(
+            @Header("UserId") Long userId,
+            @Header("ChatterId") Long chatterId
+    ) {
+        chatService.updateSeenBy(userId, chatterId);
+    }
+
+    @MessageMapping("/user/read-chats/delete")
     public void deleteReadChats(@Header("UserId") Long userId) {
         try {
             chatService.deleteAllReadChat(userId);
@@ -55,12 +63,14 @@ public class ChatController {
         }
     }
 
-    @MessageMapping("/chat/update")
-    public void updateChat(
-            @Header("UserId") Long userId,
-            @Header("ChatterId") Long chatterId
-    ) {
-        chatService.updateSeenBy(userId, chatterId);
+    @MessageMapping("/user/chat/delete")
+    public void deleteReadChats(@Header("UserId") Long userId, @Header("ChatterId") Long chatterId) {
+        try {
+            chatService.deleteChat(userId, chatterId);
+        } catch (Exception e) {
+            // Just ignore.
+            e.printStackTrace();
+        }
     }
 
     @GetMapping("/chat-history")

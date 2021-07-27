@@ -24,7 +24,9 @@ public interface ChatService {
 
     List<ChatDTO> getRecentChats(Long userId);
 
+    Integer getTotalUnreadCount(Long userId);
+
     void deleteAllReadChat(Long userId);
 
-    Integer getTotalUnreadCount(Long userId);
+    void deleteChat(Long userId, Long chatterId);
 }

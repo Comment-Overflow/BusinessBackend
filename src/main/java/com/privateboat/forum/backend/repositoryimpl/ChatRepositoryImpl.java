@@ -35,12 +35,17 @@ public class ChatRepositoryImpl implements ChatRepository {
     }
 
     @Override
+    public Integer sumUnreadByUserId(Long userId) {
+        return chatDAO.sumUnreadByUserId(userId);
+    }
+
+    @Override
     public void deleteAllReadChatsByUserId(Long userId) {
         chatDAO.deleteAllReadChatsByUserId(userId);
     }
 
     @Override
-    public Integer sumUnreadByUserId(Long userId) {
-        return chatDAO.sumUnreadByUserId(userId);
+    public void deleteChatByUserIdAndChatterId(Long userId, Long chatterId) {
+        chatDAO.deleteChatByUserIdAndChatterId(userId, chatterId);
     }
 }

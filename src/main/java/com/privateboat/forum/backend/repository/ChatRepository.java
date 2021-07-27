@@ -9,6 +9,7 @@ public interface ChatRepository {
     Chat save(Chat chat);
     Optional<Chat> findByUserIdAndChatterId(Long userId, Long chatterId);
     List<Chat> findAllByUserId(Long userId);
-    void deleteAllReadChatsByUserId(Long userId);
     Integer sumUnreadByUserId(Long userId);
+    void deleteAllReadChatsByUserId(Long userId);
+    void deleteChatByUserIdAndChatterId(Long userId, Long chatterId);
 }
