@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.serviceimpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dto.request.ImageMessageDTO;
+import com.privateboat.forum.backend.dto.request.TextMessageDTO;
 import com.privateboat.forum.backend.dto.response.ChatDTO;
 import com.privateboat.forum.backend.dto.response.MessageDTO;
 import com.privateboat.forum.backend.entity.Chat;
@@ -50,74 +51,58 @@ public class ChatServiceImpl implements ChatService {
     static private final String receiverChannel = "/queue/private";
 
     @Override
-    public void sendTextMessage(String uuid, Long senderId, Long receiverId, String content) {
+    public Timestamp sendTextMessage(Long senderId, TextMessageDTO textMessageDTO) throws JsonProcessingException {
 
-        String notifyChannel = "/message/" + uuid;
+        Long receiverId = textMessageDTO.getReceiverId();
+        String content = textMessageDTO.getContent();
         Timestamp time = new Timestamp(System.currentTimeMillis());
         MessageType type = MessageType.TEXT;
-        MessageDTO messageToSend;
 
-        try {
-            UserInfo senderInfo = userInfoRepository.getById(senderId);
-            UserInfo receiverInfo = userInfoRepository.getById(receiverId);
-
-            // Save message to the database.
-            Message message = new Message(senderInfo, receiverInfo, time, type, content);
-            messageRepository.save(message);
-
-            // Update chat in database.
-            updateChatOnNewMessage(message);
-
-            // Send the message to the receiver via socket.
-            messageToSend = new MessageDTO(
-                    projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, senderInfo),
-                    projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, senderInfo),
-                    time, type, content);
-            String jsonMessage = objectMapper.writeValueAsString(messageToSend);
-            simpMessagingTemplate.convertAndSendToUser(receiverId.toString(), receiverChannel, jsonMessage);
-
-        } catch (RuntimeException | JsonProcessingException e) {
-            // Send the error to the sender via socket.
-            System.out.println(e.getMessage());
-            simpMessagingTemplate.convertAndSend(notifyChannel, "error");
-            return;
-        }
-
-        // Send the success acknowledgment to the sender via socket.
-        simpMessagingTemplate.convertAndSend(notifyChannel, time.toString());
-    }
-
-    @Override
-    public MessageDTO sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO) throws JsonProcessingException {
-        System.out.println("enter sendImageMessage");
-        // Upload the image.
-        MultipartFile imageFile = imageMessageDTO.getImageFile();
-        String newName = ImageUtil.getNewImageName(imageFile);
-        if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName))
-            throw new ChatException(ChatException.ChatExceptionType.SEND_IMAGE_FAILED);
-
-        // Save message to the database.
-        String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
-        Long receiverId = imageMessageDTO.getReceiverId();
         UserInfo senderInfo = userInfoRepository.getById(senderId);
         UserInfo receiverInfo = userInfoRepository.getById(receiverId);
-        Timestamp time = new Timestamp(System.currentTimeMillis());
-        MessageType type = MessageType.IMAGE;
-        Message message = new Message(senderInfo, receiverInfo, time, type, imageUrl);
+
+        Message message = new Message(senderInfo, receiverInfo, time, type, content);
+
+        // Save message to the database.
         messageRepository.save(message);
 
         // Update chat in database.
         updateChatOnNewMessage(message);
 
         // Send the message to the receiver via socket.
-        MessageDTO messageToSend = new MessageDTO(
-                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, senderInfo),
-                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, senderInfo),
-                time, type, imageUrl);
-        String jsonMessage = objectMapper.writeValueAsString(messageToSend);
-        simpMessagingTemplate.convertAndSendToUser(receiverId.toString(), receiverChannel, jsonMessage);
+        sendMessageToReceiver(message);
 
-        return messageToSend;
+        return time;
+    }
+
+    @Override
+    public Timestamp sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO) throws JsonProcessingException {
+
+        // Upload the image.
+        MultipartFile imageFile = imageMessageDTO.getImageFile();
+        String newName = ImageUtil.getNewImageName(imageFile);
+        if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName))
+            throw new ChatException(ChatException.ChatExceptionType.SEND_IMAGE_FAILED);
+
+        String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
+        Long receiverId = imageMessageDTO.getReceiverId();
+        UserInfo senderInfo = userInfoRepository.getById(senderId);
+        UserInfo receiverInfo = userInfoRepository.getById(receiverId);
+        Timestamp time = new Timestamp(System.currentTimeMillis());
+        MessageType type = MessageType.IMAGE;
+
+        Message message = new Message(senderInfo, receiverInfo, time, type, imageUrl);
+
+        // Save message to the database.
+        messageRepository.save(message);
+
+        // Update chat in database.
+        updateChatOnNewMessage(message);
+
+        // Send the message to the receiver via socket.
+        sendMessageToReceiver(message);
+
+        return time;
     }
 
     @Override
@@ -169,6 +154,16 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void deleteChat(Long userId, Long chatterId) {
         chatRepository.deleteChatByUserIdAndChatterId(userId, chatterId);
+    }
+
+    private void sendMessageToReceiver(Message message) throws JsonProcessingException {
+        MessageDTO messageToSend = new MessageDTO(
+                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getSender()),
+                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getReceiver()),
+                message.getTime(), message.getType(), message.getContent());
+        String jsonMessage = objectMapper.writeValueAsString(messageToSend);
+        simpMessagingTemplate.convertAndSendToUser(
+                message.getReceiver().getId().toString(), receiverChannel, jsonMessage);
     }
 
     private void updateChatOnNewMessage(Message message) {

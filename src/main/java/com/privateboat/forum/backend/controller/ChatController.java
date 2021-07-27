@@ -18,16 +18,19 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @MessageMapping("/chat/text")
-    public void sendTextMessage(@Payload TextMessageDTO textMessageDTO) {
-        chatService.sendTextMessage(textMessageDTO.getUuid(), textMessageDTO.getSenderId(), textMessageDTO.getReceiverId(), textMessageDTO.getContent());
+    @PostMapping("/chat/text")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    public ResponseEntity<?>  sendTextMessage(TextMessageDTO textMessageDTO, @RequestAttribute Long userId) {
+        try {
+            return ResponseEntity.ok(chatService.sendTextMessage(userId, textMessageDTO));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/chat/image")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    public ResponseEntity<?> sendImageMessage(
-            ImageMessageDTO imageMessageDTO,
-            @RequestAttribute Long userId) {
+    public ResponseEntity<?> sendImageMessage(ImageMessageDTO imageMessageDTO, @RequestAttribute Long userId) {
         try {
             return ResponseEntity.ok(chatService.sendImageMessage(userId, imageMessageDTO));
         } catch (Exception e) {
