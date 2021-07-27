@@ -61,13 +61,13 @@ public class RecordController {
 
     @PostMapping(value = "/records/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<String> postApprovalRecord(@RequestAttribute Long fromUserId,
-                                              ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
+    ResponseEntity<String> postApprovalRecord(@RequestAttribute Long userId,
+                                              @RequestBody  ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
         try{
-            approvalRecordService.postApprovalRecord(fromUserId, approvalRecordReceiveDTO);
+            approvalRecordService.postApprovalRecord(userId, approvalRecordReceiveDTO);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (RuntimeException e){
-            System.out.println(fromUserId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -178,7 +178,7 @@ public class RecordController {
     @PostMapping(value = "/records/replies")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<String> postReplyRecord(@RequestAttribute Long userId,
-                                           ReplyRecordReceiveDTO replyRecordReceiveDTO) {
+                                           @RequestBody ReplyRecordReceiveDTO replyRecordReceiveDTO) throws UserInfoException, PostException {
         try {
             replyRecordService.postReplyRecord(userId, replyRecordReceiveDTO);
             return ResponseEntity.status(HttpStatus.CREATED).build();
