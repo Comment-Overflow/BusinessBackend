@@ -42,6 +42,12 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
         newApprovalRecord.setComment(newComment);
+        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
+            newComment.addApproval();
+        } else {
+            newComment.addDisapproval();
+        }
+        commentRepository.save(newComment);
 
         newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
 
@@ -59,6 +65,13 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
     @Override
     public void deleteApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
+        Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
+        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
+            newComment.subApproval();
+        } else {
+            newComment.subDisapproval();
+        }
+        commentRepository.save(newComment);
         approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
     }
 

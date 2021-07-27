@@ -73,9 +73,9 @@ public class RecordController {
     }
 
     @DeleteMapping(value = "/records/approvals")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<String> deleteApprovalRecord(@RequestAttribute Long userId,
-                                                ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
+                                                @RequestBody      ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
         try {
             approvalRecordService.deleteApprovalRecord(userId, approvalRecordReceiveDTO);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -132,7 +132,6 @@ public class RecordController {
     @DeleteMapping(value = "/records/stars")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<String> deleteStarRecord(@RequestAttribute Long userId,
-                                            @RequestParam Long toUserId,
                                             @RequestParam Long postId) {
         try {
             starRecordService.deleteStarRecord(userId, postId);
