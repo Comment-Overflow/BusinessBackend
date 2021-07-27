@@ -8,6 +8,7 @@ import com.privateboat.forum.backend.entity.Chat;
 import com.privateboat.forum.backend.entity.Message;
 import org.springframework.data.domain.Page;
 
+import java.io.IOException;
 import java.util.List;
 
 
@@ -22,4 +23,8 @@ public interface ChatService {
     void updateSeenBy(Long userId, Long chatterId);
 
     List<ChatDTO> getRecentChats(Long userId);
+
+    void deleteAllReadChat(Long userId);
+
+    Integer getTotalUnreadCount(Long userId);
 }

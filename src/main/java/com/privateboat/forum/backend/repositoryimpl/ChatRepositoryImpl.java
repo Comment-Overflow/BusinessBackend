@@ -33,4 +33,14 @@ public class ChatRepositoryImpl implements ChatRepository {
     public List<Chat> findAllByUserId(Long userId) {
         return chatDAO.findAllByUserId(userId);
     }
+
+    @Override
+    public void deleteAllReadChatsByUserId(Long userId) {
+        chatDAO.deleteAllReadChatsByUserId(userId);
+    }
+
+    @Override
+    public Integer sumUnreadByUserId(Long userId) {
+        return chatDAO.sumUnreadByUserId(userId);
+    }
 }

@@ -52,7 +52,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void sendTextMessage(String uuid, Long senderId, Long receiverId, String content) {
 
-        String notifyChannel = "/notify/" + uuid;
+        String notifyChannel = "/message/" + uuid;
         Timestamp time = new Timestamp(System.currentTimeMillis());
         MessageType type = MessageType.TEXT;
         MessageDTO messageToSend;
@@ -153,6 +153,17 @@ public class ChatServiceImpl implements ChatService {
                             content, lastMessage.getTime(), chat.getUnreadCount());
                 }
         ).collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteAllReadChat(Long userId) {
+        chatRepository.deleteAllReadChatsByUserId(userId);
+    }
+
+    @Override
+    public Integer getTotalUnreadCount(Long userId) {
+        Integer unreadCount = chatRepository.sumUnreadByUserId(userId);
+        return unreadCount == null ? 0 : unreadCount;
     }
 
     private void updateChatOnNewMessage(Message message) {

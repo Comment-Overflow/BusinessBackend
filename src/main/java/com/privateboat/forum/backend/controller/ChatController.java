@@ -8,15 +8,14 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
 
 @Controller
 @AllArgsConstructor
 public class ChatController {
 
-    private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatService chatService;
 
     @MessageMapping("/chat/text")
@@ -36,6 +35,26 @@ public class ChatController {
         }
     }
 
+    @GetMapping("/unread-chats")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    public ResponseEntity<?> getTotalUnreadCount(@RequestAttribute Long userId) {
+        try {
+            return ResponseEntity.ok(chatService.getTotalUnreadCount(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @MessageMapping("/user/read-chats")
+    public void deleteReadChats(@Header("UserId") Long userId) {
+        try {
+            chatService.deleteAllReadChat(userId);
+        } catch (Exception e) {
+            // Just ignore.
+            e.printStackTrace();
+        }
+    }
+
     @MessageMapping("/chat/update")
     public void updateChat(
             @Header("UserId") Long userId,
@@ -47,7 +66,7 @@ public class ChatController {
     @GetMapping("/chat-history")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     public ResponseEntity<?> getChatHistory(
-            @RequestParam("userId") Long userId,
+            @RequestAttribute Long userId,
             @RequestParam("chatterId") Long chatterId,
             @RequestParam("pageNum") Integer pageNum,
             @RequestParam("pageSize") Integer pageSize
@@ -61,7 +80,7 @@ public class ChatController {
 
     @GetMapping("/recent-chats")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    public ResponseEntity<?> getRecentChats(@RequestParam("userId") Long userId) {
+    public ResponseEntity<?> getRecentChats(@RequestAttribute Long userId) {
         try {
             return ResponseEntity.ok(chatService.getRecentChats(userId));
         } catch (Exception e) {
