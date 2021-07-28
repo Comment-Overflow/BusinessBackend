@@ -41,6 +41,7 @@ public class PostServiceImpl implements PostService {
     private final ApprovalRecordRepository approvalRecordRepository;
     private final StarRecordRepository starRecordRepository;
     private final ReplyRecordService replyRecordService;
+    private final UserStatisticRepository userStatisticRepository;
 
     private final Environment environment;
     private static final String imageFolderName = "comment/";
@@ -85,6 +86,8 @@ public class PostServiceImpl implements PostService {
         }
         Post post = new Post(newPostDTO.getTitle(), newPostDTO.getTag());
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
+        userInfo.get().getUserStatistic().addPost();
+        userStatisticRepository.save(userInfo.get().getUserStatistic());
         post.setHostComment(hostComment);
         post.addComment(hostComment);
 
@@ -116,6 +119,8 @@ public class PostServiceImpl implements PostService {
         Comment comment = new Comment(post.get(), userInfo.get(),
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.get().addComment(comment);
+        userInfo.get().getUserStatistic().addComment();
+        userStatisticRepository.save(userInfo.get().getUserStatistic());
         commentRepository.save(comment);
         postRepository.save(post.get());
 
@@ -215,6 +220,8 @@ public class PostServiceImpl implements PostService {
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+        post.get().getUserInfo().getUserStatistic().subPost();
+        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
         postRepository.delete(post.get());
     }
 
@@ -226,6 +233,8 @@ public class PostServiceImpl implements PostService {
         }
         Post post = comment.get().getPost();
         post.deleteComment(comment.get());
+        comment.get().getUserInfo().getUserStatistic().subComment();
+        userStatisticRepository.save(comment.get().getUserInfo().getUserStatistic());
         postRepository.save(post);
         commentRepository.delete(comment.get());
     }
