@@ -32,15 +32,15 @@ public class FollowRecordRepositoryImpl implements FollowRecordRepository {
     @Override
     public FollowStatus getFollowStatus(Long fromUserId, Long toUserId) {//usually `me` is fromUserId
         Boolean meFollowing = followRecordDAO.existsByFromUserIdAndToUserId(fromUserId, toUserId);
-        Boolean meFollowed = followRecordDAO.existsByFromUserIdAndToUserId(toUserId, fromUserId);
+        Boolean meFollowed = followRecordDAO.existsByFromUserIdAndToUserId(toUserId, fromUserId);;
         if (meFollowed && meFollowing) {
             return FollowStatus.BOTH;
         } else if (!meFollowed && !meFollowing) {
             return FollowStatus.NONE;
         } else if (meFollowed) {
-            return FollowStatus.FOLLOWING_ME;
-        } else {
             return FollowStatus.FOLLOWED_BY_ME;
+        } else {
+            return FollowStatus.FOLLOWING_ME;
         }
     }
 
