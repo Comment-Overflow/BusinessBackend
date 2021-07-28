@@ -72,7 +72,7 @@ public class FollowRecordServiceImpl implements FollowRecordService {
     public Page<UserCardInfoDTO> getFollowedRecords(Long userId, Pageable pageable) throws UserInfoException {
         Page<FollowRecord> followRecords = followRecordRepository.getFollowedRecords(userId, pageable);
         followRecords.forEach((followRecord) -> {
-            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(followRecord.getToUserId(), userId));
+            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(userId, followRecord.getToUserId()));
         });
         return followRecords.map((followRecord -> {
             UserInfo userInfo = userInfoRepository.getById(followRecord.getToUserId());
