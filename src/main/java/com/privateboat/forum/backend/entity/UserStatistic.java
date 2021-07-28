@@ -52,6 +52,9 @@ public class UserStatistic implements Serializable {
         this.isNewlyStarred = false;
     }
 
+    public void addComment() {
+        commentCount++;
+    }
     public void addPost(){
         postCount++;
     }
@@ -63,5 +66,11 @@ public class UserStatistic implements Serializable {
     }
     public void addApproval(){
         approvalCount++;
+    }
+    public void subComment() {
+        commentCount--;
+    }
+    public void subPost(){
+        postCount--;
     }
 }

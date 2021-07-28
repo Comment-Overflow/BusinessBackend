@@ -25,10 +25,14 @@ public class Post {
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     private UserInfo userInfo;
+    @Column(nullable = false)
     private String title;
+    @Column(nullable = false)
     private Integer commentCount;
+    @Column(nullable = false)
     private Timestamp postTime;
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
+    @Column(nullable = false)
     private PostTag tag;
 
     @OneToMany(cascade = CascadeType.REMOVE,
@@ -38,6 +42,7 @@ public class Post {
     private List<Comment> comments;
 
     @JsonIgnore
+    @Column(nullable = false)
     private Boolean isDeleted;
 
     @Transient

@@ -44,15 +44,21 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         ApprovalStatus status = approvalRecordReceiveDTO.getStatus();
         if(status == ApprovalStatus.APPROVAL){
-            newComment.addApprovalCount();
+            newComment.addApproval();
             userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
         }
         else {
-            newComment.addDisapprovalCount();
+            newComment.addDisapproval();
         }
         newApprovalRecord.setApprovalStatus(status);
 
         newApprovalRecord.setComment(newComment);
+        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
+            newComment.addApproval();
+        } else {
+            newComment.addDisapproval();
+        }
+        commentRepository.save(newComment);
 
         newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
 
@@ -66,6 +72,13 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
     @Override
     public void deleteApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
+        Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
+        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
+            newComment.subApproval();
+        } else {
+            newComment.subDisapproval();
+        }
+        commentRepository.save(newComment);
         approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
     }
 

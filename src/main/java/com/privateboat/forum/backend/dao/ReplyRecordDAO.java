@@ -6,6 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReplyRecordDAO extends JpaRepository<ReplyRecord, Long> {
-    Page<ReplyRecord> getByToUserId(Long toUserId, Pageable pageable);
+    Page<ReplyRecord> getByToUserIdOrderByTimestampDesc(Long toUserId, Pageable pageable);
     void deleteByFromUserIdAndCommentId(Long fromUserId, Long commentId);
 }

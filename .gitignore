@@ -34,6 +34,6 @@ build/
 
 ### Custom Application ###
 src/main/resources/banner.txt
-src/main/resources/application.properties
+
 ### MacOS Configuration ###
 *.DS_Store

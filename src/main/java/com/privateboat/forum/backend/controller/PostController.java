@@ -42,11 +42,11 @@ public class PostController {
 
     @PostMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Long> postPost(NewPostDTO newPostDTO,
+    ResponseEntity<Post> postPost(NewPostDTO newPostDTO,
                                   @RequestAttribute Long userId) {
         try {
             Post post = postService.postPost(userId, newPostDTO);
-            return ResponseEntity.ok(post.getId());
+            return ResponseEntity.ok(post);
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
