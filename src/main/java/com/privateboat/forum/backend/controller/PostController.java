@@ -23,7 +23,7 @@ public class PostController {
 
     @GetMapping(value = "/posts")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<Post>> getPosts(@RequestParam("tag") PostTag tag,
+    ResponseEntity<PageDTO<Post>> getPosts(PostTag tag,
                                            @RequestParam("pageNum") Integer pageNum,
                                            @RequestParam("pageSize") Integer pageSize,
                                            @RequestAttribute Long userId) {

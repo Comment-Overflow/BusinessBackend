@@ -15,7 +15,7 @@ public class ReplyRecordRepositoryImpl implements ReplyRecordRepository {
 
     @Override
     public Page<ReplyRecord> getReplyRecords(Long toUserId, Pageable pageable) {
-        Page<ReplyRecord> replyRecords = replyRecordDAO.getByToUserId(toUserId, pageable);
+        Page<ReplyRecord> replyRecords = replyRecordDAO.getByToUserIdOrderByTimestampDesc(toUserId, pageable);
         replyRecords.forEach((replyRecord) -> {
             replyRecord.getPost().setTransientProperties();
         });
@@ -25,5 +25,10 @@ public class ReplyRecordRepositoryImpl implements ReplyRecordRepository {
     @Override
     public void save(ReplyRecord replyRecord){
         replyRecordDAO.saveAndFlush(replyRecord);
+    }
+
+    @Override
+    public void deleteReplyRecord(Long fromUserId, Long commentId) {
+        replyRecordDAO.deleteByFromUserIdAndCommentId(fromUserId, commentId);
     }
 }

@@ -66,4 +66,20 @@ public class Comment {
         this.imageUrl = new ArrayList<>();
         this.isDeleted = false;
     }
+
+    public void addApproval() {
+        ++approvalCount;
+    }
+
+    public void subApproval() {
+        --approvalCount;
+    }
+
+    public void addDisapproval() {
+        ++disapprovalCount;
+    }
+
+    public void subDisapproval() {
+        --disapprovalCount;
+    }
 }
