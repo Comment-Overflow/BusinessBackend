@@ -246,13 +246,13 @@ public class RecordController {
 
     @DeleteMapping(value = "/records/followers")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<String> deleteFollowRecord(@RequestAttribute Long fromUserId,
+    ResponseEntity<String> deleteFollowRecord(@RequestAttribute Long userId,
                                               @RequestParam Long toUserId){
         try {
-            followRecordService.deleteFollowRecord(fromUserId, toUserId);
+            followRecordService.deleteFollowRecord(userId, toUserId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
-            System.out.println(fromUserId.toString() + toUserId.toString() + e.getMessage());
+            System.out.println(userId.toString() + toUserId.toString() + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
