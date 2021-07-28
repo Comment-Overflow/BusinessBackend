@@ -116,6 +116,7 @@ public class PostServiceImpl implements PostService {
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.get().addComment(comment);
         commentRepository.save(comment);
+        postRepository.save(post.get());
 
         Long postUserId = post.get().getUserInfo().getId();
         if (!postUserId.equals(userId)) {
