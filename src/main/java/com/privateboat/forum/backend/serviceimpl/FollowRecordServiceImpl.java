@@ -25,19 +25,6 @@ public class FollowRecordServiceImpl implements FollowRecordService {
     private final UserInfoRepository userInfoRepository;
     private final UserStatisticRepository userStatisticRepository;
 
-    private UserCardInfoDTO converter(FollowRecord followRecord) {
-        UserInfo userInfo = followRecord.getFromUser();
-        return new UserCardInfoDTO(
-                userInfo.getId(),
-                userInfo.getUserName(),
-                userInfo.getAvatarUrl(),
-                userInfo.getBrief(),
-                userInfo.getUserStatistic().getCommentCount(),
-                userInfo.getUserStatistic().getFollowerCount(),
-                followRecord.getFollowStatus()
-        );
-    }
-
     @Override
     public Page<FollowRecord> getFollowingNotifications(Long userId, Pageable pageable) throws UserInfoException {
         userStatisticRepository.removeFlag(userId, RecordType.FOLLOW);
