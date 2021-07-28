@@ -24,7 +24,6 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(nullable = false)
     private UserInfo userInfo;
     @Column(nullable = false)
     private String title;

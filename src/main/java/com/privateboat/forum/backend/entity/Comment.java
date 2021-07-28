@@ -26,11 +26,9 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     @JsonIgnore
-    @Column(nullable = false)
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @Column(nullable = false)
     private UserInfo userInfo;
     @Column(nullable = false)
     private Long quoteId;
