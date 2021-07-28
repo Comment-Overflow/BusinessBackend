@@ -2,13 +2,18 @@ package com.privateboat.forum.backend.repository;
 
 import com.privateboat.forum.backend.entity.FollowRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.enumerate.FollowStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface FollowRecordRepository {
-    Page<FollowRecord> getFollowRecords(Long userId, Pageable pageable);
+    Page<FollowRecord> getFollowingRecords(Long userId, Pageable pageable);
 
-    void postFollowRecord(FollowRecord followRecord);
+    Page<FollowRecord> getFollowedRecords(Long userId, Pageable pageable);
 
-    Boolean isFollowing(Long fromUserId, Long toUserId);
+    void save(FollowRecord followRecord);
+
+    FollowStatus getFollowStatus(Long fromUserId, Long toUserId);
+
+    void deleteFollowRecord(Long fromUserId, Long toUserId);
 }

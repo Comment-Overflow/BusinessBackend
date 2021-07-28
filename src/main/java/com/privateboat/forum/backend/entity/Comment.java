@@ -30,12 +30,18 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserInfo userInfo;
+    @Column(nullable = false)
     private Long quoteId;
+    @Column(nullable = false)
     @Length(max = 300)
     private String content;
+    @Column(nullable = false)
     private Timestamp time;
+    @Column(nullable = false)
     private Integer floor;
+    @Column(nullable = false)
     private Integer approvalCount;
+    @Column(nullable = false)
     private Integer disapprovalCount;
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -47,6 +53,7 @@ public class Comment {
     private List<String> imageUrl;
 
     @JsonIgnore
+    @Column(nullable = false)
     private Boolean isDeleted;
 
     @Transient
@@ -65,5 +72,21 @@ public class Comment {
         this.disapprovalCount = 0;
         this.imageUrl = new ArrayList<>();
         this.isDeleted = false;
+    }
+
+    public void addApproval() {
+        ++approvalCount;
+    }
+
+    public void subApproval() {
+        --approvalCount;
+    }
+
+    public void addDisapproval() {
+        ++disapprovalCount;
+    }
+
+    public void subDisapproval() {
+        --disapprovalCount;
     }
 }

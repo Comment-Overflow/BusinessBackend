@@ -5,11 +5,13 @@ import com.privateboat.forum.backend.entity.ApprovalRecord;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
+import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.ApprovalRecordRepository;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
+import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,9 +28,11 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
     private final UserInfoRepository userInfoRepository;
     private final ApprovalRecordRepository approvalRecordRepository;
     private final CommentRepository commentRepository;
+    private final UserStatisticRepository userStatisticRepository;
 
     @Override
     public Page<ApprovalRecord> getApprovalRecords(Long userId, Pageable pageable) {
+        userStatisticRepository.removeFlag(userId, RecordType.APPROVAL);
         return approvalRecordRepository.getApprovalRecords(userId, pageable);
     }
 
@@ -37,13 +41,45 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         ApprovalRecord newApprovalRecord = new ApprovalRecord();
 
         Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
-        newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
-        newApprovalRecord.setToUserId(approvalRecordReceiveDTO.getToUserId());
-        newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
-        newApprovalRecord.setComment(newComment);
-        newApprovalRecord.setApprovalStatus(approvalRecordReceiveDTO.getStatus());
 
+        ApprovalStatus status = approvalRecordReceiveDTO.getStatus();
+        if(status == ApprovalStatus.APPROVAL){
+            newComment.addApproval();
+            userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
+        }
+        else {
+            newComment.addDisapproval();
+        }
+        newApprovalRecord.setApprovalStatus(status);
+
+        newApprovalRecord.setComment(newComment);
+        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
+            newComment.addApproval();
+        } else {
+            newComment.addDisapproval();
+        }
+        commentRepository.save(newComment);
+
+        newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
+
+        newApprovalRecord.setToUserId(approvalRecordReceiveDTO.getToUserId());
+
+        newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
+
+        userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
         approvalRecordRepository.save(newApprovalRecord);
+    }
+
+    @Override
+    public void deleteApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
+        Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
+        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
+            newComment.subApproval();
+        } else {
+            newComment.subDisapproval();
+        }
+        commentRepository.save(newComment);
+        approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
     }
 
     @Override
