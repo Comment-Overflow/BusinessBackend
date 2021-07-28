@@ -52,7 +52,6 @@ public class ReplyRecordServiceImpl implements ReplyRecordService {
         replyRecord.setComment(comment);
 
         userStatisticRepository.setFlag(replyRecordReceiveDTO.getToUserId(), RecordType.REPLY);
-        userStatisticRepository.getByUserId(replyRecordReceiveDTO.getToUserId()).addPost();
 
         replyRecordRepository.save(replyRecord);
     }

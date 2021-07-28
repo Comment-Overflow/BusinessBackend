@@ -41,6 +41,17 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         ApprovalRecord newApprovalRecord = new ApprovalRecord();
 
         Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
+
+        ApprovalStatus status = approvalRecordReceiveDTO.getStatus();
+        if(status == ApprovalStatus.APPROVAL){
+            newComment.addApprovalCount();
+            userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
+        }
+        else {
+            newComment.addDisapprovalCount();
+        }
+        newApprovalRecord.setApprovalStatus(status);
+
         newApprovalRecord.setComment(newComment);
 
         newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
@@ -49,11 +60,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-        newApprovalRecord.setApprovalStatus(approvalRecordReceiveDTO.getStatus());
-
-        userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
         userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
-
         approvalRecordRepository.save(newApprovalRecord);
     }
 
