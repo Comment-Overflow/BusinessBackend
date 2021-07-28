@@ -17,6 +17,7 @@ import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ChatService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.ImageUtil;
+import com.privateboat.forum.backend.util.OffsetBasedPageRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
@@ -116,8 +117,8 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Page<MessageDTO> getChatHistory(Long userId, Long chatterId, Integer pageNum, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNum, pageSize);
+    public Page<MessageDTO> getChatHistory(Long userId, Long chatterId, Integer offset, Integer limit) {
+        Pageable pageable = new OffsetBasedPageRequest(offset, limit);
         Page<Message> messages = messageRepository.findByUserIdOrChatterId(userId, chatterId, pageable);
         return messages.map((message ->
                 new MessageDTO(

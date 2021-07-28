@@ -31,7 +31,7 @@ public class ChatRepositoryImpl implements ChatRepository {
 
     @Override
     public List<Chat> findAllByUserId(Long userId) {
-        return chatDAO.findAllByUserId(userId);
+        return chatDAO.findAllByUserIdOrderByLastMessage_TimeDesc(userId);
     }
 
     @Override

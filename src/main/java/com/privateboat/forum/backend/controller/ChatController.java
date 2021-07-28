@@ -81,11 +81,11 @@ public class ChatController {
     public ResponseEntity<?> getChatHistory(
             @RequestAttribute Long userId,
             @RequestParam("chatterId") Long chatterId,
-            @RequestParam("pageNum") Integer pageNum,
-            @RequestParam("pageSize") Integer pageSize
+            @RequestParam("offset") Integer offset,
+            @RequestParam("limit") Integer limit
     ) {
         try {
-            return ResponseEntity.ok(chatService.getChatHistory(userId, chatterId, pageNum, pageSize));
+            return ResponseEntity.ok(chatService.getChatHistory(userId, chatterId, offset, limit));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

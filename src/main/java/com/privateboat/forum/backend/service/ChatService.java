@@ -20,7 +20,7 @@ public interface ChatService {
 
     Timestamp sendImageMessage(Long senderId, ImageMessageDTO imageMessageDTO) throws JsonProcessingException;
 
-    Page<MessageDTO> getChatHistory(Long userId, Long chatterId, Integer pageNum, Integer pageSize);
+    Page<MessageDTO> getChatHistory(Long userId, Long chatterId, Integer offset, Integer limit);
 
     void updateSeenBy(Long userId, Long chatterId);
 

@@ -12,8 +12,7 @@ public interface ChatDAO extends JpaRepository<Chat, Long> {
     @Query(value = "SELECT * FROM CHAT WHERE user_id = ?1 AND chatter_id = ?2", nativeQuery = true)
     Optional<Chat> findByUserIdAndChatterId(Long userId, Long chatterId);
 
-    @Query(value = "SELECT * FROM CHAT WHERE user_id = ?1", nativeQuery = true)
-    List<Chat> findAllByUserId(Long userId);
+    List<Chat> findAllByUserIdOrderByLastMessage_TimeDesc(Long userId);
 
     @Query(value = "SELECT SUM(unread_count) FROM CHAT WHERE user_id = ?1", nativeQuery = true)
     Integer sumUnreadByUserId(Long userId);
