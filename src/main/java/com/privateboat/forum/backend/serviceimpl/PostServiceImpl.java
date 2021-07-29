@@ -169,17 +169,6 @@ public class PostServiceImpl implements PostService {
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
-        Comment host = new Comment();
-        for (Comment comment : post.get().getComments()) {
-            if (comment.getFloor() == 0) host = comment;
-            comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
-            if (comment.getQuoteId() != 0) {
-                comment.setQuoteDTO(new QuoteDTO(commentRepository.getById(comment.getQuoteId())));
-            }
-        }
-        if (post.get().getComments().remove(host)) {
-            post.get().getComments().add(0, host);
-        }
         post.get().setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post.get()));
         return post.get();
     }
