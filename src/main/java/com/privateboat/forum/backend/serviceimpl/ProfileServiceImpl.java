@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.serviceimpl;
 
 import com.privateboat.forum.backend.dto.request.ProfileSettingRequestDTO;
 import com.privateboat.forum.backend.dto.response.ProfileDTO;
+import com.privateboat.forum.backend.dto.response.ProfileSettingDTO;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.enumerate.Gender;
@@ -14,6 +15,7 @@ import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.core.env.Environment;
+import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +28,13 @@ import java.util.Optional;
 public class ProfileServiceImpl implements ProfileService {
     private final UserInfoRepository userInfoRepository;
     private final FollowRecordRepository followRecordRepository;
+    private final ProjectionFactory projectionFactory;
 
     private final Environment environment;
     static private final String imageFolderName = "personalInfo/";
 
     @Override
-    public void putProfile(Long userId, ProfileSettingRequestDTO profileSettingRequestDTO) throws ProfileException{
+    public UserInfo.UserNameAndAvatarUrl putProfile(Long userId, ProfileSettingRequestDTO profileSettingRequestDTO) throws ProfileException{
         UserInfo userInfo = userInfoRepository.getById(userId);
         if(profileSettingRequestDTO.getAvatar() != null) {
             String avatarFileName = String.format("%d_%s", userId, RandomStringUtils.randomAlphanumeric(6));
@@ -55,6 +58,9 @@ public class ProfileServiceImpl implements ProfileService {
         }
         userInfo.setUserName(profileSettingRequestDTO.getUserName());
         userInfoRepository.save(userInfo);
+        UserInfo.UserNameAndAvatarUrl userNameAndAvatarUrl = projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
+        System.out.println(userNameAndAvatarUrl.getUserName());
+        return projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
     }
 
     @Override

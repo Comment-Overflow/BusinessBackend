@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class LoginDTO {
-    private final Long userId;
     private final String token;
+    private final Long userId;
+    private final String userName;
+    private final String avatarUrl;
 }

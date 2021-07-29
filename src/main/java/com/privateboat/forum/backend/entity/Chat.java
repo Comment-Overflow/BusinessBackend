@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
+import com.sun.istack.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,7 @@ public class Chat {
     @OneToOne(targetEntity = Message.class, fetch = FetchType.LAZY)
     private Message lastMessage;
 
+    @Column(nullable = false)
     private int unreadCount;
 
     public Chat(UserInfo user, UserInfo chatter, Message lastMessage, int unreadCount) {

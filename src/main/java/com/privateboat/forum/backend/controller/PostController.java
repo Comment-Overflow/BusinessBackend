@@ -115,5 +115,16 @@ public class PostController {
         }
     }
 
+    @GetMapping(value = "/comment/post")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<Post> getPostByCommentId(@RequestParam("commentId") Long commentId,
+                                            @RequestAttribute Long userId) {
+        try {
+            return ResponseEntity.ok(postService.getPostByComment(commentId, userId));
+        } catch (PostException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
 
 }
