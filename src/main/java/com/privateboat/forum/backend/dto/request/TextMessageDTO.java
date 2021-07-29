@@ -6,10 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TextMessageDTO {
-
-    String uuid;
-    Long senderId;
     Long receiverId;
     String content;
-
 }
