@@ -46,6 +46,8 @@ public class Post {
     private Boolean isDeleted;
 
     @Transient
+    private Comment searchedComment;
+    @Transient
     private Comment hostComment;
     @Transient
     private Boolean isStarred;

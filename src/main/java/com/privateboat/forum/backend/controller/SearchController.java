@@ -28,12 +28,11 @@ public class SearchController {
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
     ResponseEntity<List<Post>> searchComments(
             @RequestAttribute Long userId,
-            @RequestParam @Nullable String postTagStr,
+            @RequestParam @Nullable PostTag postTag,
             @RequestParam String searchKey,
             @RequestParam Integer pageNum,
             @RequestParam Integer pageSize) {
 
-        PostTag postTag = postTagStr == null ? null : PostTag.toPostTag(postTagStr);
         Page<Comment> commentsPage;
         if (postTag == null) {
             commentsPage = searchService.searchComments(searchKey,
@@ -49,7 +48,6 @@ public class SearchController {
         // Get the content of the page.
         List<Comment> commentsList = commentsPage.getContent();
         List<Post> postsContainingTheComment = searchService.wrappedSearchedCommentsWithPost(userId, commentsList);
-
         return ResponseEntity.ok(postsContainingTheComment);
     }
 
