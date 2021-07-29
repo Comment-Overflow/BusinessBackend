@@ -34,11 +34,11 @@ public class ProfileController {
 
     @PutMapping(value = "/profiles/settings")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<String> putProfile(@RequestAttribute Long userId,
-                                      ProfileSettingRequestDTO profileSettingRequestDTO) {
-        try{
-            profileService.putProfile(userId, profileSettingRequestDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+    ResponseEntity<?> putProfile(@RequestAttribute Long userId,
+                                 ProfileSettingRequestDTO profileSettingRequestDTO) {
+        try {
+            System.out.println(profileSettingRequestDTO.toString());
+            return ResponseEntity.ok(profileService.putProfile(userId, profileSettingRequestDTO));
         } catch (ProfileException e) {
             System.out.println(userId.toString() + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

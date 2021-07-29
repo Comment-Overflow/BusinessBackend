@@ -46,6 +46,7 @@ public class PostController {
                                   @RequestAttribute Long userId) {
         try {
             Post post = postService.postPost(userId, newPostDTO);
+            post.setIsStarred(false);
             return ResponseEntity.ok(post);
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -54,11 +55,11 @@ public class PostController {
 
     @PostMapping(value = "/comment")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Long> postComment(NewCommentDTO newCommentDTO,
+    ResponseEntity<Integer> postComment(NewCommentDTO newCommentDTO,
                                      @RequestAttribute Long userId) {
         try {
             Comment comment = postService.postComment(userId, newCommentDTO);
-            return ResponseEntity.ok(comment.getId());
+            return ResponseEntity.ok(comment.getFloor());
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -66,7 +67,18 @@ public class PostController {
 
     @GetMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<Comment>> getPost(@RequestParam("postId") Long postId,
+    ResponseEntity<Post> getPost(@RequestParam("postId") Long postId,
+                                 @RequestAttribute Long userId) {
+        try {
+            return ResponseEntity.ok(postService.getPost(postId, userId));
+        } catch (PostException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @GetMapping(value = "/post/comments")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<PageDTO<Comment>> getPosts(@RequestParam("postId") Long postId,
                                              @RequestParam("policy") SortPolicy policy,
                                              @RequestParam("pageNum") Integer pageNum,
                                              @RequestParam("pageSize") Integer pageSize,
@@ -98,6 +110,17 @@ public class PostController {
         try {
             postService.deleteComment(commentId);
             return ResponseEntity.ok().build();
+        } catch (PostException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @GetMapping(value = "/comment/post")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<Post> getPostByCommentId(@RequestParam("commentId") Long commentId,
+                                            @RequestAttribute Long userId) {
+        try {
+            return ResponseEntity.ok(postService.getPostByComment(commentId, userId));
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }

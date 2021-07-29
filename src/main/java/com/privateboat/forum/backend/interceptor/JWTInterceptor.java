@@ -23,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -55,25 +56,28 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
                 messageType.equals("SUBSCRIBE") ||
                 // Client sends a message to another client.
                 (messageType.equals("MESSAGE") &&
-                        commandObj != null && commandObj.toString().equals("SEND")) ||
-                // Client acknowledges receiving a message.
-                (messageType.equals("OTHER") &&
-                        commandObj != null && commandObj.toString().equals("ACK"))
+                        commandObj != null && commandObj.toString().equals("SEND"))
         ) {
             // Extract token from the native headers.
             String nativeHeaders = Objects.requireNonNull(headers.get("nativeHeaders")).toString();
-            Pattern pattern = Pattern.compile("Authorization=\\[(.*?)]");
-            Matcher matcher = pattern.matcher(nativeHeaders);
-            if (!matcher.find())
-                // FIXME: Exception
-                throw new RuntimeException();
-            String token = matcher.group(1);
+            Pattern authPattern = Pattern.compile("Authorization=\\[(.*?)]");
+            Matcher authMatcher = authPattern.matcher(nativeHeaders);
+            if (!authMatcher.find()) throw new AssertionError();
+            String token = authMatcher.group(1);
 
             // Verify the token.
             Map<String, Claim> claims = JWTUtil.getClaims(token);
             Long userId = claims.get("userId").asLong();
             String password = claims.get("password").asString();
             authService.verifyAuth(userId, password);
+
+            if (messageType.equals("SUBSCRIBE")) {
+                String destination = Objects.requireNonNull(headers.get("simpDestination")).toString();
+                if (destination.startsWith("/user")) {
+                    Long subscribeUserId = Long.valueOf(destination.split("/")[2]);
+                    assert subscribeUserId.equals(userId);
+                }
+            }
         }
 
         return message;
@@ -104,8 +108,9 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
 
         // Acquire token.
         String token = request.getHeader("Authorization");
-        if (token == null)
+        if (token == null) {
             return false;
+        }
 
         // Get fields from token.
         Map<String, Claim> claims;

@@ -7,7 +7,6 @@ import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.ReplyRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
@@ -54,10 +53,8 @@ public class PostServiceImpl implements PostService {
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findByTag(tag, pageable);
-        for (Post post : posts.getContent()) {
-            Comment hostComment = post.getHostComment();
-            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), hostComment));
-            post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
+        for (Post post: posts.getContent()) {
+            setPostTransientField(post, userInfo.get());
         }
         return posts;
     }
@@ -70,10 +67,8 @@ public class PostServiceImpl implements PostService {
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findAll(pageable);
-        for (Post post : posts.getContent()) {
-            Comment hostComment = post.getHostComment();
-            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), hostComment));
-            post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
+        for (Post post: posts.getContent()) {
+            setPostTransientField(post, userInfo.get());
         }
         return posts;
     }
@@ -88,7 +83,6 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         userInfo.get().getUserStatistic().addPost();
         userStatisticRepository.save(userInfo.get().getUserStatistic());
-        post.setHostComment(hostComment);
         post.addComment(hostComment);
 
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
@@ -163,27 +157,18 @@ public class PostServiceImpl implements PostService {
     @Override
     @Deprecated
     public Post getPost(Long postId, Long userId) throws PostException {
-        Optional<Post> post = postRepository.findByPostId(postId);
-        if (post.isEmpty()) {
+        Optional<Post> optionalPost = postRepository.findByPostId(postId);
+        if (optionalPost.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
-        Comment host = new Comment();
-        for (Comment comment : post.get().getComments()) {
-            if (comment.getFloor() == 0) host = comment;
-            comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
-            if (comment.getQuoteId() != 0) {
-                comment.setQuoteDTO(new QuoteDTO(commentRepository.getById(comment.getQuoteId())));
-            }
-        }
-        if (post.get().getComments().remove(host)) {
-            post.get().getComments().add(0, host);
-        }
-        post.get().setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post.get()));
-        return post.get();
+
+        Post post = optionalPost.get();
+        post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), optionalPost.get()));
+        return post;
     }
 
     @Override
@@ -239,5 +224,27 @@ public class PostServiceImpl implements PostService {
         userStatisticRepository.save(comment.get().getUserInfo().getUserStatistic());
         postRepository.save(post);
         commentRepository.delete(comment.get());
+    }
+
+    @Override
+    public Post getPostByComment(Long commentId, Long userId) throws PostException {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
+        Optional<Comment> comment = commentRepository.findById(commentId);
+        if (comment.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
+        }
+        Post post = comment.get().getPost();
+        post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
+        return post;
+    }
+
+    @Override
+    public void setPostTransientField(Post post, UserInfo userInfo) {
+        Comment hostComment = post.getComments().get(0);
+        hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
+        post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
     }
 }

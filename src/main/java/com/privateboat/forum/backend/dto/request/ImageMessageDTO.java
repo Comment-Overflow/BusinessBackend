@@ -1,13 +1,10 @@
 package com.privateboat.forum.backend.dto.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
-@Getter
-@Setter
+@Data
 public class ImageMessageDTO {
-
     private Long receiverId;
     private MultipartFile imageFile;
 }

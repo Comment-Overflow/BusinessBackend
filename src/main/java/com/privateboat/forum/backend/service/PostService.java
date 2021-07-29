@@ -5,6 +5,7 @@ import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.exception.PostException;
@@ -16,8 +17,10 @@ public interface PostService {
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
     Post getPost(Long postId, Long userId) throws PostException;
+    Post getPostByComment(Long commentId, Long userId) throws PostException;
     PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
                                                Integer pageNum, Integer pageSize, Long userId);
     void deletePost(Long postId) throws PostException;
     void deleteComment(Long commentId) throws PostException;
+    void setPostTransientField(Post post, UserInfo userInfo);
 }
