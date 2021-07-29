@@ -16,6 +16,7 @@ public interface PostService {
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
     Post getPost(Long postId, Long userId) throws PostException;
+    Post getPostByComment(Long commentId, Long userId) throws PostException;
     PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
                                                Integer pageNum, Integer pageSize, Long userId);
     void deletePost(Long postId) throws PostException;

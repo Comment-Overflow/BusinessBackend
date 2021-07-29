@@ -227,4 +227,19 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
         commentRepository.delete(comment.get());
     }
+
+    @Override
+    public Post getPostByComment(Long commentId, Long userId) throws PostException {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
+        Optional<Comment> comment = commentRepository.findById(commentId);
+        if (comment.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
+        }
+        Post post = comment.get().getPost();
+        post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
+        return post;
+    }
 }
