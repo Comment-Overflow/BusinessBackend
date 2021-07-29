@@ -7,7 +7,6 @@ import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.ReplyRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
@@ -54,10 +53,8 @@ public class PostServiceImpl implements PostService {
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findByTag(tag, pageable);
-        for (Post post : posts.getContent()) {
-            Comment hostComment = post.getHostComment();
-            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), hostComment));
-            post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
+        for (Post post: posts.getContent()) {
+            setPostTransientField(post, userInfo.get());
         }
         return posts;
     }
@@ -70,10 +67,8 @@ public class PostServiceImpl implements PostService {
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findAll(pageable);
-        for (Post post : posts.getContent()) {
-            Comment hostComment = post.getHostComment();
-            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), hostComment));
-            post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
+        for (Post post: posts.getContent()) {
+            setPostTransientField(post, userInfo.get());
         }
         return posts;
     }
@@ -88,7 +83,6 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         userInfo.get().getUserStatistic().addPost();
         userStatisticRepository.save(userInfo.get().getUserStatistic());
-        post.setHostComment(hostComment);
         post.addComment(hostComment);
 
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
@@ -125,7 +119,8 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post.get());
 
         Long postUserId = post.get().getUserInfo().getId();
-        if (!postUserId.equals(userId)) {
+//        if (!postUserId.equals(userId)) {
+        if (true) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), 0);
             replyRecordService.postReplyRecord(userId, reply);
         }
@@ -161,16 +156,18 @@ public class PostServiceImpl implements PostService {
     @Override
     @Deprecated
     public Post getPost(Long postId, Long userId) throws PostException {
-        Optional<Post> post = postRepository.findByPostId(postId);
-        if (post.isEmpty()) {
+        Optional<Post> optionalPost = postRepository.findByPostId(postId);
+        if (optionalPost.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
-        post.get().setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post.get()));
-        return post.get();
+
+        Post post = optionalPost.get();
+        post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), optionalPost.get()));
+        return post;
     }
 
     @Override
@@ -241,5 +238,12 @@ public class PostServiceImpl implements PostService {
         Post post = comment.get().getPost();
         post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo.get(), post));
         return post;
+    }
+
+    @Override
+    public void setPostTransientField(Post post, UserInfo userInfo) {
+        Comment hostComment = post.getComments().get(0);
+        hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
+        post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
     }
 }

@@ -4,7 +4,11 @@ import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
 import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.enumerate.PostTag;
-import com.privateboat.forum.backend.repository.*;
+import com.privateboat.forum.backend.repository.CommentRepository;
+import com.privateboat.forum.backend.repository.FollowRecordRepository;
+import com.privateboat.forum.backend.repository.SearchHistoryRepository;
+import com.privateboat.forum.backend.repository.UserInfoRepository;
+import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.SearchService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,27 +25,27 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     private final CommentRepository commentRepository;
-    private final StarRecordRepository starRecordRepository;
     private final SearchHistoryRepository searchHistoryRepository;
     private final UserInfoRepository userInfoRepository;
     private final FollowRecordRepository followRecordRepository;
+    private final PostService postService;
 
     @Override
     public Page<Comment> searchComments(String searchKey, Pageable pageable) {
-        return commentRepository.searchAll(searchKey, pageable);
+        return removeQuoteId(commentRepository.searchAll(searchKey, pageable));
     }
 
     @Override
     public Page<Comment> searchCommentsByPostTag(PostTag postTag, String searchKey, Pageable pageable) {
-        return commentRepository.searchByTag(postTag, searchKey, pageable);
+        return removeQuoteId(commentRepository.searchByTag(postTag, searchKey, pageable));
     }
 
     @Override
     public List<Post> wrappedSearchedCommentsWithPost(Long userId, List<Comment> comments) {
         return comments.stream().map(comment -> {
             Post parentPost = comment.getPost();
-            parentPost.setHostComment(comment);
-            parentPost.setIsStarred(starRecordRepository.checkIfHaveStarred(comment.getUserInfo(), parentPost));
+            postService.setPostTransientField(parentPost, comment.getUserInfo());
+            parentPost.setSearchedComment(comment);
             return parentPost;
         }).collect(Collectors.toList());
     }
@@ -69,5 +73,12 @@ public class SearchServiceImpl implements SearchService {
                     followStatus
             );
         }).collect(Collectors.toList());
+    }
+
+    private Page<Comment> removeQuoteId(Page<Comment> comments) {
+        for (Comment comment: comments.getContent()) {
+            comment.setQuoteId(0L);
+        }
+        return comments;
     }
 }

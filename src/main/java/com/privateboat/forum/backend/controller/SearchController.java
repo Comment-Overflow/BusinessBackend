@@ -48,7 +48,6 @@ public class SearchController {
         // Get the content of the page.
         List<Comment> commentsList = commentsPage.getContent();
         List<Post> postsContainingTheComment = searchService.wrappedSearchedCommentsWithPost(userId, commentsList);
-
         return ResponseEntity.ok(postsContainingTheComment);
     }
 
