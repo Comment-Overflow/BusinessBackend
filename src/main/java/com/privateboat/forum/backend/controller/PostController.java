@@ -55,11 +55,11 @@ public class PostController {
 
     @PostMapping(value = "/comment")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Long> postComment(NewCommentDTO newCommentDTO,
+    ResponseEntity<Integer> postComment(NewCommentDTO newCommentDTO,
                                      @RequestAttribute Long userId) {
         try {
             Comment comment = postService.postComment(userId, newCommentDTO);
-            return ResponseEntity.ok(comment.getId());
+            return ResponseEntity.ok(comment.getFloor());
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
