@@ -6,6 +6,5 @@ import com.privateboat.forum.backend.entity.UserInfo;
 
 public interface ProfileService {
     void putProfile(Long userId, ProfileSettingRequestDTO profileSettingRequestDTO);
-    UserInfo getProfileSetting(Long userId);
     ProfileDTO getProfile(Long myUserId, Long otherUserId);
 }

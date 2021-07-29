@@ -44,14 +44,4 @@ public class ProfileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-    @GetMapping(value = "/profiles/settings")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<ProfileSettingDTO> getProfileSetting(@RequestAttribute Long userId){
-        try{
-            return ResponseEntity.ok(modelMapper.map(profileService.getProfileSetting(userId), ProfileSettingDTO.class));
-        } catch (ProfileException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
 }

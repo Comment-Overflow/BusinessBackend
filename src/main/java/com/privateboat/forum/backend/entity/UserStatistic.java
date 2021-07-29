@@ -52,25 +52,34 @@ public class UserStatistic implements Serializable {
         this.isNewlyStarred = false;
     }
 
-    public void addComment() {
-        commentCount++;
-    }
     public void addPost(){
         postCount++;
+    }
+    public void subPost(){
+        postCount--;
     }
     public void addFollowing(){
         followingCount++;
     }
+    public void subFollowing(){
+        followingCount--;
+    }
     public void addFollower(){
         followerCount++;
+    }
+    public void subFollower(){
+        followerCount--;
     }
     public void addApproval(){
         approvalCount++;
     }
+    public void subApproval(){
+        approvalCount--;
+    }
+    public void addComment() {
+        commentCount++;
+    }
     public void subComment() {
         commentCount--;
-    }
-    public void subPost(){
-        postCount--;
     }
 }

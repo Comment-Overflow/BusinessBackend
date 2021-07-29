@@ -8,5 +8,6 @@ import lombok.Data;
 public class ReplyRecordReceiveDTO {
     private Long toUserId;
     private Long postId;
-    private int floor;
+    private Long commentId;
+    private Long quoteCommentId;
 }

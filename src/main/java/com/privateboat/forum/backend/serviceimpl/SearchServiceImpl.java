@@ -65,7 +65,7 @@ public class SearchServiceImpl implements SearchService {
                     userInfo.getAvatarUrl(),
                     userInfo.getBrief(),
                     userStatistic.getCommentCount(),
-                    userStatistic.getApprovalCount(),
+                    userStatistic.getFollowerCount(),
                     followStatus
             );
         }).collect(Collectors.toList());

@@ -53,11 +53,6 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         newApprovalRecord.setApprovalStatus(status);
 
         newApprovalRecord.setComment(newComment);
-        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
-            newComment.addApproval();
-        } else {
-            newComment.addDisapproval();
-        }
         commentRepository.save(newComment);
 
         newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
@@ -79,6 +74,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
             newComment.subDisapproval();
         }
         commentRepository.save(newComment);
+        userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
         approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
     }
 

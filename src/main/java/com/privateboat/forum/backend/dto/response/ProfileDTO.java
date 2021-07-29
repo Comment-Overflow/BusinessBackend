@@ -11,7 +11,7 @@ public class ProfileDTO {
     String brief;
     String avatarUrl;
     Gender gender;
-    Integer userStatisticCommentCount;
+    Integer userStatisticPostCount;
     Integer userStatisticFollowerCount;
     Integer userStatisticFollowingCount;
     Integer userStatisticApprovalCount;

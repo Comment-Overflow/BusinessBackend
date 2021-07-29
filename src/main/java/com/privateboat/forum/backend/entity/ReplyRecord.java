@@ -16,19 +16,26 @@ public class ReplyRecord {
     private Long id;
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private UserInfo fromUser;
 
+    @Column(nullable = false)
     private Long toUserId;
 
+    @Column(nullable = false)
     private Timestamp timestamp;
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private Comment comment;
+    // 新回复的comment
+
+    private Long quoteCommentId;
+    // 0 means reply main post
+    // otherwise use it to find comment
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private Post post;
     //comment being replied belongs to which post
 }

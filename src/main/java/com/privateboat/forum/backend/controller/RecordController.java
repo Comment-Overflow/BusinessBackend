@@ -160,27 +160,7 @@ public class RecordController {
                                                                @RequestParam int page,
                                                                @RequestParam int pageSize) {
         try {
-            Page<ReplyRecordDTO> ret = replyRecordService.getReplyRecords(userId, PageRequest.of(page, pageSize)).map(
-                    replyRecord -> {
-                        System.out.println(replyRecord.toString());
-                        return modelMapper.map(replyRecord, ReplyRecordDTO.class);
-                    }
-            );
-
-            return ResponseEntity.ok(ret.getContent());
-        } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-
-    @PostMapping(value = "/records/replies")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<String> postReplyRecord(@RequestAttribute Long userId,
-                                           @RequestBody ReplyRecordReceiveDTO replyRecordReceiveDTO) throws UserInfoException, PostException {
-        try {
-            replyRecordService.postReplyRecord(userId, replyRecordReceiveDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            return ResponseEntity.ok(replyRecordService.getReplyRecords(userId, PageRequest.of(page, pageSize)));
         } catch (RuntimeException e) {
             System.out.println(userId.toString() + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
