@@ -38,7 +38,6 @@ public class ReplyRecordServiceImpl implements ReplyRecordService {
             UserInfo userInfo = replyRecord.getFromUser();
             Long quoteId = replyRecord.getQuoteCommentId();
             Comment quoteComment = quoteId == 0 ? replyRecord.getPost().getHostComment():commentRepository.getById(quoteId);
-            System.out.println(replyRecord.getPost().getHostComment());
             Comment replyComment = replyRecord.getComment();
             return new ReplyRecordDTO(
                     userInfo.getId(),
