@@ -17,6 +17,7 @@ public class ReplyRecordRepositoryImpl implements ReplyRecordRepository {
     public Page<ReplyRecord> getReplyRecords(Long toUserId, Pageable pageable) {
         Page<ReplyRecord> replyRecords = replyRecordDAO.getByToUserIdOrderByTimestampDesc(toUserId, pageable);
         replyRecords.forEach((replyRecord) -> {
+            System.out.println(replyRecord.getFromUser().toString());
             replyRecord.getPost().setTransientProperties();
         });
         return replyRecords;

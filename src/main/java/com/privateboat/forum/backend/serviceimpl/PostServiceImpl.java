@@ -116,12 +116,12 @@ public class PostServiceImpl implements PostService {
         userInfo.get().getUserStatistic().addComment();
         userStatisticRepository.save(userInfo.get().getUserStatistic());
         commentRepository.save(comment);
+        Long newCommentId = comment.getId();
         postRepository.save(post.get());
 
         Long postUserId = post.get().getUserInfo().getId();
-//        if (!postUserId.equals(userId)) {
-        if (true) {
-            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), 0);
+        if (!postUserId.equals(userId)) {
+            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
             replyRecordService.postReplyRecord(userId, reply);
         }
         if (comment.getQuoteId() != 0) {
@@ -132,11 +132,12 @@ public class PostServiceImpl implements PostService {
             if (finder.size() != 1) throw new PostException(PostException.PostExceptionType.QUOTE_OUT_OF_BOUND);
             Comment target = finder.get(0);
             Long quoteUserId = target.getUserInfo().getId();
-            if (!quoteUserId.equals(userId)) {
+            if (!quoteUserId.equals(userId) && !quoteUserId.equals(postUserId)) {
                 ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(
                         target.getUserInfo().getId(),
                         commentDTO.getPostId(),
-                        target.getFloor());
+                        newCommentId,
+                        commentDTO.getQuoteId());
                 replyRecordService.postReplyRecord(userId, reply);
             }
         }

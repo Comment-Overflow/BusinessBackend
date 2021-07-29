@@ -16,20 +16,22 @@ public class ApprovalRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
     ApprovalStatus approvalStatus;
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private UserInfo fromUser;
 
+    @Column(nullable = false)
     private Long toUserId;
 
+    @Column(nullable = false)
     private Timestamp timestamp;
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private Comment comment;
     // use comment.postId to get post Title
 }
