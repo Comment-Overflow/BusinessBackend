@@ -70,15 +70,24 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginDTO login(String email, String rawPassword) throws AuthException {
         UserAuth verifiedUserAuth = verifyAuth(email, rawPassword);
-
-        return new LoginDTO(verifiedUserAuth.getUserId(), JWTUtil.getLoginToken(verifiedUserAuth));
+        Long userId = verifiedUserAuth.getUserId();
+        UserInfo.UserNameAndAvatarUrl userNameAndAvatarUrl = userInfoRepository.getUserNameAndAvatarUrlById(userId);
+        return new LoginDTO(
+                JWTUtil.getLoginToken(verifiedUserAuth),
+                verifiedUserAuth.getUserId(),
+                userNameAndAvatarUrl.getUserName(),
+                userNameAndAvatarUrl.getAvatarUrl());
     }
 
     @Override
     public LoginDTO refreshToken(Long userId) {
         UserAuth userAuth = userAuthRepository.getByUserId(userId);
-
-        return new LoginDTO(userId, JWTUtil.getLoginToken(userAuth));
+        UserInfo.UserNameAndAvatarUrl userNameAndAvatarUrl = userInfoRepository.getUserNameAndAvatarUrlById(userId);
+        return new LoginDTO(
+                JWTUtil.getLoginToken(userAuth),
+                userId,
+                userNameAndAvatarUrl.getUserName(),
+                userNameAndAvatarUrl.getAvatarUrl());
     }
 
     @Override

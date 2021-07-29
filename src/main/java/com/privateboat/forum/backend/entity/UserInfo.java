@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hibernate.annotations.Proxy;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -48,6 +47,11 @@ public class UserInfo implements Serializable {
 
     public interface MinimalUserInfo {
         Long getId();
+        String getUserName();
+        String getAvatarUrl();
+    }
+
+    public interface UserNameAndAvatarUrl {
         String getUserName();
         String getAvatarUrl();
     }

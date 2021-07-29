@@ -39,12 +39,12 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         Map<String, Object> headers = message.getHeaders();
-        for (String key : headers.keySet()) {
-            System.out.print(key);
-            System.out.println(' ');
-            System.out.println(headers.get(key).toString());
-        }
-        System.out.println();
+//        for (String key : headers.keySet()) {
+//            System.out.print(key);
+//            System.out.println(' ');
+//            System.out.println(headers.get(key).toString());
+//        }
+//        System.out.println();
 
         String messageType = Objects.requireNonNull(headers.get("simpMessageType")).toString();
         Object commandObj = headers.get("stompCommand");
@@ -108,8 +108,9 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
 
         // Acquire token.
         String token = request.getHeader("Authorization");
-        if (token == null)
+        if (token == null) {
             return false;
+        }
 
         // Get fields from token.
         Map<String, Claim> claims;

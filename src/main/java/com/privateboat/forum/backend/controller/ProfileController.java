@@ -1,8 +1,8 @@
 package com.privateboat.forum.backend.controller;
 
-import com.privateboat.forum.backend.dto.request.ProfileSettingDTO;
+import com.privateboat.forum.backend.dto.request.ProfileSettingRequestDTO;
 import com.privateboat.forum.backend.dto.response.ProfileDTO;
-import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.dto.response.ProfileSettingDTO;
 import com.privateboat.forum.backend.exception.ProfileException;
 import com.privateboat.forum.backend.service.ProfileService;
 import com.privateboat.forum.backend.util.JWTUtil;
@@ -20,26 +20,36 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
-    @PutMapping(value = "/profiles")
+    @GetMapping(value = "/profiles/{otherUserId}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<String> putProfile(@RequestAttribute Long userId,
-                                      ProfileSettingDTO profileSettingDTO) {
-        try{
-            System.out.println(profileSettingDTO.toString());
-            profileService.putProfile(userId, profileSettingDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+    ResponseEntity<ProfileDTO> getProfile(@RequestAttribute Long userId,
+                                          @PathVariable Long otherUserId) {
+        try {
+            return ResponseEntity.ok(profileService.getProfile(userId, otherUserId));
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PutMapping(value = "/profiles/settings")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<?> putProfile(@RequestAttribute Long userId,
+                                 ProfileSettingRequestDTO profileSettingRequestDTO) {
+        try {
+            System.out.println(profileSettingRequestDTO.toString());
+            return ResponseEntity.ok(profileService.putProfile(userId, profileSettingRequestDTO));
         } catch (ProfileException e) {
             System.out.println(userId.toString() + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping(value = "/profiles")
+    @GetMapping(value = "/profiles/settings")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<ProfileDTO> getProfile(@RequestAttribute Long userId){
+    ResponseEntity<ProfileSettingDTO> getProfileSetting(@RequestAttribute Long userId){
         try{
-            UserInfo userInfo = profileService.getProfile(userId);
-            return ResponseEntity.ok(modelMapper.map(userInfo, ProfileDTO.class));
+            return ResponseEntity.ok(modelMapper.map(profileService.getProfileSetting(userId), ProfileSettingDTO.class));
         } catch (ProfileException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

@@ -149,7 +149,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void deleteAllReadChat(Long userId) {
-        chatRepository.deleteAllReadChatsByUserId(userId);
+//        chatRepository.deleteAllReadChatsByUserId(userId);
     }
 
     @Override

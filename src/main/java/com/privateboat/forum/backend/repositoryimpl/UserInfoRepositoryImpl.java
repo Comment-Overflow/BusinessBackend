@@ -39,4 +39,13 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
     public List<UserInfo> findByUserNameContaining(String searchKey) {
         return userInfoDao.findByUserNameContaining(searchKey);
     }
+
+    @Override
+    public UserInfo.UserNameAndAvatarUrl getUserNameAndAvatarUrlById(Long userId) {
+        Optional<UserInfo.UserNameAndAvatarUrl> userNameAndAvatarUrl =
+                userInfoDao.findOneProjectionById(userId, UserInfo.UserNameAndAvatarUrl.class);
+        if (userNameAndAvatarUrl.isEmpty())
+            throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+        return userNameAndAvatarUrl.get();
+    }
 }
