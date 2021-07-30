@@ -1,4 +1,4 @@
-package com.privateboat.forum.backend.controllertest;
+package com.privateboat.forum.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.controller.AuthController;
@@ -16,6 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static com.privateboat.forum.backend.fakedata.UserData.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
@@ -26,14 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AuthController.class)
 public class AuthControllerUnitTest {
-    static final private String EMAIL = "gungnir_guo@sjtu.edu.cn";
-    static final private String PASSWORD = "guozhdiong12";
-    static final private String WRONG_PASSWORD = "abc";
-    static final private String CORRECT_EMAIL_CODE = "123456";
-    static final private String WRONG_EMAIL_CODE = "654321";
-    static final private String EXPIRED_EMAIL_CODE = "123123";
-    static final private String FAKE_TOKEN = "";
-    static final private Long USER_ID = 1L;
 
     @Autowired
     private MockMvc mvc;
