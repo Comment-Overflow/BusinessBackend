@@ -7,6 +7,8 @@ import java.util.Map;
 
 @Getter
 public class AuthException extends RuntimeException {
+    private final AuthExceptionType type;
+
     public enum AuthExceptionType {
         DUPLICATE_EMAIL, WRONG_EMAIL, WRONG_PASSWORD, EXPIRED_EMAIL_TOKEN, WRONG_EMAIL_TOKEN
     }
@@ -21,5 +23,6 @@ public class AuthException extends RuntimeException {
 
     public AuthException(AuthExceptionType authExceptionType) {
         super(map.get(authExceptionType));
+        this.type = authExceptionType;
     }
 }
