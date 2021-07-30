@@ -22,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
@@ -90,45 +91,54 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
             @NonNull HttpServletResponse response,
             @NonNull Object handler) {
 
-        if (!(handler instanceof HandlerMethod)) {
-            return false;
-        }
+        try {
+            if (!(handler instanceof HandlerMethod)) {
+                return false;
+            }
 
-        // Check the request authentication. ALl the methods in the controller should be annotated with @Authentication.
-        HandlerMethod handlerMethod = (HandlerMethod) handler;
-        Method method = handlerMethod.getMethod();
-        if (!method.isAnnotationPresent(JWTUtil.Authentication.class)) {
-            return false;
-        }
+            // Check the request authentication. ALl the methods in the controller should be annotated with @Authentication.
+            HandlerMethod handlerMethod = (HandlerMethod) handler;
+            Method method = handlerMethod.getMethod();
+            if (!method.isAnnotationPresent(JWTUtil.Authentication.class)) {
+                response.getWriter().write("controller未标注解");
+                return false;
+            }
 
-        JWTUtil.AuthenticationType authenticationType = method.getAnnotation(JWTUtil.Authentication.class).type();
-        if (authenticationType == JWTUtil.AuthenticationType.PASS) {
+            JWTUtil.AuthenticationType authenticationType = method.getAnnotation(JWTUtil.Authentication.class).type();
+            if (authenticationType == JWTUtil.AuthenticationType.PASS) {
+                return true;
+            }
+
+            // Acquire token.
+            String token = request.getHeader("Authorization");
+            if (token == null) {
+                response.getWriter().write("token不存在");
+                return false;
+            }
+
+            // Get fields from token.
+            Map<String, Claim> claims;
+            try {
+                claims = JWTUtil.getClaims(token);
+            } catch (TokenExpiredException e) {
+                response.getWriter().write("token已过期");
+                return false;
+            }
+
+            // Add user Id to request attribute.
+            Long userId = claims.get("userId").asLong();
+            request.setAttribute("userId", userId);
+
+            String password = claims.get("password").asString();
+            try {
+                authService.verifyAuth(userId, password);
+            } catch (AuthException e) {
+                response.getWriter().write("密码已被修改，自动登录失效");
+                return false;
+            }
+        } catch (IOException e) {
+            // Failed to write error message, so just reject the request.
             return true;
-        }
-
-        // Acquire token.
-        String token = request.getHeader("Authorization");
-        if (token == null) {
-            return false;
-        }
-
-        // Get fields from token.
-        Map<String, Claim> claims;
-        try {
-            claims = JWTUtil.getClaims(token);
-        } catch (TokenExpiredException e) {
-            return false;
-        }
-
-        // Add user Id to request attribute.
-        Long userId = claims.get("userId").asLong();
-        request.setAttribute("userId", userId);
-
-        String password = claims.get("password").asString();
-        try {
-            authService.verifyAuth(userId, password);
-        } catch (AuthException e) {
-            return false;
         }
         return true;
     }
