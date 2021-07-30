@@ -38,7 +38,7 @@ public class RecordController {
             UserStatistic userStatistic = userStatisticService.getNewlyRecords(userId);
             return ResponseEntity.ok(modelMapper.map(userStatistic, NewlyRecordDTO.class));
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -54,7 +54,7 @@ public class RecordController {
             );
             return ResponseEntity.ok(ret.getContent());
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -62,11 +62,11 @@ public class RecordController {
     @PostMapping(value = "/records/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<String> postApprovalRecord(@RequestAttribute Long userId,
-                                              @RequestBody  ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
+                                              @RequestBody ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
         try{
             approvalRecordService.postApprovalRecord(userId, approvalRecordReceiveDTO);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (RuntimeException e){
+        } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -75,12 +75,12 @@ public class RecordController {
     @DeleteMapping(value = "/records/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<String> deleteApprovalRecord(@RequestAttribute Long userId,
-                                                @RequestBody      ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
+                                                @RequestBody ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
         try {
             approvalRecordService.deleteApprovalRecord(userId, approvalRecordReceiveDTO);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -94,7 +94,7 @@ public class RecordController {
             ApprovalStatus status = approvalRecordService.checkIfHaveApproved(userId, commentId);
             return ResponseEntity.ok(status);
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -110,7 +110,7 @@ public class RecordController {
             );
             return ResponseEntity.ok(ret.getContent());
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -124,7 +124,7 @@ public class RecordController {
             starRecordService.postStarRecord(userId, toUserId, postId);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -137,7 +137,7 @@ public class RecordController {
             starRecordService.deleteStarRecord(userId, postId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -149,7 +149,7 @@ public class RecordController {
         try {
             return ResponseEntity.ok(starRecordService.checkIfHaveStarred(userId, postId));
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -162,7 +162,7 @@ public class RecordController {
         try {
             return ResponseEntity.ok(replyRecordService.getReplyRecords(userId, PageRequest.of(page, pageSize)));
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -176,7 +176,7 @@ public class RecordController {
             Page<UserCardInfoDTO> ret = followRecordService.getFollowingRecords(userId, PageRequest.of(page, pageSize));
             return ResponseEntity.ok(ret.getContent());
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + '\t' + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -190,7 +190,7 @@ public class RecordController {
             Page<UserCardInfoDTO> ret = followRecordService.getFollowedRecords(userId, PageRequest.of(page, pageSize));
             return ResponseEntity.ok(ret.getContent());
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -206,7 +206,7 @@ public class RecordController {
             );
             return ResponseEntity.ok(ret.getContent());
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -218,8 +218,8 @@ public class RecordController {
         try {
             followRecordService.postFollowRecord(userId, toUserId);
             return ResponseEntity.status(HttpStatus.CREATED).build();
-        } catch (RuntimeException e){
-            System.out.println(userId.toString() + e.getMessage());
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -232,7 +232,7 @@ public class RecordController {
             followRecordService.deleteFollowRecord(userId, toUserId);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
-            System.out.println(userId.toString() + toUserId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

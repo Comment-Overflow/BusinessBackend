@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.controller;
 import com.privateboat.forum.backend.dto.request.ProfileSettingRequestDTO;
 import com.privateboat.forum.backend.dto.response.ProfileDTO;
 import com.privateboat.forum.backend.dto.response.ProfileSettingDTO;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.exception.ProfileException;
 import com.privateboat.forum.backend.service.ProfileService;
 import com.privateboat.forum.backend.util.JWTUtil;
@@ -34,8 +35,8 @@ public class ProfileController {
 
     @PutMapping(value = "/profiles/settings")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<?> putProfile(@RequestAttribute Long userId,
-                                 ProfileSettingRequestDTO profileSettingRequestDTO) {
+    ResponseEntity<UserInfo.UserNameAndAvatarUrl> putProfile(@RequestAttribute Long userId,
+                                                             ProfileSettingRequestDTO profileSettingRequestDTO) {
         try {
             System.out.println(profileSettingRequestDTO.toString());
             return ResponseEntity.ok(profileService.putProfile(userId, profileSettingRequestDTO));
