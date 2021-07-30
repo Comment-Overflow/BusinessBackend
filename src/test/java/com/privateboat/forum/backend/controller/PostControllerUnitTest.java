@@ -1,6 +1,5 @@
 package com.privateboat.forum.backend.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
