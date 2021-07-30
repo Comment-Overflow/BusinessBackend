@@ -83,6 +83,7 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         userInfo.get().getUserStatistic().addPost();
         userStatisticRepository.save(userInfo.get().getUserStatistic());
+        post.setHostComment(hostComment);
         post.addComment(hostComment);
 
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
