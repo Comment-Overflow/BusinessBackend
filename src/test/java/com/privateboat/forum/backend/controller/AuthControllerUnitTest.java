@@ -1,7 +1,6 @@
 package com.privateboat.forum.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.privateboat.forum.backend.controller.AuthController;
 import com.privateboat.forum.backend.dto.request.RegisterDTO;
 import com.privateboat.forum.backend.dto.response.LoginDTO;
 import com.privateboat.forum.backend.exception.AuthException;

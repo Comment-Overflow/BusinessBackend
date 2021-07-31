@@ -17,7 +17,6 @@ public class UserData {
     static final public String EXPIRED_EMAIL_CODE = "123123";
     static final public String FAKE_TOKEN = "";
     static final public Long USER_ID = 1L;
-    static final public Long WRONG_USER_ID = 2L;
     static final public UserAuth USER_AUTH = new UserAuth();
     static final public String ENCODED_PASSWORD;
     static final public String WRONG_ENCODED_PASSWORD;

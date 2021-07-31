@@ -41,7 +41,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<Post> wrappedSearchedCommentsWithPost(Long userId, List<Comment> comments) {
+    public List<Post> wrapSearchedCommentsWithPost(List<Comment> comments) {
         return comments.stream().map(comment -> {
             Post parentPost = comment.getPost();
             postService.setPostTransientField(parentPost, comment.getUserInfo());
