@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
 public class ProfileController {
-    private final ModelMapper modelMapper;
 
     private final ProfileService profileService;
 

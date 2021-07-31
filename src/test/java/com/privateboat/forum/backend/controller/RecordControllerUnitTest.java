@@ -1,9 +1,10 @@
 package com.privateboat.forum.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.response.ApprovalRecordDTO;
+import com.privateboat.forum.backend.entity.ApprovalRecord;
+import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
-import com.privateboat.forum.backend.fakedata.Record;
 import com.privateboat.forum.backend.interceptor.JWTInterceptor;
 import com.privateboat.forum.backend.service.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,28 +13,24 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.privateboat.forum.backend.fakedata.Record.approvalRecordReceiveDTOUserNotExist;
-import static com.privateboat.forum.backend.fakedata.Record.newlyRecordDTO;
+import java.util.LinkedList;
+import java.util.List;
+
+import static com.privateboat.forum.backend.fakedata.Record.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RecordController.class)
 class RecordControllerUnitTest {
-    static final private String EMAIL = "gungnir_guo@sjtu.edu.cn";
-    static final private String PASSWORD = "guozhdiong12";
-    static final private String WRONG_PASSWORD = "abc";
-    static final private String CORRECT_EMAIL_CODE = "123456";
-    static final private String WRONG_EMAIL_CODE = "654321";
-    static final private String EXPIRED_EMAIL_CODE = "123123";
-    static final private String FAKE_TOKEN = "";
-    static final private Long USER_ID = 1L;
-
     @Autowired
     private MockMvc mvc;
 
@@ -64,86 +61,128 @@ class RecordControllerUnitTest {
     }
 
     @Test
-    void testGetNewlyRecords() {
+    void testGetNewlyRecords() throws Exception {
+        //get valid NewlyRecord
+        given(userStatisticService.getNewlyRecords(VALID_USER_ID)).willReturn(userStatisticNewlyRecord);
+        mvc.perform(get("/notifications/new_records")
+                .requestAttr("userId", VALID_USER_ID))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(userStatisticNewlyRecord)));
 
-        given(userStatisticService.getNewlyRecords(USER_ID)).willReturn(newlyRecordDTO);
-    }
-
-    @Test
-    void testGetApprovalRecords() {
-
-    }
-
-    @Test
-    void testPostApprovalRecord() throws Exception {
-        ApprovalRecordReceiveDTO approvalRecordReceiveDTO = Record.approvalRecordReceiveDTO;
-        mvc.perform(post("/records/approvals")
-                .requestAttr("userId", Record.USER_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(approvalRecordReceiveDTO)))
-                .andExpect(status().isCreated());
-
+        //get NOT_EXIST_USER NewlyRecord
         Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
-                .when(approvalRecordService)
-                .postApprovalRecord(Record.USER_ID, approvalRecordReceiveDTO);
+                .when(userStatisticService)
+                .getNewlyRecords(NOT_EXIST_USER_ID);
 
-        mvc.perform(post("/records/approvals")
-                .requestAttr("userId", Record.USER_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(approvalRecordReceiveDTO)))
+        mvc.perform(get("/notifications/new_records")
+                .requestAttr("userId", NOT_EXIST_USER_ID))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void deleteApprovalRecord() {
+    void testGetApprovalRecords() throws Exception {
+        //construct Approval data
+        List<ApprovalRecord> approvalRecordList = new LinkedList<>();
+        for (int i = 0; i < 10; i++) {
+            approvalRecordList.add(new ApprovalRecord());
+        }
+        Page<ApprovalRecord> approvalRecordPage = new PageImpl<>(approvalRecordList, PAGEABLE, approvalRecordList.size());
+        List<ApprovalRecordDTO> approvalRecordDTOList = new LinkedList<>();
+        for (int i = 0; i < 10; i++) {
+            approvalRecordDTOList.add(new ApprovalRecordDTO());
+        }
+        //get valid approval records
+        given(approvalRecordService.getApprovalRecords(VALID_USER_ID, PAGEABLE)).willReturn(approvalRecordPage);
+        mvc.perform(get("/notifications/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .param("page", String.valueOf(PAGE_OFFSET))
+                .param("pageSize", String.valueOf(PAGE_SIZE)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(approvalRecordDTOList)));
     }
 
     @Test
-    void checkIfHaveApproved() {
+    void testPostApprovalRecord() throws Exception {
+        //post valid approval
+        mvc.perform(post("/records/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
+                .andExpect(status().isCreated());
+
+        //post FROM_USER_NOT_EXIST approval
+        Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
+                .when(approvalRecordService)
+                .postApprovalRecord(NOT_EXIST_USER_ID, VALID_APPROVAL);
+
+        mvc.perform(post("/records/approvals")
+                .requestAttr("userId", NOT_EXIST_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
+                .andExpect(status().isNotFound());
+
+        //post TO_USER_NOT_EXIST approval
+        Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
+                .when(approvalRecordService)
+                .postApprovalRecord(VALID_USER_ID, TO_USER_NOT_EXIST_APPROVAL);
+        mvc.perform(post("/records/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(TO_USER_NOT_EXIST_APPROVAL)))
+                .andExpect(status().isNotFound());
+
+        //post COMMENT_NOT_EXIST approval
+        Mockito.doThrow(new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST))
+                .when(approvalRecordService)
+                .postApprovalRecord(VALID_USER_ID, COMMENT_NOT_EXIST_APPROVAL);
+
+        mvc.perform(post("/records/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(COMMENT_NOT_EXIST_APPROVAL)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void getStarRecords() {
-    }
+    void deleteApprovalRecord() throws Exception {
+        //delete normal approval
+        mvc.perform(delete("/records/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
+                .andExpect(status().isNoContent());
 
-    @Test
-    void testPostStarRecord() {
+        //delete COMMENT_NOT_EXIST approval
+        Mockito.doThrow(new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST))
+                .when(approvalRecordService)
+                .deleteApprovalRecord(VALID_USER_ID, COMMENT_NOT_EXIST_APPROVAL);
 
-    }
+        mvc.perform(delete("/records/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(COMMENT_NOT_EXIST_APPROVAL)))
+                .andExpect(status().isNotFound());
 
-    @Test
-    void deleteStarRecord() {
-    }
+        //delete TO_USER_NOT_EXIST approval
+        Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
+                .when(approvalRecordService)
+                .deleteApprovalRecord(VALID_USER_ID, TO_USER_NOT_EXIST_APPROVAL);
 
-    @Test
-    void checkIfHaveStarred() {
-    }
+        mvc.perform(delete("/records/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(TO_USER_NOT_EXIST_APPROVAL)))
+                .andExpect(status().isNotFound());
 
-    @Test
-    void getReplyNotifications() {
-    }
+        //delete FROM_USER_NOT_EXIST approval
+        Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
+                .when(approvalRecordService)
+                .deleteApprovalRecord(NOT_EXIST_USER_ID, VALID_APPROVAL);
 
-    @Test
-    void postReplyRecord() {
-    }
-
-    @Test
-    void getMyFollowingRecords() {
-    }
-
-    @Test
-    void getMyFollowedRecords() {
-    }
-
-    @Test
-    void getFollowNotifications() {
-    }
-
-    @Test
-    void postFollowRecord() {
-    }
-
-    @Test
-    void deleteFollowRecord() {
+        mvc.perform(delete("/records/approvals")
+                .requestAttr("userId", NOT_EXIST_USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
+                .andExpect(status().isNotFound());
     }
 }
