@@ -28,7 +28,7 @@ import static com.privateboat.forum.backend.fakedata.UserData.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
-public class AuthServiceImplTest {
+public class AuthServiceImplUnitTest {
     static final private String JWT_SECRET = "comment_overflow";
 
     static final private UserInfo.UserNameAndAvatarUrl USER_NAME_AND_AVATAR_URL = new UserInfo.UserNameAndAvatarUrl() {

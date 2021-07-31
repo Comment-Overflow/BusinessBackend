@@ -14,7 +14,7 @@ public interface SearchService {
 
     Page<Comment> searchCommentsByPostTag(PostTag postTag, String searchKey, Pageable pageable);
 
-    List<Post> wrappedSearchedCommentsWithPost(Long userId, List<Comment> comments);
+    List<Post> wrapSearchedCommentsWithPost(List<Comment> comments);
 
     void addSearchHistory(Long userId, String searchKey, PostTag postTag);
 
