@@ -15,5 +15,6 @@ public class ReplyRecordDTO {
     String quoteCommentContent;
     String replyContent;
     Long replyCommentId;
+    Integer replyCommentFloor;
     Integer commentFloor;
 }
