@@ -49,7 +49,7 @@ public class PostServiceImpl implements PostService {
     public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if (userInfo.isEmpty()) {
-            throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findByTag(tag, pageable);
@@ -63,7 +63,7 @@ public class PostServiceImpl implements PostService {
     public Page<Post> findAll(Integer pageNum, Integer pageSize, Long userId) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if (userInfo.isEmpty()) {
-            throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findAll(pageable);
@@ -157,7 +157,6 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Deprecated
     public Post getPost(Long postId, Long userId) throws PostException {
         Optional<Post> optionalPost = postRepository.findByPostId(postId);
         if (optionalPost.isEmpty()) {

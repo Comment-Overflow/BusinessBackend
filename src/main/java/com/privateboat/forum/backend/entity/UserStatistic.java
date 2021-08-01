@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.io.Serializable;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserStatistic implements Serializable {
     @Id
     private Long userId;
@@ -50,6 +52,13 @@ public class UserStatistic implements Serializable {
         this.isNewlyFollowed = false;
         this.isNewlyReplied = false;
         this.isNewlyStarred = false;
+    }
+
+    public interface NewlyRecord {
+        Boolean getIsNewlyApproved();
+        Boolean getIsNewlyReplied();
+        Boolean getIsNewlyStarred();
+        Boolean getIsNewlyFollowed();
     }
 
     public void addPost(){

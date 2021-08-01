@@ -21,7 +21,6 @@ import com.privateboat.forum.backend.util.OffsetBasedPageRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -120,12 +119,12 @@ public class ChatServiceImpl implements ChatService {
     public Page<MessageDTO> getChatHistory(Long userId, Long chatterId, Integer offset, Integer limit) {
         Pageable pageable = new OffsetBasedPageRequest(offset, limit);
         Page<Message> messages = messageRepository.findByUserIdOrChatterId(userId, chatterId, pageable);
-        return messages.map((message ->
+        return messages.map(message ->
                 new MessageDTO(
                         projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getSender()),
                         projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getReceiver()),
                         message.getTime(), message.getType(), message.getContent())
-        ));
+        );
     }
 
     @Override

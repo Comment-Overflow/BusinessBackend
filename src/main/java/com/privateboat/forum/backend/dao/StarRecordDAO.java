@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StarRecordDAO extends JpaRepository<StarRecord, Long> {
-    Page<StarRecord> findByToUserIdOrderByTimestampDesc(Long userId, Pageable pageable);
+    Page<StarRecord> findByToUserIdAndFromUserIdIsNotOrderByTimestampDesc(Long userId, Long fromUserId, Pageable pageable);
     Boolean existsByFromUserAndPost(UserInfo userInfo, Post post);
     void deleteByFromUserIdAndPostId(Long fromUserId, Long postId);
 }

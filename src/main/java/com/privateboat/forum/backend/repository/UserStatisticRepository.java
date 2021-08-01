@@ -8,4 +8,5 @@ public interface UserStatisticRepository {
     void setFlag(Long userId, RecordType recordType);
     void save(UserStatistic userStatistic);
     void removeFlag(Long userId, RecordType recordType);
+    UserStatistic.NewlyRecord getNewlyRecordByUserId(Long userId);
 }

@@ -55,11 +55,12 @@ public class ProfileServiceImpl implements ProfileService {
             case "保密":
                 userInfo.setGender(Gender.SECRET);
                 break;
+            default:
+                throw new ProfileException(ProfileException.ProfileExceptionType.GENDER_NOT_VALID);
         }
         userInfo.setUserName(profileSettingRequestDTO.getUserName());
         userInfoRepository.save(userInfo);
         UserInfo.UserNameAndAvatarUrl userNameAndAvatarUrl = projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
-        System.out.println(userNameAndAvatarUrl.getUserName());
         return projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
     }
 

@@ -25,6 +25,15 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
+    public UserStatistic.NewlyRecord getNewlyRecordByUserId(Long userId) {
+        try {
+            return userStatisticDAO.getNewlyRecordByUserId(userId);
+        } catch (EntityNotFoundException e) {
+            throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+        }
+    }
+
+    @Override
     public void setFlag(Long userId, RecordType recordType) {
         UserStatistic userStatistic;
         try {
