@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
@@ -73,6 +72,7 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Transactional
     @Override
     public Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
@@ -101,6 +101,7 @@ public class PostServiceImpl implements PostService {
         return post;
     }
 
+    @Transactional
     @Override
     public Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
@@ -184,11 +185,22 @@ public class PostServiceImpl implements PostService {
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
 
         Comment host = null;
-        for (Comment comment : comments.getContent()) {
+        for (Comment comment: comments.getContent()) {
             if (comment.getFloor() == 0) host = comment;
             comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
+            if (comment.getIsDeleted()) {
+                comment.setContent("");
+                comment.setImageUrl(new ArrayList<>());
+                comment.setQuoteId(0L);
+                continue;
+            }
             if (comment.getQuoteId() != 0) {
-                comment.setQuoteDTO(new QuoteDTO(commentRepository.getById(comment.getQuoteId())));
+                Comment quoteComment = commentRepository.getById(comment.getQuoteId());
+                QuoteDTO quoteDTO = new QuoteDTO(quoteComment);
+                if (quoteComment.getIsDeleted()) {
+                    quoteDTO.setContent("内容已被删除");
+                }
+                comment.setQuoteDTO(quoteDTO);
             }
         }
         if (host != null) {
@@ -198,10 +210,10 @@ public class PostServiceImpl implements PostService {
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
 
-
         return new PageDTO<>(comments);
     }
 
+    @Transactional
     @Override
     public void deletePost(Long postId) throws PostException {
         Optional<Post> post = postRepository.findByPostId(postId);
@@ -213,6 +225,7 @@ public class PostServiceImpl implements PostService {
         postRepository.delete(post.get());
     }
 
+    @Transactional
     @Override
     public void deleteComment(Long commentId) throws PostException {
         Optional<Comment> comment = commentRepository.findById(commentId);

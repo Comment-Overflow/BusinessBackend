@@ -49,6 +49,7 @@ public class ReplyRecordServiceImpl implements ReplyRecordService {
                     quoteComment.getContent(),
                     replyComment.getContent(),
                     replyComment.getId(),
+                    replyComment.getFloor(),
                     quoteId == 0 ? 0 : quoteComment.getFloor()
             );
         }).collect(Collectors.toList());

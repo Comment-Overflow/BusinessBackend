@@ -54,7 +54,6 @@ public class Comment {
     @Fetch(value = FetchMode.SELECT)
     private List<String> imageUrl;
 
-    @JsonIgnore
     @Column(nullable = false)
     private Boolean isDeleted;
 

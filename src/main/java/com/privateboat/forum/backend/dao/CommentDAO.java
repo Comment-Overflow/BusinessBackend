@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CommentDAO extends JpaRepository<Comment, Long> {
+    Page<Comment> findByPostId(Long postId, Pageable pageable);
 
     @Query("select c from Comment c where " +
             "(c.post.title like concat('%', :searchKey, '%') and c.floor = 0 " +

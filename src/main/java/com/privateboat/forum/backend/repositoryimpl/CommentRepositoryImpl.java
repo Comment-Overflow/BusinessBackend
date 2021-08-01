@@ -20,7 +20,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
 
     @Override
     public Page<Comment> findByPostId(Long postId, Pageable pageable) {
-        return commentDAO.findByPostIdAndIsDeleted(postId, false, pageable);
+        return commentDAO.findByPostId(postId, pageable);
     }
 
     @Override
