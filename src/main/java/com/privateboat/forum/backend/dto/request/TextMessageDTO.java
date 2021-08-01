@@ -1,10 +1,8 @@
 package com.privateboat.forum.backend.dto.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class TextMessageDTO {
     Long receiverId;
     String content;
