@@ -40,7 +40,7 @@ public class ProfileController {
             System.out.println(profileSettingRequestDTO.toString());
             return ResponseEntity.ok(profileService.putProfile(userId, profileSettingRequestDTO));
         } catch (ProfileException e) {
-            System.out.println(userId.toString() + e.getMessage());
+            System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -45,7 +45,9 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         ApprovalStatus status = approvalRecordReceiveDTO.getStatus();
         if(status == ApprovalStatus.APPROVAL){
             newComment.addApproval();
-            userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
+            if(!fromUserId.equals(approvalRecordReceiveDTO.getToUserId())) {
+                userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
+            }
         }
         else {
             newComment.addDisapproval();

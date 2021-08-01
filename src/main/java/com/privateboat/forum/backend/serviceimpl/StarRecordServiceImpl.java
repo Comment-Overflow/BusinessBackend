@@ -46,7 +46,9 @@ public class StarRecordServiceImpl implements StarRecordService {
 
         newStarRecord.setPost(postRepository.getByPostId(postId));
 
-        userStatisticRepository.setFlag(toUserId, RecordType.STAR);
+        if(!fromUserId.equals(toUserId)) {
+            userStatisticRepository.setFlag(toUserId, RecordType.STAR);
+        }
 
         starRecordRepository.save(newStarRecord);
     }

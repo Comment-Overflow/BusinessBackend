@@ -144,7 +144,7 @@ class RecordControllerUnitTest {
     }
 
     @Test
-    void deleteApprovalRecord() throws Exception {
+    void testDeleteApprovalRecord() throws Exception {
         //delete normal approval
         mvc.perform(delete("/records/approvals")
                 .requestAttr("userId", VALID_USER_ID)
