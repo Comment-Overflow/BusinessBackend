@@ -47,7 +47,7 @@ public class Post {
 
     @Transient
     private Comment searchedComment;
-    @Transient
+    @OneToOne(fetch = FetchType.LAZY)
     private Comment hostComment;
     @Transient
     private Boolean isStarred;
@@ -73,14 +73,9 @@ public class Post {
 
     public void deleteComment(Comment comment) {
         comments.remove(comment);
-        commentCount--;
-    }
-
-    public Comment getHostComment() {
-        return comments.get(0);
     }
 
     public void setTransientProperties() {
-        this.hostComment = comments.get(0);
+
     }
 }
