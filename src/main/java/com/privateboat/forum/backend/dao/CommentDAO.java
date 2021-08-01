@@ -11,7 +11,8 @@ import org.springframework.data.repository.query.Param;
 public interface CommentDAO extends JpaRepository<Comment, Long> {
 
     @Query("select c from Comment c where " +
-            "(c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%')) and " +
+            "(c.post.title like concat('%', :searchKey, '%') and c.floor = 0 " +
+            "or c.content like concat('%', :searchKey, '%')) and " +
             "c.post.isDeleted = :isDeleted " +
             "order by c.time desc")
     Page<Comment> findByContentContainingOrPostTitleContainingAndPostIsDeleted(
@@ -21,7 +22,8 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
 
     @Query("select c from Comment c where " +
             "c.post.tag = :postTag and " +
-            "(c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%')) and " +
+            "(c.post.title like concat('%', :searchKey, '%') and c.floor = 0 " +
+            "or c.content like concat('%', :searchKey, '%')) and " +
             "c.post.isDeleted = :isDeleted " +
             "order by c.time desc")
     Page<Comment> findByPostTagAndContentContainingOrPostTitleContainingAndPostIsDeleted(

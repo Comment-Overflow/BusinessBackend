@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.service;
 
+import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.privateboat.forum.backend.fakedata.UserData.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -76,6 +76,8 @@ public class SearchServiceImplUnitTest {
             add(COMMENT1);
             add(COMMENT2);
         }};
+        POST1.setComments(COMMENTS);
+        POST2.setComments(COMMENTS);
     }
 
     @Test
@@ -91,8 +93,9 @@ public class SearchServiceImplUnitTest {
                                 comment.getPost().getTitle().contains("abc")
                         ).collect(Collectors.toList())
                 ));
-        Page<Comment> searchedComments = searchService.searchComments("abc", PAGE_REQUEST);
-        for (Comment comment: searchedComments) {
+        List<SearchedCommentDTO> searchedComments = searchService.searchComments("abc", PAGE_REQUEST);
+        for (SearchedCommentDTO parentPost: searchedComments) {
+            Comment comment = parentPost.getSearchedComment();
             assertTrue(comment.getContent().contains("abc") || comment.getPost().getTitle().contains("abc"));
         }
     }
@@ -113,14 +116,6 @@ public class SearchServiceImplUnitTest {
             assertTrue((comment.getContent().contains("abc") ||
                     comment.getPost().getTitle().contains("abc")) &&
                     comment.getPost().getTag().equals(PostTag.LIFE));
-        }
-    }
-
-    @Test
-    void testWrapSearchedCommentsWithPost() {
-        List<Post> wrappingPost = searchService.wrapSearchedCommentsWithPost(COMMENTS);
-        for (Post post: wrappingPost) {
-            assertNotNull(post.getSearchedComment());
         }
     }
 

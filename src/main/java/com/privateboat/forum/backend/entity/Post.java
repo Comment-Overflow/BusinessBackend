@@ -7,6 +7,7 @@ import com.privateboat.forum.backend.util.FTSUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
@@ -45,8 +46,6 @@ public class Post {
     @Column(nullable = false)
     private Boolean isDeleted;
 
-    @Transient
-    private Comment searchedComment;
     @Transient
     private Comment hostComment;
     @Transient
