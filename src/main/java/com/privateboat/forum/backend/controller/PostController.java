@@ -78,7 +78,7 @@ public class PostController {
 
     @GetMapping(value = "/post/comments")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<Comment>> getPosts(@RequestParam("postId") Long postId,
+    ResponseEntity<PageDTO<Comment>> getPostComments(@RequestParam("postId") Long postId,
                                              @RequestParam("policy") SortPolicy policy,
                                              @RequestParam("pageNum") Integer pageNum,
                                              @RequestParam("pageSize") Integer pageSize,

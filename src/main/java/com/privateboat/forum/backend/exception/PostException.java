@@ -9,6 +9,8 @@ public class PostException extends RuntimeException {
         VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND
     }
 
+    private PostExceptionType type;
+
     private static final Map<PostExceptionType, String> map = new HashMap<>() {{
         put(PostExceptionType.COMMENT_NOT_EXIST, "回复不存在！");
         put(PostExceptionType.POST_NOT_EXIST, "帖子不存在！");
@@ -22,5 +24,10 @@ public class PostException extends RuntimeException {
 
     public PostException(PostExceptionType postExceptionType) {
         super(map.get(postExceptionType));
+        this.type = postExceptionType;
+    }
+
+    public PostExceptionType getType() {
+        return type;
     }
 }
