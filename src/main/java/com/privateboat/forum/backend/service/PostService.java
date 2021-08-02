@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 public interface PostService {
     Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException;
     Page<Post> findAll(Integer pageNum, Integer pageSize, Long userId) throws PostException;
+    Page<Post> findFollowingOnly(Integer pageNum, Integer pageSize, Long userId);
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
     Post getPost(Long postId, Long userId) throws PostException;
