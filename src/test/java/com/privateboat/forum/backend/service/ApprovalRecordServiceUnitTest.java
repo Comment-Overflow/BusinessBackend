@@ -1,4 +1,4 @@
-package com.privateboat.forum.backend.servicetest;
+package com.privateboat.forum.backend.service;
 
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.*;
@@ -148,7 +148,6 @@ class ApprovalRecordServiceUnitTest {
         try {
             approvalRecordService.postApprovalRecord(VALID_USER_ID, VALID_APPROVAL_RECORD_RECEIVE_DTO);
             Mockito.verify(commentRepository).getById(VALID_COMMENT_ID);
-            Mockito.verify(userStatisticRepository).setFlag(VALID_USER_ID, RecordType.APPROVAL);
             Mockito.verify(commentRepository).save(any());
             Mockito.verify(userInfoRepository).getById(VALID_USER_ID);
             Mockito.verify(userStatisticRepository).getByUserId(VALID_USER_ID);
@@ -161,7 +160,7 @@ class ApprovalRecordServiceUnitTest {
         try {
             approvalRecordService.postApprovalRecord(VALID_USER_ID, VALID_DISAPPROVAL_RECORD_RECEIVE_DTO);
             //this time it won't call setFlag
-            Mockito.verify(userStatisticRepository).setFlag(any(), any());
+            Mockito.verify(userStatisticRepository, Mockito.never()).setFlag(any(), any());
         } catch (Exception e) {
             assertNull(e);
         }
