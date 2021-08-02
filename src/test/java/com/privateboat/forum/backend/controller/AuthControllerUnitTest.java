@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dto.request.RegisterDTO;
 import com.privateboat.forum.backend.dto.response.LoginDTO;
+import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.AuthException;
 import com.privateboat.forum.backend.interceptor.JWTInterceptor;
 import com.privateboat.forum.backend.service.AuthService;
@@ -102,7 +103,7 @@ public class AuthControllerUnitTest {
         com.privateboat.forum.backend.dto.request.LoginDTO successfulRequestDTO
                 = new com.privateboat.forum.backend.dto.request.LoginDTO(EMAIL, PASSWORD);
         com.privateboat.forum.backend.dto.response.LoginDTO successfulResponseDTO
-                = new LoginDTO(FAKE_TOKEN, USER_ID, EMAIL, null);
+                = new LoginDTO(FAKE_TOKEN, USER_ID, EMAIL, null, UserType.USER);
         com.privateboat.forum.backend.dto.request.LoginDTO failRequestDTO
                 = new com.privateboat.forum.backend.dto.request.LoginDTO(EMAIL, WRONG_PASSWORD);
 
@@ -129,7 +130,7 @@ public class AuthControllerUnitTest {
 
     @Test
     void testAutoLogin() throws Exception {
-        LoginDTO loginDTO = new LoginDTO(FAKE_TOKEN, USER_ID, EMAIL, null);
+        LoginDTO loginDTO = new LoginDTO(FAKE_TOKEN, USER_ID, EMAIL, null, UserType.USER);
         given(authService.refreshToken(USER_ID)).willReturn(loginDTO);
         mvc.perform(get("/sessions").
                 requestAttr("userId", USER_ID)

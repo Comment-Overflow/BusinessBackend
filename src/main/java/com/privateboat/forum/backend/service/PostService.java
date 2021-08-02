@@ -20,7 +20,7 @@ public interface PostService {
     Post getPostByComment(Long commentId, Long userId) throws PostException;
     PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
                                                Integer pageNum, Integer pageSize, Long userId);
-    void deletePost(Long postId) throws PostException;
-    void deleteComment(Long commentId) throws PostException;
+    void deletePost(Long postId, Long userId) throws PostException;
+    void deleteComment(Long commentId, Long userId) throws PostException;
     void setPostTransientField(Post post, UserInfo userInfo);
 }
