@@ -6,7 +6,7 @@ import java.util.Map;
 public class PostException extends RuntimeException {
     public enum PostExceptionType {
         POST_NOT_EXIST, POST_DELETED, PAGE_OUT_OF_BOUND, POSTER_NOT_EXIST, UPLOAD_IMAGE_FAILED, COMMENT_NOT_EXIST,
-        VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND, PERMISSION_DENIED
+        VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND, PERMISSION_DENIED, USER_SILENCED
     }
 
     private final PostExceptionType type;
@@ -21,6 +21,7 @@ public class PostException extends RuntimeException {
         put(PostExceptionType.VIEWER_NOT_EXIST, "访问用户不存在。");
         put(PostExceptionType.QUOTE_OUT_OF_BOUND, "引用了不是本楼的回复！");
         put(PostExceptionType.PERMISSION_DENIED, "删除权限不足！");
+        put(PostExceptionType.USER_SILENCED, "用户已被禁言！");
     }};
 
     public PostException(PostExceptionType postExceptionType) {

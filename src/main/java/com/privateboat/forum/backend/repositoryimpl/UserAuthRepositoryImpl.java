@@ -27,4 +27,9 @@ public class UserAuthRepositoryImpl implements UserAuthRepository {
     public UserAuth getByUserId(Long userId) {
         return userAuthDAO.getById(userId);
     }
+
+    @Override
+    public UserAuth save(UserAuth userAuth) {
+        return userAuthDAO.save(userAuth);
+    }
 }

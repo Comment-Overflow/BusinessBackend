@@ -78,6 +78,7 @@ public class ProfileServiceImpl implements ProfileService {
                 userInfo.getUserStatistic().getFollowerCount(),
                 userInfo.getUserStatistic().getFollowingCount(),
                 userInfo.getUserStatistic().getApprovalCount(),
+                userInfo.getUserAuth().getUserType(),
                 followStatus
         );
     }
