@@ -99,6 +99,7 @@ class PostControllerUnitTest {
         mvc.perform(get("/posts")
                 .param("pageNum", PAGE_NUM.toString())
                 .param("pageSize", PAGE_SIZE.toString())
+                .param("followingOnly", "false")
                 .requestAttr("userId", USER_ID))
                 .andExpect(status().isOk());
 
@@ -107,6 +108,7 @@ class PostControllerUnitTest {
                         .param("tag", TAG.toString())
                         .param("pageNum", PAGE_NUM.toString())
                         .param("pageSize", PAGE_SIZE.toString())
+                        .param("followingOnly", "false")
                         .requestAttr("userId", USER_ID))
                 .andExpect(status().isOk());
 
@@ -114,6 +116,7 @@ class PostControllerUnitTest {
         mvc.perform(get("/posts")
                         .param("pageNum", PAGE_NUM.toString())
                         .param("pageSize", PAGE_SIZE.toString())
+                        .param("followingOnly", "false")
                         .requestAttr("userId", WRONG_USER_ID))
                 .andExpect(status().isConflict());
 
@@ -121,6 +124,7 @@ class PostControllerUnitTest {
                         .param("tag", TAG.toString())
                         .param("pageNum", PAGE_NUM.toString())
                         .param("pageSize", PAGE_SIZE.toString())
+                        .param("followingOnly", "false")
                         .requestAttr("userId", WRONG_USER_ID))
                 .andExpect(status().isConflict());
     }
