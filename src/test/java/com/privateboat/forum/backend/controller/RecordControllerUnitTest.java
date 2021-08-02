@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dto.response.ApprovalRecordDTO;
+import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.ApprovalRecord;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
@@ -91,6 +92,7 @@ class RecordControllerUnitTest {
         for (int i = 0; i < 10; i++) {
             approvalRecordDTOList.add(new ApprovalRecordDTO());
         }
+        Page<ApprovalRecordDTO> approvalRecordDTOPage = new PageImpl<>(approvalRecordDTOList, PAGEABLE, approvalRecordList.size());
         //get valid approval records
         given(approvalRecordService.getApprovalRecords(VALID_USER_ID, PAGEABLE)).willReturn(approvalRecordPage);
         mvc.perform(get("/notifications/approvals")
@@ -98,7 +100,7 @@ class RecordControllerUnitTest {
                 .param("page", String.valueOf(PAGE_OFFSET))
                 .param("pageSize", String.valueOf(PAGE_SIZE)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(objectMapper.writeValueAsString(approvalRecordDTOList)));
+                .andExpect(content().string(objectMapper.writeValueAsString(new PageDTO<>(approvalRecordDTOPage))));
     }
 
     @Test
