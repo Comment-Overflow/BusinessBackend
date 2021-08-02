@@ -20,8 +20,4 @@ public class BusinessBackendApplication {
         SpringApplication.run(BusinessBackendApplication.class, args);
     }
 
-    @PostConstruct
-    public void init(){
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT+08:00"));
-    }
 }
