@@ -122,8 +122,7 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post.get());
 
         Long postUserId = post.get().getUserInfo().getId();
-//        if (!postUserId.equals(userId)) {
-        if (true) {
+        if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
             replyRecordService.postReplyRecord(userId, reply);
         }
