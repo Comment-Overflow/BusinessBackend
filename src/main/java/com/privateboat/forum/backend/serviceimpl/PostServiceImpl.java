@@ -134,7 +134,6 @@ public class PostServiceImpl implements PostService {
             }
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
             hostComment.getImageUrl().add(imageUrl);
-            System.out.println(imageUrl);
         }
 
         postRepository.save(post);
