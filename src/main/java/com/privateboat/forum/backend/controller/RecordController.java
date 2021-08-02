@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.controller;
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.*;
+import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.exception.PostException;
@@ -44,14 +45,14 @@ public class RecordController {
 
     @GetMapping(value = "/notifications/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<List<ApprovalRecordDTO>> getApprovalRecords(@RequestAttribute Long userId,
+    ResponseEntity<PageDTO<ApprovalRecordDTO>> getApprovalRecords(@RequestAttribute Long userId,
                                                                @RequestParam int page,
                                                                @RequestParam int pageSize) {
         try {
             Page<ApprovalRecordDTO> ret = approvalRecordService.getApprovalRecords(userId, PageRequest.of(page, pageSize)).map(
                     approvalNotification -> modelMapper.map(approvalNotification, ApprovalRecordDTO.class)
             );
-            return ResponseEntity.ok(ret.getContent());
+            return ResponseEntity.ok(new PageDTO<>(ret));
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -100,14 +101,14 @@ public class RecordController {
 
     @GetMapping(value = "/notifications/stars")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<List<StarRecordDTO>> getStarRecords(@RequestAttribute Long userId,
-                                                       @RequestParam int page,
-                                                       @RequestParam int pageSize) {
+    ResponseEntity<PageDTO<StarRecordDTO>> getStarRecords(@RequestAttribute Long userId,
+                                                          @RequestParam int page,
+                                                          @RequestParam int pageSize) {
         try {
             Page<StarRecordDTO> ret = starRecordService.getStarRecords(userId, PageRequest.of(page, pageSize)).map(
                     starNotification -> modelMapper.map(starNotification, StarRecordDTO.class)
             );
-            return ResponseEntity.ok(ret.getContent());
+            return ResponseEntity.ok(new PageDTO<>(ret));
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -141,18 +142,6 @@ public class RecordController {
         }
     }
 
-    @GetMapping(value = "/records/stars")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<Boolean> checkIfHaveStarred(@RequestParam Long userId,
-                                               @RequestParam Long postId) {
-        try {
-            return ResponseEntity.ok(starRecordService.checkIfHaveStarred(userId, postId));
-        } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
-
     @GetMapping(value = "/notifications/replies")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<List<ReplyRecordDTO>> getReplyNotifications(@RequestAttribute Long userId,
@@ -168,12 +157,12 @@ public class RecordController {
 
     @GetMapping(value = "/records/following")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<List<UserCardInfoDTO>> getMyFollowingRecords(@RequestAttribute Long userId,
+    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowingRecords(@RequestAttribute Long userId,
                                                                      @RequestParam int page,
                                                                      @RequestParam int pageSize) {
         try{
             Page<UserCardInfoDTO> ret = followRecordService.getFollowingRecords(userId, PageRequest.of(page, pageSize));
-            return ResponseEntity.ok(ret.getContent());
+            return ResponseEntity.ok(new PageDTO<>(ret));
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -182,12 +171,12 @@ public class RecordController {
 
     @GetMapping(value = "/records/followed")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<List<UserCardInfoDTO>> getMyFollowedRecords(@RequestAttribute Long userId,
+    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowedRecords(@RequestAttribute Long userId,
                                                                @RequestParam int page,
                                                                @RequestParam int pageSize) {
         try {
             Page<UserCardInfoDTO> ret = followRecordService.getFollowedRecords(userId, PageRequest.of(page, pageSize));
-            return ResponseEntity.ok(ret.getContent());
+            return ResponseEntity.ok(new PageDTO<>(ret));
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -196,14 +185,14 @@ public class RecordController {
 
     @GetMapping(value = "/notifications/followers")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<List<FollowNotificationDTO>> getFollowNotifications(@RequestAttribute Long userId,
+    ResponseEntity<PageDTO<FollowNotificationDTO>> getFollowNotifications(@RequestAttribute Long userId,
                                                                        @RequestParam int page,
                                                                        @RequestParam int pageSize) {
         try {
             Page<FollowNotificationDTO> ret = followRecordService.getFollowingNotifications(userId, PageRequest.of(page, pageSize)).map(
                     followRecord -> modelMapper.map(followRecord, FollowNotificationDTO.class)
             );
-            return ResponseEntity.ok(ret.getContent());
+            return ResponseEntity.ok(new PageDTO<>(ret));
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
