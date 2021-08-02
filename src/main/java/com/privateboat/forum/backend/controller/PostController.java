@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @AllArgsConstructor
 public class PostController {
@@ -26,10 +28,13 @@ public class PostController {
     ResponseEntity<PageDTO<Post>> getPosts(PostTag tag,
                                            @RequestParam("pageNum") Integer pageNum,
                                            @RequestParam("pageSize") Integer pageSize,
+                                           @RequestParam("followingOnly") Boolean followingOnly,
                                            @RequestAttribute Long userId) {
         try {
             Page<Post> posts;
-            if (tag == null) {
+            if (followingOnly) {
+                posts = postService.findFollowingOnly(pageNum, pageSize, userId);
+            } else if (tag == null) {
                 posts = postService.findAll(pageNum, pageSize, userId);
             } else {
                 posts = postService.findByTag(tag, pageNum, pageSize, userId);
@@ -124,9 +129,10 @@ public class PostController {
 
     @DeleteMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<?> deletePost(@RequestParam("postId") Long postId) {
+    ResponseEntity<?> deletePost(@RequestParam("postId") Long postId,
+                                 @RequestAttribute Long userId) {
         try {
-            postService.deletePost(postId);
+            postService.deletePost(postId, userId);
             return ResponseEntity.ok().build();
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -135,9 +141,10 @@ public class PostController {
 
     @DeleteMapping(value = "/comment")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<?> deleteComment(@RequestParam("commentId") Long commentId) {
+    ResponseEntity<?> deleteComment(@RequestParam("commentId") Long commentId,
+                                    @RequestAttribute Long userId) {
         try {
-            postService.deleteComment(commentId);
+            postService.deleteComment(commentId, userId);
             return ResponseEntity.ok().build();
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();

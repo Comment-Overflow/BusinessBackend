@@ -11,6 +11,7 @@ import com.privateboat.forum.backend.entity.StarRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
+import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
@@ -86,13 +87,27 @@ public class PostServiceImpl implements PostService {
         UserInfo userInfo = userInfoRepository.getById(userId);
         Page<StarRecord> starRecordPage = starRecordRepository.getMyStarRecords(userId, PageRequest.of(pageNum, pageSize));
         List<Post> postList = new LinkedList<>();
-        for(StarRecord starRecord: starRecordPage.getContent()) {
+        for (StarRecord starRecord : starRecordPage.getContent()) {
             postList.add(starRecord.getPost());
         }
-        for(Post post: postList) {
+        for (Post post : postList) {
             setPostTransientField(post, userInfo);
         }
         return new PageImpl<>(postList);
+    }
+
+    @Override
+    public Page<Post> findFollowingOnly(Integer pageNum, Integer pageSize, Long userId) {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
+        Page<Post> posts = postRepository.findFollowingOnly(userId, pageable);
+        for (Post post: posts.getContent()) {
+            setPostTransientField(post, userInfo.get());
+        }
+        return posts;
     }
 
     @Transactional
@@ -237,10 +252,18 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public void deletePost(Long postId) throws PostException {
+    public void deletePost(Long postId, Long userId) throws PostException {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
         Optional<Post> post = postRepository.findByPostId(postId);
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+        }
+        if (post.get().getUserInfo() != userInfo.get() &&
+                userInfo.get().getUserAuth().getUserType() != UserType.ADMIN) {
+            throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
         post.get().getUserInfo().getUserStatistic().subPost();
         userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
@@ -249,10 +272,18 @@ public class PostServiceImpl implements PostService {
 
     @Transactional
     @Override
-    public void deleteComment(Long commentId) throws PostException {
+    public void deleteComment(Long commentId, Long userId) throws PostException {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
         Optional<Comment> comment = commentRepository.findById(commentId);
         if (comment.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
+        }
+        if (comment.get().getUserInfo() != userInfo.get() &&
+                userInfo.get().getUserAuth().getUserType() != UserType.ADMIN) {
+            throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
         Post post = comment.get().getPost();
         post.deleteComment(comment.get());

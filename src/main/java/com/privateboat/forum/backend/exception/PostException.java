@@ -6,10 +6,10 @@ import java.util.Map;
 public class PostException extends RuntimeException {
     public enum PostExceptionType {
         POST_NOT_EXIST, POST_DELETED, PAGE_OUT_OF_BOUND, POSTER_NOT_EXIST, UPLOAD_IMAGE_FAILED, COMMENT_NOT_EXIST,
-        VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND
+        VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND, PERMISSION_DENIED
     }
 
-    private PostExceptionType type;
+    private final PostExceptionType type;
 
     private static final Map<PostExceptionType, String> map = new HashMap<>() {{
         put(PostExceptionType.COMMENT_NOT_EXIST, "回复不存在！");
@@ -20,6 +20,7 @@ public class PostException extends RuntimeException {
         put(PostExceptionType.UPLOAD_IMAGE_FAILED, "上传图片失败。");
         put(PostExceptionType.VIEWER_NOT_EXIST, "访问用户不存在。");
         put(PostExceptionType.QUOTE_OUT_OF_BOUND, "引用了不是本楼的回复！");
+        put(PostExceptionType.PERMISSION_DENIED, "删除权限不足！");
     }};
 
     public PostException(PostExceptionType postExceptionType) {

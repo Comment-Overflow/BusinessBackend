@@ -1,6 +1,6 @@
 package com.privateboat.forum.backend.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
@@ -13,9 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.privateboat.forum.backend.fakedata.UserData.USER_ID;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,9 +34,6 @@ public class SearchControllerUnitTest {
 
     @MockBean
     private SearchService searchService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockBean
     private JWTInterceptor jwtInterceptor;
@@ -61,7 +60,7 @@ public class SearchControllerUnitTest {
 
     @Test
     void testSearchComments() throws Exception {
-        Page<Comment> commentPage = Page.empty();
+        List<SearchedCommentDTO> commentPage = new ArrayList<>();
         given(searchService.searchComments(any(String.class), any(PageRequest.class))).
                 willReturn(commentPage);
         given(searchService.searchCommentsByPostTag(

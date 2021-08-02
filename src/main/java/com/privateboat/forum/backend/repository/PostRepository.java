@@ -12,6 +12,7 @@ public interface PostRepository {
     Optional<Post> findByPostId(Long postId);
     Page<Post> findByUserId(Long userId, Pageable pageable);
     Page<Post> findAll(Pageable pageable);
+    Page<Post> findFollowingOnly(Long userId, Pageable pageable);
     Page<Post> findByTag(PostTag tag, Pageable pageable);
     Post save(Post post);
     Post getByPostId(Long postId) throws PostException;

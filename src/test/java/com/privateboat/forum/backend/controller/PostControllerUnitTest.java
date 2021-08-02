@@ -251,15 +251,17 @@ class PostControllerUnitTest {
     void testDeletePost() throws Exception {
         Mockito.doThrow(new PostException(PostException.PostExceptionType.POST_NOT_EXIST))
                 .when(postService)
-                .deletePost(WRONG_POST_ID);
+                .deletePost(WRONG_POST_ID, USER_ID);
 
         // delete normal
         mvc.perform(delete("/post")
-                .param("postId", POST_ID.toString()))
+                .param("postId", POST_ID.toString())
+                .requestAttr("userId", USER_ID))
                 .andExpect(status().isOk());
 
         mvc.perform(delete("/post")
-                        .param("postId", WRONG_POST_ID.toString()))
+                        .param("postId", WRONG_POST_ID.toString())
+                        .requestAttr("userId", USER_ID))
                 .andExpect(status().isConflict());
 
     }
@@ -268,15 +270,17 @@ class PostControllerUnitTest {
     void testDeleteComment() throws Exception {
         Mockito.doThrow(new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST))
                 .when(postService)
-                .deleteComment(WRONG_COMMENT_ID);
+                .deleteComment(WRONG_COMMENT_ID, USER_ID);
 
         // delete normal
         mvc.perform(delete("/comment")
-                        .param("commentId", COMMENT_ID.toString()))
+                        .param("commentId", COMMENT_ID.toString())
+                        .requestAttr("userId", USER_ID))
                 .andExpect(status().isOk());
 
         mvc.perform(delete("/comment")
-                        .param("commentId", WRONG_COMMENT_ID.toString()))
+                        .param("commentId", WRONG_COMMENT_ID.toString())
+                        .requestAttr("userId", USER_ID))
                 .andExpect(status().isConflict());
     }
 
