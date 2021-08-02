@@ -27,7 +27,17 @@ public class AuthController {
             );
             return ResponseEntity.ok().build();
         } catch (AuthException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            HttpStatus status;
+            switch (e.getType()) {
+                case DUPLICATE_EMAIL:
+                    status = HttpStatus.CONFLICT;
+                    break;
+                case EXPIRED_EMAIL_TOKEN:
+                case WRONG_EMAIL_TOKEN:
+                default:
+                    status = HttpStatus.UNAUTHORIZED;
+            }
+            return ResponseEntity.status(status).body(e.getMessage());
         }
     }
 

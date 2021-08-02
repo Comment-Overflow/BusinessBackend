@@ -10,4 +10,6 @@ public interface UserAuthRepository {
     Optional<UserAuth> findByEmail(String email);
 
     UserAuth getByUserId(Long userId);
+
+    UserAuth save(UserAuth userAuth);
 }

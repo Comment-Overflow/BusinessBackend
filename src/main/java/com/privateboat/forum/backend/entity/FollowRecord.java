@@ -16,12 +16,14 @@ public class FollowRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Long toUserId;
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private UserInfo fromUser;
 
+    @Column(nullable = false)
     private Timestamp timestamp;
 
     @Transient

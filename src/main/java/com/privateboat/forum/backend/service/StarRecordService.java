@@ -12,6 +12,4 @@ public interface StarRecordService {
     void postStarRecord(Long fromUserId, Long toUserId, Long postId) throws UserInfoException, PostException;
 
     void deleteStarRecord(Long fromUserId, Long postId);
-
-    Boolean checkIfHaveStarred(Long userId, Long postId) throws PostException;
 }

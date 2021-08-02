@@ -16,14 +16,16 @@ public class StarRecord {
     private Long id;
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private UserInfo fromUser;
 
+    @Column(nullable = false)
     private Long toUserId;
 
+    @Column(nullable = false)
     private Timestamp timestamp;
 
     @OneToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private Post post;
 }

@@ -1,18 +1,20 @@
 package com.privateboat.forum.backend.dto.response;
 
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 public class ReplyRecordDTO {
-    private Long fromUserUserId;
-    private String fromUserUserName;
-    private String fromUserAvatarUrl;
+    Long userId;
+    String userName;
+    String userAvatarUrl;
 
-    private Long timestamp;
+    Long timestamp;
 
-    private String postTitle;
-    private Integer postHostCommentId;
-    private String postHostCommentContent;
-    private String commentContent;
-    private String postHostCommentFloor;
+    String postTitle;
+    Long quoteCommentId;
+    String quoteCommentContent;
+    String replyContent;
+    Long replyCommentId;
+    Integer replyCommentFloor;
+    Integer commentFloor;
 }

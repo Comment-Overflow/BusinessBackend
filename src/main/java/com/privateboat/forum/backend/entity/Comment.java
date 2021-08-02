@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.validator.constraints.Length;
@@ -16,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Comment {
@@ -52,7 +54,6 @@ public class Comment {
     @Fetch(value = FetchMode.SELECT)
     private List<String> imageUrl;
 
-    @JsonIgnore
     @Column(nullable = false)
     private Boolean isDeleted;
 
@@ -88,5 +89,14 @@ public class Comment {
 
     public void subDisapproval() {
         --disapprovalCount;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", floor=" + floor +
+                '}';
     }
 }

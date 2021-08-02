@@ -95,6 +95,8 @@ public class FollowRecordServiceImpl implements FollowRecordService {
 
     @Override
     public void deleteFollowRecord(Long fromUserId, Long toUserId) {
+        userStatisticRepository.getByUserId(fromUserId).subFollowing();
+        userStatisticRepository.getByUserId(toUserId).subFollower();
         followRecordRepository.deleteFollowRecord(fromUserId, toUserId);
     }
 }

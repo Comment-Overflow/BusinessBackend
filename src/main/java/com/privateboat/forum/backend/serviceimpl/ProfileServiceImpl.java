@@ -36,7 +36,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     public UserInfo.UserNameAndAvatarUrl putProfile(Long userId, ProfileSettingRequestDTO profileSettingRequestDTO) throws ProfileException{
         UserInfo userInfo = userInfoRepository.getById(userId);
-        if(profileSettingRequestDTO.getAvatar() != null) {
+        if (profileSettingRequestDTO.getAvatar() != null) {
             String avatarFileName = String.format("%d_%s", userId, RandomStringUtils.randomAlphanumeric(6));
             if (!ImageUtil.uploadImage(profileSettingRequestDTO.getAvatar(), avatarFileName, imageFolderName)) {
                 throw new ProfileException(ProfileException.ProfileExceptionType.UPLOAD_IMAGE_FAILED);
@@ -45,7 +45,7 @@ public class ProfileServiceImpl implements ProfileService {
             userInfo.setAvatarUrl(imageUrl);
         }
         userInfo.setBrief(profileSettingRequestDTO.getBrief());
-        switch (profileSettingRequestDTO.getGender()){
+        switch (profileSettingRequestDTO.getGender()) {
             case "男":
                 userInfo.setGender(Gender.MALE);
                 break;
@@ -55,11 +55,12 @@ public class ProfileServiceImpl implements ProfileService {
             case "保密":
                 userInfo.setGender(Gender.SECRET);
                 break;
+            default:
+                throw new ProfileException(ProfileException.ProfileExceptionType.GENDER_NOT_VALID);
         }
         userInfo.setUserName(profileSettingRequestDTO.getUserName());
         userInfoRepository.save(userInfo);
         UserInfo.UserNameAndAvatarUrl userNameAndAvatarUrl = projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
-        System.out.println(userNameAndAvatarUrl.getUserName());
         return projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
     }
 
@@ -73,16 +74,12 @@ public class ProfileServiceImpl implements ProfileService {
                 userInfo.getBrief(),
                 userInfo.getAvatarUrl(),
                 userInfo.getGender(),
-                userInfo.getUserStatistic().getCommentCount(),
+                userInfo.getUserStatistic().getPostCount(),
                 userInfo.getUserStatistic().getFollowerCount(),
                 userInfo.getUserStatistic().getFollowingCount(),
                 userInfo.getUserStatistic().getApprovalCount(),
+                userInfo.getUserAuth().getUserType(),
                 followStatus
         );
-    }
-
-    @Override
-    public UserInfo getProfileSetting(Long userId) {
-        return userInfoRepository.getById(userId);
     }
 }

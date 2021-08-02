@@ -76,7 +76,8 @@ public class AuthServiceImpl implements AuthService {
                 JWTUtil.getLoginToken(verifiedUserAuth),
                 verifiedUserAuth.getUserId(),
                 userNameAndAvatarUrl.getUserName(),
-                userNameAndAvatarUrl.getAvatarUrl());
+                userNameAndAvatarUrl.getAvatarUrl(),
+                verifiedUserAuth.getUserType());
     }
 
     @Override
@@ -87,7 +88,8 @@ public class AuthServiceImpl implements AuthService {
                 JWTUtil.getLoginToken(userAuth),
                 userId,
                 userNameAndAvatarUrl.getUserName(),
-                userNameAndAvatarUrl.getAvatarUrl());
+                userNameAndAvatarUrl.getAvatarUrl(),
+                userAuth.getUserType());
     }
 
     @Override

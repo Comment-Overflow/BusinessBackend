@@ -20,7 +20,7 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
 
     @Override
     public Page<ApprovalRecord> getApprovalRecords(Long toUserId, Pageable pageable){
-        return approvalRecordDAO.findByToUserIdAndApprovalStatusOrderByTimestampDesc(toUserId, ApprovalStatus.APPROVAL, pageable);
+        return approvalRecordDAO.findByToUserIdAndFromUserIdIsNotAndApprovalStatusOrderByTimestampDesc(toUserId, toUserId, ApprovalStatus.APPROVAL, pageable);
     }
 
     @Override

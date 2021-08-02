@@ -3,11 +3,9 @@ package com.privateboat.forum.backend.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.privateboat.forum.backend.enumerate.PostTag;
-import com.privateboat.forum.backend.util.FTSUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -45,9 +43,7 @@ public class Post {
     @Column(nullable = false)
     private Boolean isDeleted;
 
-    @Transient
-    private Comment searchedComment;
-    @Transient
+    @OneToOne(fetch = FetchType.LAZY)
     private Comment hostComment;
     @Transient
     private Boolean isStarred;
@@ -73,14 +69,9 @@ public class Post {
 
     public void deleteComment(Comment comment) {
         comments.remove(comment);
-        commentCount--;
-    }
-
-    public Comment getHostComment() {
-        return comments.get(0);
     }
 
     public void setTransientProperties() {
-        this.hostComment = comments.get(0);
+
     }
 }

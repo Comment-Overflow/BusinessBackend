@@ -45,7 +45,9 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         ApprovalStatus status = approvalRecordReceiveDTO.getStatus();
         if(status == ApprovalStatus.APPROVAL){
             newComment.addApproval();
-            userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
+            if(!fromUserId.equals(approvalRecordReceiveDTO.getToUserId())) {
+                userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
+            }
         }
         else {
             newComment.addDisapproval();
@@ -53,11 +55,6 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         newApprovalRecord.setApprovalStatus(status);
 
         newApprovalRecord.setComment(newComment);
-        if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
-            newComment.addApproval();
-        } else {
-            newComment.addDisapproval();
-        }
         commentRepository.save(newComment);
 
         newApprovalRecord.setFromUser(userInfoRepository.getById(fromUserId));
@@ -72,13 +69,14 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
     @Override
     public void deleteApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
-        Comment newComment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
+        Comment comment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
         if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
-            newComment.subApproval();
+            comment.subApproval();
+            userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
         } else {
-            newComment.subDisapproval();
+            comment.subDisapproval();
         }
-        commentRepository.save(newComment);
+        commentRepository.save(comment);
         approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
     }
 
