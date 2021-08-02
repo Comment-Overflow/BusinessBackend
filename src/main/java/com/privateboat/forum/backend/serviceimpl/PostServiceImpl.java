@@ -80,6 +80,9 @@ public class PostServiceImpl implements PostService {
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
         }
+        if (userInfo.get().getUserAuth().getUserType() == UserType.SILENCED) {
+            throw new PostException(PostException.PostExceptionType.USER_SILENCED);
+        }
         Post post = new Post(newPostDTO.getTitle(), newPostDTO.getTag());
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         userInfo.get().getUserStatistic().addPost();
@@ -108,6 +111,9 @@ public class PostServiceImpl implements PostService {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
+        }
+        if (userInfo.get().getUserAuth().getUserType() == UserType.SILENCED) {
+            throw new PostException(PostException.PostExceptionType.USER_SILENCED);
         }
         Optional<Post> post = postRepository.findByPostId(commentDTO.getPostId());
         if (post.isEmpty()) {
