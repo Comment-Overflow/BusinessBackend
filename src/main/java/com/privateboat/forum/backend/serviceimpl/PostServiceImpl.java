@@ -72,6 +72,20 @@ public class PostServiceImpl implements PostService {
         return posts;
     }
 
+    @Override
+    public Page<Post> findFollowingOnly(Integer pageNum, Integer pageSize, Long userId) {
+        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
+        if (userInfo.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
+        }
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
+        Page<Post> posts = postRepository.findFollowingOnly(userId, pageable);
+        for (Post post: posts.getContent()) {
+            setPostTransientField(post, userInfo.get());
+        }
+        return posts;
+    }
+
     @Transactional
     @Override
     public Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException {
@@ -122,8 +136,7 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post.get());
 
         Long postUserId = post.get().getUserInfo().getId();
-//        if (!postUserId.equals(userId)) {
-        if (true) {
+        if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
             replyRecordService.postReplyRecord(userId, reply);
         }
