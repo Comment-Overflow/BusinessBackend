@@ -80,7 +80,11 @@ public class SearchServiceImplUnitTest {
 
     @Test
     void testSearchComments() {
-        given(commentRepository.searchAll("abc", PAGE_REQUEST))
+        given(commentRepository.findByContentContainingOrPostTitleContainingAndIsDeleted(
+                "abc",
+                false,
+                PAGE_REQUEST)
+        )
                 .willReturn(new PageImpl<>(
                         COMMENTS.stream().filter(
                         comment -> comment.getContent().contains("abc") ||
@@ -95,7 +99,7 @@ public class SearchServiceImplUnitTest {
 
     @Test
     void testSearchCommentsByPostTag() {
-        given(commentRepository.searchByTag(PostTag.LIFE, "abc", PAGE_REQUEST))
+        given(commentRepository.findByPostTag(PostTag.LIFE, "abc", PAGE_REQUEST))
                 .willReturn(new PageImpl<>(
                         COMMENTS.stream().filter(
                                 comment ->
@@ -104,7 +108,7 @@ public class SearchServiceImplUnitTest {
                                                 comment.getPost().getTag().equals(PostTag.LIFE)
                         ).collect(Collectors.toList())
                 ));
-        Page<Comment> searchedComments = commentRepository.searchByTag(PostTag.LIFE, "abc", PAGE_REQUEST);
+        Page<Comment> searchedComments = commentRepository.findByPostTag(PostTag.LIFE, "abc", PAGE_REQUEST);
         for (Comment comment: searchedComments) {
             assertTrue((comment.getContent().contains("abc") ||
                     comment.getPost().getTitle().contains("abc")) &&

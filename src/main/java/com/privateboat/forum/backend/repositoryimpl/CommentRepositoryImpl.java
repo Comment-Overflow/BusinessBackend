@@ -48,13 +48,23 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
-    public Page<Comment> searchAll(String searchKey, Pageable pageable) {
-        return commentDAO.findByContentContainingOrPostTitleContaining(searchKey, pageable);
+    public Page<Comment> findByContentContainingOrPostTitleContainingAndIsDeleted(
+            String searchKey,
+            Boolean isDeleted,
+            Pageable pageable) {
+        return commentDAO.findByContentContainingOrPostTitleContainingAndPostIsDeleted(
+                searchKey,
+                false,
+                pageable);
     }
 
     @Override
-    public Page<Comment> searchByTag(PostTag postTag, String searchKey, Pageable pageable) {
-        return commentDAO.findByPostTagAndContentContainingOrPostTitleContaining(postTag, searchKey, pageable);
+    public Page<Comment> findByPostTag(PostTag postTag, String searchKey, Pageable pageable) {
+        return commentDAO.findByPostTagAndContentContainingOrPostTitleContainingAndPostIsDeleted(
+                postTag,
+                searchKey,
+                false,
+                pageable);
     }
 
     public void delete(Comment comment) {

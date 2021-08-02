@@ -14,8 +14,8 @@ public interface CommentRepository {
     Comment save(Comment comment);
     Optional<Comment> findById(Long commentId);
     Comment getById(Long commentId) throws PostException;
-    Page<Comment> searchAll(String searchKey, Pageable pageable);
-    Page<Comment> searchByTag(PostTag tag, String searchKey, Pageable pageable);
+    Page<Comment> findByContentContainingOrPostTitleContainingAndIsDeleted(String searchKey, Boolean isDeleted, Pageable pageable);
+    Page<Comment> findByPostTag(PostTag tag, String searchKey, Pageable pageable);
     QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
     void delete(Comment comment);
 }

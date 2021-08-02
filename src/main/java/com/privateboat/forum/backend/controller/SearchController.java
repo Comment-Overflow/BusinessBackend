@@ -47,7 +47,13 @@ public class SearchController {
 
         // Get the content of the page.
         List<Comment> commentsList = commentsPage.getContent();
+        for (Comment comment: commentsList) {
+            System.out.println(comment.getFloor());
+        }
         List<Post> postsContainingTheComment = searchService.wrapSearchedCommentsWithPost(commentsList);
+        for (Post post: postsContainingTheComment) {
+            System.out.println(post.getSearchedComment().getFloor());
+        }
         return ResponseEntity.ok(postsContainingTheComment);
     }
 

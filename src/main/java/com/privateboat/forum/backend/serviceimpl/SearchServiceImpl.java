@@ -32,20 +32,26 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<Comment> searchComments(String searchKey, Pageable pageable) {
-        return removeQuoteId(commentRepository.searchAll(searchKey, pageable));
+        return removeQuoteId(commentRepository.findByContentContainingOrPostTitleContainingAndIsDeleted(
+                searchKey, false, pageable)
+        );
     }
 
     @Override
     public Page<Comment> searchCommentsByPostTag(PostTag postTag, String searchKey, Pageable pageable) {
-        return removeQuoteId(commentRepository.searchByTag(postTag, searchKey, pageable));
+        return removeQuoteId(commentRepository.findByPostTag(postTag, searchKey, pageable));
     }
 
     @Override
     public List<Post> wrapSearchedCommentsWithPost(List<Comment> comments) {
         return comments.stream().map(comment -> {
             Post parentPost = comment.getPost();
+            System.out.println("=================== get new parentPost");
+            System.out.println("title: " + parentPost.getTitle());
+            System.out.println(comment.getFloor());
             postService.setPostTransientField(parentPost, comment.getUserInfo());
             parentPost.setSearchedComment(comment);
+            System.out.println(parentPost.getSearchedComment().getFloor());
             return parentPost;
         }).collect(Collectors.toList());
     }
