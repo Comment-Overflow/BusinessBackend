@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Custom Application ###
+src/main/resources/banner.txt
+
+### MacOS Configuration ###
+*.DS_Store
