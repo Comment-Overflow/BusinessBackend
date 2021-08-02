@@ -100,9 +100,10 @@ public class PostController {
 
     @DeleteMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<?> deletePost(@RequestParam("postId") Long postId) {
+    ResponseEntity<?> deletePost(@RequestParam("postId") Long postId,
+                                 @RequestAttribute Long userId) {
         try {
-            postService.deletePost(postId);
+            postService.deletePost(postId, userId);
             return ResponseEntity.ok().build();
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -111,9 +112,10 @@ public class PostController {
 
     @DeleteMapping(value = "/comment")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<?> deleteComment(@RequestParam("commentId") Long commentId) {
+    ResponseEntity<?> deleteComment(@RequestParam("commentId") Long commentId,
+                                    @RequestAttribute Long userId) {
         try {
-            postService.deleteComment(commentId);
+            postService.deleteComment(commentId, userId);
             return ResponseEntity.ok().build();
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();

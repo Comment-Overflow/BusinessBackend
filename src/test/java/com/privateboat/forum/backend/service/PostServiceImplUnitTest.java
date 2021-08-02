@@ -285,27 +285,27 @@ public class PostServiceImplUnitTest {
 
     @Test
     void testDeletePost() {
-        postService.deletePost(POST_ID);
+        postService.deletePost(POST_ID, USER_ID);
         Mockito.verify(userStatisticRepository).save(any());
         Mockito.verify(postRepository).delete(any());
 
         PostException wrongPostException =
                 Assertions.assertThrows(PostException.class, () -> postService
-                        .deletePost(WRONG_POST_ID));
+                        .deletePost(WRONG_POST_ID, USER_ID));
         assertSame(wrongPostException.getType(),
                 PostException.PostExceptionType.POST_NOT_EXIST);
     }
 
     @Test
     void testDeleteComment() {
-        postService.deleteComment(COMMENT_ID);
+        postService.deleteComment(COMMENT_ID, USER_ID);
         Mockito.verify(userStatisticRepository).save(any());
         Mockito.verify(postRepository).save(any());
         Mockito.verify(commentRepository).delete(any());
 
         PostException wrongPostException =
                 Assertions.assertThrows(PostException.class, () -> postService
-                        .deleteComment(WRONG_COMMENT_ID));
+                        .deleteComment(WRONG_COMMENT_ID, USER_ID));
         assertSame(wrongPostException.getType(),
                 PostException.PostExceptionType.COMMENT_NOT_EXIST);
     }
