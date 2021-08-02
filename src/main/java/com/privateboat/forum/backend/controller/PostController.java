@@ -40,6 +40,35 @@ public class PostController {
         }
     }
 
+    @GetMapping(value = "/posts/{otherUserId}")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<PageDTO<Post>> getOnesPosts(@PathVariable Long otherUserId,
+                                               @RequestParam("pageNum") Integer pageNum,
+                                               @RequestParam("pageSize") Integer pageSize,
+                                               @RequestAttribute Long userId) {
+        try {
+            Page<Post> myPosts = postService.findOnesPosts(otherUserId, pageNum, pageSize, userId);
+            return ResponseEntity.ok(new PageDTO<>(myPosts));
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping(value = "/posts/starred")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<PageDTO<Post>> getStarredPosts(@RequestAttribute Long userId,
+                                                  @RequestParam("pageNum") Integer pageNum,
+                                                  @RequestParam("pageSize") Integer pageSize) {
+        try {
+            Page<Post> starredPosts = postService.findStarredPosts(userId, pageNum, pageSize);
+            return ResponseEntity.ok(new PageDTO<>(starredPosts));
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
     @PostMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<Post> postPost(NewPostDTO newPostDTO,

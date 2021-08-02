@@ -7,6 +7,7 @@ import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
+import com.privateboat.forum.backend.entity.StarRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
@@ -17,15 +18,13 @@ import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,6 +69,30 @@ public class PostServiceImpl implements PostService {
             setPostTransientField(post, userInfo.get());
         }
         return posts;
+    }
+
+    @Override
+    public Page<Post> findOnesPosts(Long userId, Integer pageNum, Integer pageSize, Long myUserId) {
+        UserInfo userInfo = userInfoRepository.getById(myUserId);
+        Page<Post> postPage = postRepository.findByUserId(userId, PageRequest.of(pageNum, pageSize));
+        for(Post post: postPage.getContent()) {
+            setPostTransientField(post, userInfo);
+        }
+        return postPage;
+    }
+
+    @Override
+    public Page<Post> findStarredPosts(Long userId, Integer pageNum, Integer pageSize) {
+        UserInfo userInfo = userInfoRepository.getById(userId);
+        Page<StarRecord> starRecordPage = starRecordRepository.getMyStarRecords(userId, PageRequest.of(pageNum, pageSize));
+        List<Post> postList = new LinkedList<>();
+        for(StarRecord starRecord: starRecordPage.getContent()) {
+            postList.add(starRecord.getPost());
+        }
+        for(Post post: postList) {
+            setPostTransientField(post, userInfo);
+        }
+        return new PageImpl<>(postList);
     }
 
     @Transactional
