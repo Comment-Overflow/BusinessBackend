@@ -16,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @AllArgsConstructor
 public class PostController {
@@ -26,10 +28,13 @@ public class PostController {
     ResponseEntity<PageDTO<Post>> getPosts(PostTag tag,
                                            @RequestParam("pageNum") Integer pageNum,
                                            @RequestParam("pageSize") Integer pageSize,
+                                           @RequestParam("followingOnly") Boolean followingOnly,
                                            @RequestAttribute Long userId) {
         try {
             Page<Post> posts;
-            if (tag == null) {
+            if (followingOnly) {
+                posts = postService.findFollowingOnly(pageNum, pageSize, userId);
+            } else if (tag == null) {
                 posts = postService.findAll(pageNum, pageSize, userId);
             } else {
                 posts = postService.findByTag(tag, pageNum, pageSize, userId);
@@ -37,6 +42,35 @@ public class PostController {
             return ResponseEntity.ok(new PageDTO<>(posts));
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @GetMapping(value = "/posts/{otherUserId}")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<PageDTO<Post>> getOnesPosts(@PathVariable Long otherUserId,
+                                               @RequestParam("pageNum") Integer pageNum,
+                                               @RequestParam("pageSize") Integer pageSize,
+                                               @RequestAttribute Long userId) {
+        try {
+            Page<Post> myPosts = postService.findOnesPosts(otherUserId, pageNum, pageSize, userId);
+            return ResponseEntity.ok(new PageDTO<>(myPosts));
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping(value = "/posts/starred")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<PageDTO<Post>> getStarredPosts(@RequestAttribute Long userId,
+                                                  @RequestParam("pageNum") Integer pageNum,
+                                                  @RequestParam("pageSize") Integer pageSize) {
+        try {
+            Page<Post> starredPosts = postService.findStarredPosts(userId, pageNum, pageSize);
+            return ResponseEntity.ok(new PageDTO<>(starredPosts));
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 

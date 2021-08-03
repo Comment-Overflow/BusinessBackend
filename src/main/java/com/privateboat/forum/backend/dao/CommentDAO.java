@@ -12,19 +12,25 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
     Page<Comment> findByPostId(Long postId, Pageable pageable);
 
     @Query("select c from Comment c where " +
-            "c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%') " +
+            "(lower(c.post.title) like lower(concat('%', :searchKey, '%')) and c.floor = 0 " +
+            "or lower(c.content) like lower(concat('%', :searchKey, '%'))) and " +
+            "c.post.isDeleted = :isDeleted " +
             "order by c.time desc")
-    Page<Comment> findByContentContainingOrPostTitleContaining(
+    Page<Comment> findByContentContainingOrPostTitleContainingAndPostIsDeleted(
             @Param("searchKey") String searchKey,
+            @Param("isDeleted") Boolean isDeleted,
             Pageable pageable);
 
     @Query("select c from Comment c where " +
             "c.post.tag = :postTag and " +
-            "(c.post.title like concat('%', :searchKey, '%') or c.content like concat('%', :searchKey, '%')) " +
+            "(lower(c.post.title) like lower(concat('%', :searchKey, '%')) and c.floor = 0 " +
+            "or lower(c.content) like lower(concat('%', :searchKey, '%'))) and " +
+            "c.post.isDeleted = :isDeleted " +
             "order by c.time desc")
-    Page<Comment> findByPostTagAndContentContainingOrPostTitleContaining(
+    Page<Comment> findByPostTagAndContentContainingOrPostTitleContainingAndPostIsDeleted(
             @Param("postTag") PostTag postTag,
             @Param("searchKey") String searchKey,
+            @Param("isDeleted") Boolean isDeleted,
             Pageable pageable);
 
     Page<Comment> findByPostIdAndIsDeleted(Long postId, Boolean isDeleted, Pageable pageable);
