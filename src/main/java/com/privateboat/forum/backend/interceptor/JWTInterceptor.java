@@ -2,13 +2,10 @@ package com.privateboat.forum.backend.interceptor;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.exception.AuthException;
 import com.privateboat.forum.backend.service.AuthService;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -24,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -55,6 +51,8 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
                 messageType.equals("CONNECT") ||
                 // Client subscribes to a channel.
                 messageType.equals("SUBSCRIBE") ||
+                // Client unsubscribes from a channel.
+                messageType.equals("UNSUBSCRIBE") ||
                 // Client sends a message to another client.
                 (messageType.equals("MESSAGE") &&
                         commandObj != null && commandObj.toString().equals("SEND"))
@@ -72,6 +70,7 @@ public class JWTInterceptor implements HandlerInterceptor, ChannelInterceptor {
             String password = claims.get("password").asString();
             authService.verifyAuth(userId, password);
 
+            // Confirm that user subscribes to his own channel.
             if (messageType.equals("SUBSCRIBE")) {
                 String destination = Objects.requireNonNull(headers.get("simpDestination")).toString();
                 if (destination.startsWith("/user")) {

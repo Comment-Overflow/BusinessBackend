@@ -6,7 +6,7 @@ import java.util.Map;
 public class PostException extends RuntimeException {
     public enum PostExceptionType {
         POST_NOT_EXIST, POST_DELETED, PAGE_OUT_OF_BOUND, POSTER_NOT_EXIST, UPLOAD_IMAGE_FAILED, COMMENT_NOT_EXIST,
-        VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND, PERMISSION_DENIED, USER_SILENCED, ILLEGAL_TEXT, ILLEGAL_IMAGE
+        VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND, PERMISSION_DENIED, USER_SILENCED, POST_FROZEN, ILLEGAL_TEXT, ILLEGAL_IMAGE
     }
 
     private final PostExceptionType type;
@@ -24,6 +24,7 @@ public class PostException extends RuntimeException {
         put(PostExceptionType.USER_SILENCED, "用户已被禁言！");
         put(PostExceptionType.ILLEGAL_TEXT, "帖子中存在不合规内容");
         put(PostExceptionType.ILLEGAL_IMAGE, "图片中存在不合规内容");
+        put(PostExceptionType.POST_FROZEN, "该帖子已被冻结！");
     }};
 
     public PostException(PostExceptionType postExceptionType) {

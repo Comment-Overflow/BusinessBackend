@@ -87,7 +87,6 @@ public class ImageUtil {
         request.setObjectKey(key);
         
         ImageAuditingResponse response = client.imageAuditing(request);
-        System.out.println(response);
         return new ImageAuditResult(response);
     }
 }
