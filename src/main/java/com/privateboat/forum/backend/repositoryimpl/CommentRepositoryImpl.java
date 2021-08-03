@@ -67,6 +67,11 @@ public class CommentRepositoryImpl implements CommentRepository  {
                 pageable);
     }
 
+    @Override
+    public Page<Comment> getMyComments(Long userId, Pageable pageable) {
+        return commentDAO.findByUserInfoIdAndFloorIsNotAndIsDeletedOrderByTimeDesc(userId, 0,false, pageable);
+    }
+
     public void delete(Comment comment) {
         comment.setIsDeleted(true);
         commentDAO.save(comment);
