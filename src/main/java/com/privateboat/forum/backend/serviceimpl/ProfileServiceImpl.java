@@ -12,6 +12,8 @@ import com.privateboat.forum.backend.service.ProfileService;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
 import com.privateboat.forum.backend.util.audit.TextAuditUtil;
+import com.privateboat.forum.backend.util.image.ImageAuditException;
+import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -38,7 +40,13 @@ public class ProfileServiceImpl implements ProfileService {
 
         if (profileSettingRequestDTO.getAvatar() != null) {
             String avatarFileName = String.format("%d_%s", userId, RandomStringUtils.randomAlphanumeric(6));
-            if (!ImageUtil.uploadImage(profileSettingRequestDTO.getAvatar(), avatarFileName, imageFolderName)) {
+            try {
+                ImageUtil.uploadImage(profileSettingRequestDTO.getAvatar(), avatarFileName, imageFolderName);
+            } catch (ImageAuditException e) {
+                if (e.getResult().isConfirmed()) {
+                    throw new ProfileException(ProfileException.ProfileExceptionType.ILLEGAL_AVATAR);
+                }
+            } catch (ImageUploadException e) {
                 throw new ProfileException(ProfileException.ProfileExceptionType.UPLOAD_IMAGE_FAILED);
             }
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + avatarFileName;

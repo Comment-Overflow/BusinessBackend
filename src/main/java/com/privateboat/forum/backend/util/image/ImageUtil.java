@@ -2,6 +2,8 @@ package com.privateboat.forum.backend.util.image;
 
 import com.privateboat.forum.backend.cloudclient.TencentCOSClient;
 import com.qcloud.cos.COSClient;
+import com.qcloud.cos.exception.CosClientException;
+import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.model.*;
 import com.qcloud.cos.model.ciModel.auditing.ImageAuditingRequest;
 import com.qcloud.cos.model.ciModel.auditing.ImageAuditingResponse;
@@ -19,18 +21,21 @@ public class ImageUtil {
     private static final String BUCKET_NAME = "comment-overflow-1306578009";
     private static final COSClient client = TencentCOSClient.getClient();
 
-    static public Boolean uploadImage(MultipartFile file, String fileName, String folderName) {
+    static public void uploadImage(MultipartFile file, String fileName, String folderName) throws ImageUploadException {
+        uploadImage(file, fileName, folderName, true);
+    }
+
+    static public void uploadImage(MultipartFile file, String fileName, String folderName, Boolean shouldAudit) throws ImageUploadException {
         // Convert multipart file to InputStream.
         InputStream inputStream;
         try {
             inputStream = file.getInputStream();
         } catch (IOException e) {
-            return false;
+            throw new ImageUploadException(ImageUploadException.ExceptionType.NETWORK_ERROR);
         }
 
         // Specify the path to store on COS. File name should include extension.
-        String key;
-        key = BASE_KEY + folderName + fileName;
+        String key = BASE_KEY + folderName + fileName;
 
         // Get object metadata.
         ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -40,9 +45,15 @@ public class ImageUtil {
 
         try {
             client.putObject(putObjectRequest);
-            return true;
-        } catch (RuntimeException e) {
-            return false;
+        } catch (CosClientException e){
+            throw new ImageUploadException(ImageUploadException.ExceptionType.NETWORK_ERROR);
+        }
+
+        if (shouldAudit) {
+            ImageAuditResult result = auditImage(key);
+            if (!result.isOk()) {
+                throw new ImageAuditException(result);
+            }
         }
     }
 
@@ -69,13 +80,14 @@ public class ImageUtil {
         return RandomStringUtils.randomAlphanumeric(12) + suffix;
     }
 
-    static public ImageAuditResult auditImage(String key) {
+    static private ImageAuditResult auditImage(String key) {
         ImageAuditingRequest request = new ImageAuditingRequest();
         request.setBucketName(BUCKET_NAME);
-        request.setDetectType("porn, terrorist, ads, politics");
+        request.setDetectType("porn,terrorist,ads,politics");
         request.setObjectKey(key);
         
         ImageAuditingResponse response = client.imageAuditing(request);
+        System.out.println(response);
         return new ImageAuditResult(response);
     }
 }

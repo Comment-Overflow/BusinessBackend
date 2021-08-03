@@ -26,6 +26,13 @@ public class ImageAuditResult {
                 isTerrorism == ImageAuditResultType.OK;
     }
 
+    public Boolean isConfirmed() {
+        return isPorn == ImageAuditResultType.CONFIRM ||
+                isAds == ImageAuditResultType.CONFIRM ||
+                isPolitics == ImageAuditResultType.CONFIRM ||
+                isTerrorism == ImageAuditResultType.CONFIRM;
+    }
+
     private ImageAuditResultType getType(Integer score) {
         if (score > CONFIRM_THRESHOLD) {
             return ImageAuditResultType.CONFIRM;

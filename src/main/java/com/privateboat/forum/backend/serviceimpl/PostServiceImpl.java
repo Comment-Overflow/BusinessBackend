@@ -17,6 +17,8 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
+import com.privateboat.forum.backend.util.image.ImageAuditException;
+import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
@@ -141,7 +143,13 @@ public class PostServiceImpl implements PostService {
 
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
             String newName = ImageUtil.getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
+            try {
+                ImageUtil.uploadImage(imageFile, newName, imageFolderName);
+            } catch (ImageAuditException e) {
+                if (e.getResult().isConfirmed()) {
+                    throw new PostException(PostException.PostExceptionType.ILLEGAL_IMAGE);
+                }
+            } catch (ImageUploadException e) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
@@ -202,7 +210,13 @@ public class PostServiceImpl implements PostService {
 
         for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
             String newName = ImageUtil.getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
+            try {
+                ImageUtil.uploadImage(imageFile, newName, imageFolderName);
+            } catch (ImageAuditException e) {
+                if (e.getResult().isConfirmed()) {
+                    throw new PostException(PostException.PostExceptionType.ILLEGAL_IMAGE);
+                }
+            } catch (ImageUploadException e) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
@@ -357,7 +371,7 @@ public class PostServiceImpl implements PostService {
     private void auditPostContent(String text) {
         TextAuditResult textAuditResult = TextAuditUtil.auditText(text);
         if (textAuditResult.getResultType() == TextAuditResultType.NOT_OK) {
-            throw new PostException(PostException.PostExceptionType.ILLEGAL_CONTENT);
+            throw new PostException(PostException.PostExceptionType.ILLEGAL_TEXT);
         }
     }
 }

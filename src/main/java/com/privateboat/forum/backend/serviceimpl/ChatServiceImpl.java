@@ -16,6 +16,7 @@ import com.privateboat.forum.backend.repository.MessageRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ChatService;
 import com.privateboat.forum.backend.util.Constant;
+import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.OffsetBasedPageRequest;
 import lombok.AllArgsConstructor;
@@ -82,8 +83,11 @@ public class ChatServiceImpl implements ChatService {
         // Upload the image.
         MultipartFile imageFile = imageMessageDTO.getImageFile();
         String newName = ImageUtil.getNewImageName(imageFile);
-        if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName))
+        try {
+            ImageUtil.uploadImage(imageFile, newName, imageFolderName, false);
+        } catch (ImageUploadException e) {
             throw new ChatException(ChatException.ChatExceptionType.SEND_IMAGE_FAILED);
+        }
 
         String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
         Long receiverId = imageMessageDTO.getReceiverId();
