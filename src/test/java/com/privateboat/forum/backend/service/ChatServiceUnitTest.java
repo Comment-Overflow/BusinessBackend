@@ -14,7 +14,7 @@ import com.privateboat.forum.backend.repository.ChatRepository;
 import com.privateboat.forum.backend.repository.MessageRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.serviceimpl.ChatServiceImpl;
-import com.privateboat.forum.backend.util.ImageUtil;
+import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.OffsetBasedPageRequest;
 import org.joda.time.DateTimeUtils;
 import org.junit.jupiter.api.Assertions;

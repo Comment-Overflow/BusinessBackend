@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
@@ -27,7 +26,7 @@ public class PostController {
 
     @GetMapping(value = "/posts")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<Post>> getPosts(PostTag tag,
+    ResponseEntity<?> getPosts(PostTag tag,
                                            @RequestParam("pageNum") Integer pageNum,
                                            @RequestParam("pageSize") Integer pageSize,
                                            @RequestParam("followingOnly") Boolean followingOnly,
@@ -43,7 +42,7 @@ public class PostController {
             }
             return ResponseEntity.ok(new PageDTO<>(posts));
         } catch (PostException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
@@ -78,7 +77,7 @@ public class PostController {
 
     @PostMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Post> postPost(NewPostDTO newPostDTO,
+    ResponseEntity<?> postPost(NewPostDTO newPostDTO,
                                   @RequestAttribute Long userId) {
         try {
             Post post = postService.postPost(userId, newPostDTO);
@@ -86,9 +85,9 @@ public class PostController {
             return ResponseEntity.ok(post);
         } catch (PostException e) {
             if (e.getType() == PostException.PostExceptionType.USER_SILENCED) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
             }
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
@@ -101,7 +100,8 @@ public class PostController {
             return ResponseEntity.ok(comment.getFloor());
         } catch (PostException e) {
             if (e.getType() == PostException.PostExceptionType.USER_SILENCED) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
             }
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
