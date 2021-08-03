@@ -34,4 +34,6 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
             Pageable pageable);
 
     Page<Comment> findByPostIdAndIsDeleted(Long postId, Boolean isDeleted, Pageable pageable);
+
+    Page<Comment> findByUserInfoIdAndFloorIsNotAndIsDeletedOrderByTimeDesc(Long userId, Integer floor, Boolean isDeleted, Pageable pageable);
 }

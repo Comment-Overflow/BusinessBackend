@@ -5,6 +5,7 @@ import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
+import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.StarRecord;
@@ -16,6 +17,7 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
+import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
@@ -299,6 +301,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<SearchedCommentDTO> findMyComments(Long userId, Integer pageNum, Integer pageSize) {
+        List<Comment> myComments = commentRepository.getMyComments(userId, PageRequest.of(pageNum, pageSize)).getContent();
+        removeQuoteId(myComments);
+        return wrapSearchedCommentsWithPost(myComments);
+    }
+
+    @Override
     public Post getPostByComment(Long commentId, Long userId) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
         if (userInfo.isEmpty()) {
@@ -318,5 +327,19 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = post.getComments().get(0);
         hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
         post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
+    }
+
+    public List<SearchedCommentDTO> wrapSearchedCommentsWithPost(List<Comment> comments) {
+        return comments.stream().map(comment -> {
+            Post parentPost = comment.getPost();
+            setPostTransientField(parentPost, comment.getUserInfo());
+            return new SearchedCommentDTO(parentPost, comment);
+        }).collect(Collectors.toList());
+    }
+
+    public void removeQuoteId(List<Comment> comments) {
+        for (Comment comment: comments) {
+            comment.setQuoteId(0L);
+        }
     }
 }

@@ -7,6 +7,7 @@ import com.privateboat.forum.backend.exception.PostException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CommentRepository {
@@ -16,6 +17,7 @@ public interface CommentRepository {
     Comment getById(Long commentId) throws PostException;
     Page<Comment> findByContentContainingOrPostTitleContainingAndIsDeleted(String searchKey, Boolean isDeleted, Pageable pageable);
     Page<Comment> findByPostTag(PostTag tag, String searchKey, Pageable pageable);
+    Page<Comment> getMyComments(Long userId, Pageable pageable);
     QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
     void delete(Comment comment);
 }

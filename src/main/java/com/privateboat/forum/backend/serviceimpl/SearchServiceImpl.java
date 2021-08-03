@@ -73,7 +73,8 @@ public class SearchServiceImpl implements SearchService {
                     userInfo.getBrief(),
                     userStatistic.getCommentCount(),
                     userStatistic.getFollowerCount(),
-                    followStatus
+                    followStatus,
+                    userInfo.getUserAuth().getUserType()
             );
         }).collect(Collectors.toList());
     }
