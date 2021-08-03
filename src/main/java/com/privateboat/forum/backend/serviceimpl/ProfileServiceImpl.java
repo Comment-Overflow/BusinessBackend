@@ -9,6 +9,9 @@ import com.privateboat.forum.backend.exception.ProfileException;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ProfileService;
+import com.privateboat.forum.backend.util.audit.TextAuditResult;
+import com.privateboat.forum.backend.util.audit.TextAuditResultType;
+import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import com.privateboat.forum.backend.util.image.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -30,8 +33,9 @@ public class ProfileServiceImpl implements ProfileService {
     static private final String imageFolderName = "personalInfo/";
 
     @Override
-    public UserInfo.UserNameAndAvatarUrl putProfile(Long userId, ProfileSettingRequestDTO profileSettingRequestDTO) throws ProfileException{
+    public UserInfo.UserNameAndAvatarUrl putProfile(Long userId, ProfileSettingRequestDTO profileSettingRequestDTO) throws ProfileException {
         UserInfo userInfo = userInfoRepository.getById(userId);
+
         if (profileSettingRequestDTO.getAvatar() != null) {
             String avatarFileName = String.format("%d_%s", userId, RandomStringUtils.randomAlphanumeric(6));
             if (!ImageUtil.uploadImage(profileSettingRequestDTO.getAvatar(), avatarFileName, imageFolderName)) {
@@ -40,7 +44,15 @@ public class ProfileServiceImpl implements ProfileService {
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + avatarFileName;
             userInfo.setAvatarUrl(imageUrl);
         }
-        userInfo.setBrief(profileSettingRequestDTO.getBrief());
+        // Audit user name and brief.
+        String brief = profileSettingRequestDTO.getBrief();
+        String userName = profileSettingRequestDTO.getUserName();
+        auditContent(userName, true);
+        auditContent(brief, false);
+
+        userInfo.setUserName(profileSettingRequestDTO.getUserName());
+        userInfo.setBrief(brief);
+
         switch (profileSettingRequestDTO.getGender()) {
             case "男":
                 userInfo.setGender(Gender.MALE);
@@ -54,7 +66,7 @@ public class ProfileServiceImpl implements ProfileService {
             default:
                 throw new ProfileException(ProfileException.ProfileExceptionType.GENDER_NOT_VALID);
         }
-        userInfo.setUserName(profileSettingRequestDTO.getUserName());
+
         userInfoRepository.save(userInfo);
         UserInfo.UserNameAndAvatarUrl userNameAndAvatarUrl = projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
         return projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
@@ -77,5 +89,16 @@ public class ProfileServiceImpl implements ProfileService {
                 userInfo.getUserAuth().getUserType(),
                 followStatus
         );
+    }
+
+    private void auditContent(String text, Boolean isUserName) {
+        TextAuditResult auditResult = TextAuditUtil.auditText(text);
+        if (auditResult.getResultType() == TextAuditResultType.NOT_OK) {
+            if (isUserName) {
+                throw new ProfileException(ProfileException.ProfileExceptionType.ILLEGAL_USER_NAME);
+            } else {
+                throw new ProfileException(ProfileException.ProfileExceptionType.ILLEGAL_BRIEF);
+            }
+        }
     }
 }
