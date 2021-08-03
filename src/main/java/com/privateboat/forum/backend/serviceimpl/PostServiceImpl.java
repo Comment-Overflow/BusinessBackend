@@ -19,6 +19,9 @@ import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.ImageUtil;
+import com.privateboat.forum.backend.util.audit.AuditResult;
+import com.privateboat.forum.backend.util.audit.AuditResultType;
+import com.privateboat.forum.backend.util.audit.AuditUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
@@ -122,6 +125,14 @@ public class PostServiceImpl implements PostService {
         if (userInfo.get().getUserAuth().getUserType() == UserType.SILENCED) {
             throw new PostException(PostException.PostExceptionType.USER_SILENCED);
         }
+
+        // Audit post title.
+        auditPostContent(newPostDTO.getTitle());
+        // Audit post content.
+        if (!newPostDTO.getContent().isEmpty()) {
+            auditPostContent(newPostDTO.getContent());
+        }
+
         Post post = new Post(newPostDTO.getTitle(), newPostDTO.getTag());
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         userInfo.get().getUserStatistic().addPost();
@@ -157,6 +168,7 @@ public class PostServiceImpl implements PostService {
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+        auditPostContent(commentDTO.getContent());
         Comment comment = new Comment(post.get(), userInfo.get(),
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.get().addComment(comment);
@@ -340,6 +352,13 @@ public class PostServiceImpl implements PostService {
     public void removeQuoteId(List<Comment> comments) {
         for (Comment comment: comments) {
             comment.setQuoteId(0L);
+        }
+    }
+
+    private void auditPostContent(String text) {
+        AuditResult auditResult = AuditUtil.auditText(text);
+        if (auditResult.getResultType() == AuditResultType.NOT_OK) {
+            throw new PostException(PostException.PostExceptionType.ILLEGAL_CONTENT);
         }
     }
 }
