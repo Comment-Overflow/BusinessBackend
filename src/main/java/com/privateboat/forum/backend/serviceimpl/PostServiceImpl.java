@@ -17,11 +17,10 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
-import com.privateboat.forum.backend.service.SearchService;
-import com.privateboat.forum.backend.util.ImageUtil;
-import com.privateboat.forum.backend.util.audit.AuditResult;
-import com.privateboat.forum.backend.util.audit.AuditResultType;
-import com.privateboat.forum.backend.util.audit.AuditUtil;
+import com.privateboat.forum.backend.util.image.ImageUtil;
+import com.privateboat.forum.backend.util.audit.TextAuditResult;
+import com.privateboat.forum.backend.util.audit.TextAuditResultType;
+import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
@@ -356,8 +355,8 @@ public class PostServiceImpl implements PostService {
     }
 
     private void auditPostContent(String text) {
-        AuditResult auditResult = AuditUtil.auditText(text);
-        if (auditResult.getResultType() == AuditResultType.NOT_OK) {
+        TextAuditResult textAuditResult = TextAuditUtil.auditText(text);
+        if (textAuditResult.getResultType() == TextAuditResultType.NOT_OK) {
             throw new PostException(PostException.PostExceptionType.ILLEGAL_CONTENT);
         }
     }

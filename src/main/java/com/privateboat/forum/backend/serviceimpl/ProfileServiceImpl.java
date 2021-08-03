@@ -2,24 +2,20 @@ package com.privateboat.forum.backend.serviceimpl;
 
 import com.privateboat.forum.backend.dto.request.ProfileSettingRequestDTO;
 import com.privateboat.forum.backend.dto.response.ProfileDTO;
-import com.privateboat.forum.backend.dto.response.ProfileSettingDTO;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.enumerate.Gender;
 import com.privateboat.forum.backend.exception.ProfileException;
-import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ProfileService;
-import com.privateboat.forum.backend.util.ImageUtil;
+import com.privateboat.forum.backend.util.image.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 
 @Service

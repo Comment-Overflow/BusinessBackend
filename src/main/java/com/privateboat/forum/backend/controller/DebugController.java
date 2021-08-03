@@ -1,6 +1,6 @@
 package com.privateboat.forum.backend.controller;
 
-import com.privateboat.forum.backend.util.audit.AuditUtil;
+import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import com.privateboat.forum.backend.util.JWTUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +18,6 @@ public class DebugController {
     @GetMapping(value = "/audition")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
     ResponseEntity<String> auditText(@RequestParam String text) {
-        return ResponseEntity.ok(AuditUtil.auditText(text).getResultType().toString());
+        return ResponseEntity.ok(TextAuditUtil.auditText(text).getResultType().toString());
     }
 }

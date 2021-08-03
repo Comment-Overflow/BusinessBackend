@@ -16,7 +16,7 @@ import com.privateboat.forum.backend.repository.MessageRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.ChatService;
 import com.privateboat.forum.backend.util.Constant;
-import com.privateboat.forum.backend.util.ImageUtil;
+import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.OffsetBasedPageRequest;
 import lombok.AllArgsConstructor;
 import org.joda.time.DateTimeUtils;

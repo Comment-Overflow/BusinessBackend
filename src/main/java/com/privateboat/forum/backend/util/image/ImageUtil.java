@@ -1,13 +1,10 @@
-package com.privateboat.forum.backend.util;
+package com.privateboat.forum.backend.util.image;
 
+import com.privateboat.forum.backend.cloudclient.TencentCOSClient;
 import com.qcloud.cos.COSClient;
-import com.qcloud.cos.ClientConfig;
-import com.qcloud.cos.auth.BasicCOSCredentials;
-import com.qcloud.cos.auth.COSCredentials;
-import com.qcloud.cos.http.HttpProtocol;
 import com.qcloud.cos.model.*;
-import com.qcloud.cos.region.Region;
-import com.sun.istack.Nullable;
+import com.qcloud.cos.model.ciModel.auditing.ImageAuditingRequest;
+import com.qcloud.cos.model.ciModel.auditing.ImageAuditingResponse;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,23 +12,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.privateboat.forum.backend.util.Constant.SECRET_ID;
-import static com.privateboat.forum.backend.util.Constant.SECRET_KEY;
-
 @Component
 public class ImageUtil {
-    private static final String BASE_KEY = "images/";
-    private static final COSCredentials CRED;
-    private static final ClientConfig CLIENT_CONFIG;
-    private static final String BUCKET_NAME;
 
-    static {
-        CRED = new BasicCOSCredentials(SECRET_ID, SECRET_KEY);
-        Region region = new Region("ap-shanghai");
-        CLIENT_CONFIG = new ClientConfig(region);
-        CLIENT_CONFIG.setHttpProtocol(HttpProtocol.https);
-        BUCKET_NAME = "comment-overflow-1306578009";
-    }
+    private static final String BASE_KEY = "images/";
+    private static final String BUCKET_NAME = "comment-overflow-1306578009";
+    private static final COSClient client = TencentCOSClient.getClient();
 
     static public Boolean uploadImage(MultipartFile file, String fileName, String folderName) {
         // Convert multipart file to InputStream.
@@ -41,9 +27,6 @@ public class ImageUtil {
         } catch (IOException e) {
             return false;
         }
-
-        // Open client to COS.
-        COSClient cosClient = new COSClient(CRED, CLIENT_CONFIG);
 
         // Specify the path to store on COS. File name should include extension.
         String key;
@@ -56,11 +39,9 @@ public class ImageUtil {
         PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, key, inputStream, objectMetadata);
 
         try {
-            cosClient.putObject(putObjectRequest);
-            cosClient.shutdown();
+            client.putObject(putObjectRequest);
             return true;
         } catch (RuntimeException e) {
-            cosClient.shutdown();
             return false;
         }
     }
@@ -69,18 +50,14 @@ public class ImageUtil {
         // Specify the path to store on COS. File name should include extension.
         String key = BASE_KEY + folderName + fileName;
         // Acquire download input steam.
-        COSClient cosClient = new COSClient(CRED, CLIENT_CONFIG);
         GetObjectRequest getObjectRequest = new GetObjectRequest(BUCKET_NAME, key);
-        COSObject cosObject = cosClient.getObject(getObjectRequest);
+        COSObject cosObject = client.getObject(getObjectRequest);
         COSObjectInputStream cosObjectInput = cosObject.getObjectContent();
 
         try {
             // Get the image in the form of byte stream.
-            byte[] res = cosObjectInput.readAllBytes();
-            cosClient.shutdown();
-            return res;
+            return cosObjectInput.readAllBytes();
         } catch (IOException e) {
-            cosClient.shutdown();
             throw new RuntimeException();
         }
     }
@@ -92,4 +69,13 @@ public class ImageUtil {
         return RandomStringUtils.randomAlphanumeric(12) + suffix;
     }
 
+    static public ImageAuditResult auditImage(String key) {
+        ImageAuditingRequest request = new ImageAuditingRequest();
+        request.setBucketName(BUCKET_NAME);
+        request.setDetectType("porn, terrorist, ads, politics");
+        request.setObjectKey(key);
+        
+        ImageAuditingResponse response = client.imageAuditing(request);
+        return new ImageAuditResult(response);
+    }
 }
