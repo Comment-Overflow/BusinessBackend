@@ -49,6 +49,9 @@ public class PostController {
             post.setIsStarred(false);
             return ResponseEntity.ok(post);
         } catch (PostException e) {
+            if (e.getType() == PostException.PostExceptionType.USER_SILENCED) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
@@ -61,6 +64,9 @@ public class PostController {
             Comment comment = postService.postComment(userId, newCommentDTO);
             return ResponseEntity.ok(comment.getFloor());
         } catch (PostException e) {
+            if (e.getType() == PostException.PostExceptionType.USER_SILENCED) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
