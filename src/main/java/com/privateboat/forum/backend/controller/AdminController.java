@@ -38,4 +38,28 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
+
+    @PutMapping(value = "/freeze/{freezePostId}")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<?> freezePost(@RequestAttribute Long userId,
+                                 @PathVariable Long freezePostId) {
+        try {
+            adminService.freezePost(userId, freezePostId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    @PutMapping(value = "/release/{releasePostId}")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<?> releasePost(@RequestAttribute Long userId,
+                                 @PathVariable Long releasePostId) {
+        try {
+            adminService.releasePost(userId, releasePostId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
 }
