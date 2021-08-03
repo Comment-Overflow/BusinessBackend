@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 public interface StarRecordRepository {
     Page<StarRecord> getStarRecords(Long userId, Pageable pageable);
 
+    Page<StarRecord> getMyStarRecords(Long userId, Pageable pageable);
+
     void save(StarRecord starRecord);
 
     void deleteStarRecord(Long fromUserId, Long postId);

@@ -35,6 +35,11 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public Page<Post> findFollowingOnly(Long userId, Pageable pageable) {
+        return postDAO.findByFollowing(userId, pageable);
+    }
+
+    @Override
     public Page<Post> findByTag(PostTag tag, Pageable pageable) {
         return postDAO.findByTagAndIsDeletedOrderByPostTimeDesc(tag, false, pageable);
     }

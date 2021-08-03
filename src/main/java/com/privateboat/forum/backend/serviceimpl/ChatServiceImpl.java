@@ -19,6 +19,7 @@ import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.ImageUtil;
 import com.privateboat.forum.backend.util.OffsetBasedPageRequest;
 import lombok.AllArgsConstructor;
+import org.joda.time.DateTimeUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +56,7 @@ public class ChatServiceImpl implements ChatService {
 
         Long receiverId = textMessageDTO.getReceiverId();
         String content = textMessageDTO.getContent();
-        Timestamp time = new Timestamp(System.currentTimeMillis());
+        Timestamp time = new Timestamp(DateTimeUtils.currentTimeMillis());
         MessageType type = MessageType.TEXT;
 
         UserInfo senderInfo = userInfoRepository.getById(senderId);
@@ -88,7 +89,7 @@ public class ChatServiceImpl implements ChatService {
         Long receiverId = imageMessageDTO.getReceiverId();
         UserInfo senderInfo = userInfoRepository.getById(senderId);
         UserInfo receiverInfo = userInfoRepository.getById(receiverId);
-        Timestamp time = new Timestamp(System.currentTimeMillis());
+        Timestamp time = new Timestamp(DateTimeUtils.currentTimeMillis());
         MessageType type = MessageType.IMAGE;
 
         Message message = new Message(senderInfo, receiverInfo, time, type, imageUrl);
@@ -148,7 +149,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void deleteAllReadChat(Long userId) {
-//        chatRepository.deleteAllReadChatsByUserId(userId);
+        chatRepository.deleteAllReadChatsByUserId(userId);
     }
 
     @Override

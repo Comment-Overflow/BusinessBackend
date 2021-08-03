@@ -25,6 +25,15 @@ public class StarRecordRepositoryImpl implements StarRecordRepository {
     }
 
     @Override
+    public Page<StarRecord> getMyStarRecords(Long userId, Pageable pageable) {
+        Page<StarRecord> starRecords = starRecordDAO.findByFromUserIdOrderByTimestampDesc(userId, pageable);
+        starRecords.forEach((starRecord) -> {
+            starRecord.getPost().setTransientProperties();
+        });
+        return starRecords;
+    }
+
+    @Override
     public void save(StarRecord newStarRecord) {
         starRecordDAO.saveAndFlush(newStarRecord);
     }

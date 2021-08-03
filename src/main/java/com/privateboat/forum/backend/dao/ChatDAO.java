@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatDAO extends JpaRepository<Chat, Long> {
-    @Query(value = "SELECT * FROM CHAT WHERE user_id = ?1 AND chatter_id = ?2", nativeQuery = true)
+    @Query(value = "SELECT * FROM CHAT WHERE user_id = ?1 AND chatter_id = ?2 LIMIT 1", nativeQuery = true)
     Optional<Chat> findByUserIdAndChatterId(Long userId, Long chatterId);
 
     List<Chat> findAllByUserIdOrderByLastMessage_TimeDesc(Long userId);
