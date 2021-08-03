@@ -119,6 +119,9 @@ public class PostServiceImpl implements PostService {
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+        if (post.get().getIsFrozen()) {
+            throw new PostException(PostException.PostExceptionType.POST_FROZEN);
+        }
         Comment comment = new Comment(post.get(), userInfo.get(),
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.get().addComment(comment);
@@ -230,7 +233,7 @@ public class PostServiceImpl implements PostService {
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
-        if (post.get().getUserInfo() != userInfo.get() &&
+        if ((post.get().getUserInfo() != userInfo.get() || post.get().getIsFrozen()) &&
                 userInfo.get().getUserAuth().getUserType() != UserType.ADMIN) {
             throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
@@ -250,11 +253,11 @@ public class PostServiceImpl implements PostService {
         if (comment.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
         }
-        if (comment.get().getUserInfo() != userInfo.get() &&
+        Post post = comment.get().getPost();
+        if ((comment.get().getUserInfo() != userInfo.get() || post.getIsFrozen()) &&
                 userInfo.get().getUserAuth().getUserType() != UserType.ADMIN) {
             throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
-        Post post = comment.get().getPost();
         post.deleteComment(comment.get());
         comment.get().getUserInfo().getUserStatistic().subComment();
         userStatisticRepository.save(comment.get().getUserInfo().getUserStatistic());

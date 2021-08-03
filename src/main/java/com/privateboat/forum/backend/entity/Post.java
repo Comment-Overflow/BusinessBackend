@@ -45,6 +45,9 @@ public class Post {
     @Column(nullable = false)
     private Boolean isDeleted;
 
+    @Column(nullable = false)
+    private Boolean isFrozen;
+
     @Transient
     private Comment searchedComment;
     @OneToOne(fetch = FetchType.LAZY)
@@ -57,6 +60,7 @@ public class Post {
         this.tag = tag;
         this.commentCount = 0;
         this.isDeleted = false;
+        this.isFrozen = false;
         this.postTime = new Timestamp(System.currentTimeMillis());
         this.comments = new ArrayList<>();
     }

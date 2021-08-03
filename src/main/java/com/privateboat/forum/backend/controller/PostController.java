@@ -58,7 +58,7 @@ public class PostController {
 
     @PostMapping(value = "/comment")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Integer> postComment(NewCommentDTO newCommentDTO,
+    ResponseEntity<?> postComment(NewCommentDTO newCommentDTO,
                                      @RequestAttribute Long userId) {
         try {
             Comment comment = postService.postComment(userId, newCommentDTO);
@@ -67,7 +67,7 @@ public class PostController {
             if (e.getType() == PostException.PostExceptionType.USER_SILENCED) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
