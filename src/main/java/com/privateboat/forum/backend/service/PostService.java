@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.service;
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
+import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
@@ -10,6 +11,8 @@ import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.exception.PostException;
 import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public interface PostService {
     Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException;
@@ -20,6 +23,7 @@ public interface PostService {
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
     Post getPost(Long postId, Long userId) throws PostException;
+    List<SearchedCommentDTO> findMyComments(Long userId, Integer pageNum, Integer pageSize);
     Post getPostByComment(Long commentId, Long userId) throws PostException;
     PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
                                                Integer pageNum, Integer pageSize, Long userId);

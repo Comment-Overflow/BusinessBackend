@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.controller;
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
+import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.enumerate.PostTag;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -119,10 +121,10 @@ public class PostController {
     @GetMapping(value = "/post/comments")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<PageDTO<Comment>> getPostComments(@RequestParam("postId") Long postId,
-                                             @RequestParam("policy") SortPolicy policy,
-                                             @RequestParam("pageNum") Integer pageNum,
-                                             @RequestParam("pageSize") Integer pageSize,
-                                             @RequestAttribute Long userId) {
+                                                     @RequestParam("policy") SortPolicy policy,
+                                                     @RequestParam("pageNum") Integer pageNum,
+                                                     @RequestParam("pageSize") Integer pageSize,
+                                                     @RequestAttribute Long userId) {
         try {
             PageDTO<Comment> comments = postService.findByPostIdOrderByPolicy(
                     postId, policy, pageNum, pageSize, userId
@@ -130,6 +132,20 @@ public class PostController {
             return ResponseEntity.ok(comments);
         } catch (PostException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @GetMapping(value = "/comments/{userId}")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<List<SearchedCommentDTO>> getMyComments(@PathVariable Long userId,
+                                                   @RequestParam("pageNum") Integer pageNum,
+                                                   @RequestParam("pageSize") Integer pageSize) {
+        try {
+            List<SearchedCommentDTO> myComments = postService.findMyComments(userId, pageNum, pageSize);
+            return ResponseEntity.ok(myComments);
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
