@@ -7,11 +7,14 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.PostRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -62,5 +65,11 @@ public class PostRepositoryImpl implements PostRepository {
     public void delete(Post post) {
         post.setIsDeleted(true);
         postDAO.save(post);
+    }
+
+    @Override
+    public List<Post> getHotPosts(Integer limit) {
+        PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Order.desc("hotIndex")));
+        return postDAO.findAll(pageRequest).getContent();
     }
 }

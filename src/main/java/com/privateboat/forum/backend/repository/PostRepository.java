@@ -6,6 +6,7 @@ import com.privateboat.forum.backend.exception.PostException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PostRepository {
@@ -17,4 +18,5 @@ public interface PostRepository {
     Post save(Post post);
     Post getByPostId(Long postId) throws PostException;
     void delete(Post post);
+    List<Post> getHotPosts(Integer limit);
 }
