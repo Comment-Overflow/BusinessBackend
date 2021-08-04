@@ -19,6 +19,7 @@ import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.ImageUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final StarRecordRepository starRecordRepository;
     private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
+    private final RedisUtil redisUtil;
 
     private final Environment environment;
     private static final String imageFolderName = "comment/";
@@ -139,6 +141,8 @@ public class PostServiceImpl implements PostService {
             System.out.println(imageUrl);
         }
 
+        redisUtil.addPostCounter();
+        redisUtil.addActiveUserCounter(userId);
         postRepository.save(post);
         commentRepository.save(hostComment);
         return post;
@@ -202,6 +206,8 @@ public class PostServiceImpl implements PostService {
             comment.getImageUrl().add(imageUrl);
         }
 
+        redisUtil.addCommentCounter();
+        redisUtil.addActiveUserCounter(userId);
         return comment;
     }
 
@@ -255,6 +261,7 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
+            redisUtil.addViewCounter();
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
 

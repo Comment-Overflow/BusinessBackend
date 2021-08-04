@@ -14,6 +14,7 @@ import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.AuthService;
 import com.privateboat.forum.backend.util.EmailUtil;
 import com.privateboat.forum.backend.util.JWTUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
+    private final RedisUtil redisUtil;
     private final BCryptPasswordEncoder encoder;
     private final UserAuthRepository userAuthRepository;
     private final UserInfoRepository userInfoRepository;
@@ -65,6 +67,7 @@ public class AuthServiceImpl implements AuthService {
         userInfo.setUserAuth(userAuth);
         userInfo.setUserStatistic(userStatistic);
         userInfoRepository.save(userInfo);
+        redisUtil.addUserCounter();
     }
 
     @Override

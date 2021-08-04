@@ -13,6 +13,7 @@ import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Transactional
 public class ApprovalRecordServiceImpl implements ApprovalRecordService {
+    private final RedisUtil redisUtil;
     private final UserInfoRepository userInfoRepository;
     private final ApprovalRecordRepository approvalRecordRepository;
     private final CommentRepository commentRepository;
@@ -65,6 +67,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
         approvalRecordRepository.save(newApprovalRecord);
+        redisUtil.addApprovalCount();
     }
 
     @Override
