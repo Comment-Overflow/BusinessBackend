@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.privateboat.forum.backend.fakedata.UserData.USER_AUTH;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -84,6 +85,7 @@ public class PostServiceImplUnitTest {
 
         USER_INFO = new UserInfo();
         USER_INFO.setId(USER_ID);
+        USER_INFO.setUserAuth(USER_AUTH);
         UserStatistic USER_STATISTIC = new UserStatistic(USER_INFO);
         USER_INFO.setUserStatistic(USER_STATISTIC);
         Post POST = new Post(TITLE, TAG);

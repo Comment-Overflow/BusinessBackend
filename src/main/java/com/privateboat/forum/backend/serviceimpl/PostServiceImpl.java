@@ -17,6 +17,12 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
+import com.privateboat.forum.backend.util.image.ImageAuditException;
+import com.privateboat.forum.backend.util.image.ImageUploadException;
+import com.privateboat.forum.backend.util.image.ImageUtil;
+import com.privateboat.forum.backend.util.audit.TextAuditResult;
+import com.privateboat.forum.backend.util.audit.TextAuditResultType;
+import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import com.privateboat.forum.backend.util.RedisUtil;
@@ -124,6 +130,14 @@ public class PostServiceImpl implements PostService {
         if (userInfo.get().getUserAuth().getUserType() == UserType.SILENCED) {
             throw new PostException(PostException.PostExceptionType.USER_SILENCED);
         }
+
+        // Audit post title.
+        auditPostContent(newPostDTO.getTitle());
+        // Audit post content.
+        if (!newPostDTO.getContent().isEmpty()) {
+            auditPostContent(newPostDTO.getContent());
+        }
+
         Post post = new Post(newPostDTO.getTitle(), newPostDTO.getTag());
         Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
         userInfo.get().getUserStatistic().addPost();
@@ -133,12 +147,17 @@ public class PostServiceImpl implements PostService {
 
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
             String newName = ImageUtil.getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
+            try {
+                ImageUtil.uploadImage(imageFile, newName, imageFolderName);
+            } catch (ImageAuditException e) {
+                if (e.getResult().isConfirmed()) {
+                    throw new PostException(PostException.PostExceptionType.ILLEGAL_IMAGE);
+                }
+            } catch (ImageUploadException e) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
             hostComment.getImageUrl().add(imageUrl);
-            System.out.println(imageUrl);
         }
 
         redisUtil.addPostCounter();
@@ -162,6 +181,7 @@ public class PostServiceImpl implements PostService {
         if (post.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+        auditPostContent(commentDTO.getContent());
         if (post.get().getIsFrozen()) {
             throw new PostException(PostException.PostExceptionType.POST_FROZEN);
         }
@@ -199,7 +219,13 @@ public class PostServiceImpl implements PostService {
 
         for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
             String newName = ImageUtil.getNewImageName(imageFile);
-            if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
+            try {
+                ImageUtil.uploadImage(imageFile, newName, imageFolderName);
+            } catch (ImageAuditException e) {
+                if (e.getResult().isConfirmed()) {
+                    throw new PostException(PostException.PostExceptionType.ILLEGAL_IMAGE);
+                }
+            } catch (ImageUploadException e) {
                 throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
             }
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
@@ -351,6 +377,13 @@ public class PostServiceImpl implements PostService {
     public void removeQuoteId(List<Comment> comments) {
         for (Comment comment: comments) {
             comment.setQuoteId(0L);
+        }
+    }
+
+    private void auditPostContent(String text) {
+        TextAuditResult textAuditResult = TextAuditUtil.auditText(text);
+        if (textAuditResult.getResultType() == TextAuditResultType.NOT_OK) {
+            throw new PostException(PostException.PostExceptionType.ILLEGAL_TEXT);
         }
     }
 }

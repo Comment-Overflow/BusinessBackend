@@ -2,13 +2,10 @@ package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.request.ProfileSettingRequestDTO;
 import com.privateboat.forum.backend.dto.response.ProfileDTO;
-import com.privateboat.forum.backend.dto.response.ProfileSettingDTO;
-import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.exception.ProfileException;
 import com.privateboat.forum.backend.service.ProfileService;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,14 +31,16 @@ public class ProfileController {
 
     @PutMapping(value = "/profiles/settings")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<UserInfo.UserNameAndAvatarUrl> putProfile(@RequestAttribute Long userId,
+    ResponseEntity<?> putProfile(@RequestAttribute Long userId,
                                                              ProfileSettingRequestDTO profileSettingRequestDTO) {
         try {
-            System.out.println(profileSettingRequestDTO.toString());
             return ResponseEntity.ok(profileService.putProfile(userId, profileSettingRequestDTO));
         } catch (ProfileException e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            String message = e.getMessage();
+            if (e.getType() == ProfileException.ProfileExceptionType.UPLOAD_IMAGE_FAILED) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
         }
     }
 }
