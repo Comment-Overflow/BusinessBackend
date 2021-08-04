@@ -23,8 +23,6 @@ import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
 import com.privateboat.forum.backend.util.audit.TextAuditUtil;
-import com.privateboat.forum.backend.service.SearchService;
-import com.privateboat.forum.backend.util.ImageUtil;
 import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
