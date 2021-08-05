@@ -1,8 +1,7 @@
 package com.privateboat.forum.backend.serviceimpl;
 
-import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.StarRecord;
-import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.enumerate.PreferDegree;
 import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
@@ -10,6 +9,7 @@ import com.privateboat.forum.backend.repository.PostRepository;
 import com.privateboat.forum.backend.repository.StarRecordRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
+import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.service.StarRecordService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +27,7 @@ public class StarRecordServiceImpl implements StarRecordService {
     private final StarRecordRepository starRecordRepository;
     private final PostRepository postRepository;
     private final UserStatisticRepository userStatisticRepository;
+    private final RecommendService recommendService;
 
     @Override
     public Page<StarRecord> getStarRecords(Long userId, Pageable pageable){
@@ -36,6 +37,8 @@ public class StarRecordServiceImpl implements StarRecordService {
 
     @Override
     public void postStarRecord(Long fromUserId, Long toUserId, Long postId) throws UserInfoException, PostException {
+        recommendService.updatePreferredWordList(fromUserId, postId, PreferDegree.STAR);
+
         StarRecord newStarRecord = new StarRecord();
 
         newStarRecord.setFromUser(userInfoRepository.getById(fromUserId));

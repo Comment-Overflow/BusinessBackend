@@ -9,12 +9,15 @@ import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.PostTag;
+import com.privateboat.forum.backend.enumerate.PreferDegree;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
+import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
+import com.privateboat.forum.backend.util.ImageUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
 import com.privateboat.forum.backend.util.audit.TextAuditUtil;
@@ -45,6 +48,8 @@ public class PostServiceImpl implements PostService {
     private final StarRecordRepository starRecordRepository;
     private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
+    private final RecommendService recommendService;
+
     private final RedisUtil redisUtil;
 
     private final Environment environment;
@@ -109,7 +114,6 @@ public class PostServiceImpl implements PostService {
         if (optionalSenderInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
         }
-
         UserInfo senderInfo = optionalSenderInfo.get();
         checkSilence(senderInfo);
 
@@ -124,6 +128,7 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(newPost, senderInfo, 0L, newPostDTO.getContent());
         newPost.setHostComment(hostComment);
         newPost.addComment(hostComment);
+        newPost.setKeyWordList(recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent()));
 
         // Change user statistics.
         UserStatistic senderStatistic = senderInfo.getUserStatistic();
@@ -168,7 +173,7 @@ public class PostServiceImpl implements PostService {
         commentRepository.save(newComment);
         Long newCommentId = newComment.getId();
         postRepository.save(post);
-
+        recommendService.updatePreferredWordList(userId, commentDTO.getPostId(), PreferDegree.REPLY);
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
@@ -249,6 +254,7 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
+            recommendService.updatePreferredWordList(userId, postId, PreferDegree.BROWSE);
             redisUtil.addViewCounter();
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
