@@ -21,6 +21,7 @@ import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import com.privateboat.forum.backend.util.image.ImageAuditException;
 import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
@@ -44,6 +45,7 @@ public class PostServiceImpl implements PostService {
     private final StarRecordRepository starRecordRepository;
     private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
+    private final RedisUtil redisUtil;
 
     private final Environment environment;
     private static final String imageFolderName = "comment/";
@@ -131,6 +133,8 @@ public class PostServiceImpl implements PostService {
         addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
 
         postRepository.save(newPost);
+        redisUtil.addPostCounter();
+        redisUtil.addActiveUserCounter(userId);
         commentRepository.save(hostComment);
         return newPost;
     }
@@ -190,6 +194,8 @@ public class PostServiceImpl implements PostService {
 
         addAndUploadImage(newComment, commentDTO.getUploadFiles());
 
+        redisUtil.addCommentCounter();
+        redisUtil.addActiveUserCounter(userId);
         return newComment;
     }
 
@@ -243,6 +249,7 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
+            redisUtil.addViewCounter();
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
 
