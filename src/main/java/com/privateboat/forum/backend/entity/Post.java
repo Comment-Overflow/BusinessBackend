@@ -31,6 +31,8 @@ public class Post {
     private Integer commentCount;
     @Column(nullable = false)
     private Timestamp postTime;
+    @Column(nullable = false)
+    private Timestamp lastCommentTime;
     @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false)
     private PostTag tag;
@@ -55,19 +57,24 @@ public class Post {
     @Transient
     private Boolean isStarred;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    List<KeyWord> KeyWordList;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Basic(fetch = FetchType.LAZY)
     @Formula("(comment_count + approval_count) * 100 / POWER((DATE_PART('hour', now() - post_time) + 2), 1.8)")
     Integer hotIndex;
 
     public Post(String title, PostTag tag) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         this.title = title;
         this.tag = tag;
         this.commentCount = 0;
         this.approvalCount = 0;
         this.isDeleted = false;
         this.isFrozen = false;
-        this.postTime = new Timestamp(System.currentTimeMillis());
+        this.postTime = now;
+        this.lastCommentTime = now;
         this.comments = new ArrayList<>();
     }
 

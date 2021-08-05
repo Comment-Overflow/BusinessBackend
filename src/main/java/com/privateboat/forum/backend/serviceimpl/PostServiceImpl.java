@@ -7,16 +7,15 @@ import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.HotPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
-import com.privateboat.forum.backend.entity.Comment;
-import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.StarRecord;
-import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.PostTag;
+import com.privateboat.forum.backend.enumerate.PreferDegree;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
+import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
@@ -24,8 +23,8 @@ import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import com.privateboat.forum.backend.util.image.ImageAuditException;
 import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -48,6 +47,9 @@ public class PostServiceImpl implements PostService {
     private final StarRecordRepository starRecordRepository;
     private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
+    private final RecommendService recommendService;
+
+    private final RedisUtil redisUtil;
 
     private final Environment environment;
     private static final String imageFolderName = "comment/";
@@ -107,13 +109,12 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException {
-        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        Optional<UserInfo> optionalSenderInfo = userInfoRepository.findByUserId(userId);
+        if (optionalSenderInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
         }
-        if (userInfo.get().getUserAuth().getUserType() == UserType.SILENCED) {
-            throw new PostException(PostException.PostExceptionType.USER_SILENCED);
-        }
+        UserInfo senderInfo = optionalSenderInfo.get();
+        checkSilence(senderInfo);
 
         // Audit post title.
         auditPostContent(newPostDTO.getTitle());
@@ -122,69 +123,65 @@ public class PostServiceImpl implements PostService {
             auditPostContent(newPostDTO.getContent());
         }
 
-        Post post = new Post(newPostDTO.getTitle(), newPostDTO.getTag());
-        Comment hostComment = new Comment(post, userInfo.get(), 0L, newPostDTO.getContent());
-        userInfo.get().getUserStatistic().addPost();
-        userStatisticRepository.save(userInfo.get().getUserStatistic());
-        post.setHostComment(hostComment);
-        post.addComment(hostComment);
+        Post newPost = new Post(newPostDTO.getTitle(), newPostDTO.getTag());
+        Comment hostComment = new Comment(newPost, senderInfo, 0L, newPostDTO.getContent());
+        newPost.setHostComment(hostComment);
+        newPost.addComment(hostComment);
+        newPost.setKeyWordList(recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent()));
 
-        for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
-            String newName = ImageUtil.getNewImageName(imageFile);
-            try {
-                ImageUtil.uploadImage(imageFile, newName, imageFolderName);
-            } catch (ImageAuditException e) {
-                if (e.getResult().isConfirmed()) {
-                    throw new PostException(PostException.PostExceptionType.ILLEGAL_IMAGE);
-                }
-            } catch (ImageUploadException e) {
-                throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
-            }
-            String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
-            hostComment.getImageUrl().add(imageUrl);
-        }
+        // Change user statistics.
+        UserStatistic senderStatistic = senderInfo.getUserStatistic();
+        senderStatistic.addPost();
+        userStatisticRepository.save(senderStatistic);
 
-        postRepository.save(post);
+        addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
+
+        postRepository.save(newPost);
+        redisUtil.addPostCounter();
+        redisUtil.addActiveUserCounter(userId);
         commentRepository.save(hostComment);
-        return post;
+        return newPost;
     }
 
     @Transactional
     @Override
     public Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException {
-        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        Optional<UserInfo> optionalSenderInfo = userInfoRepository.findByUserId(userId);
+        if (optionalSenderInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
         }
-        if (userInfo.get().getUserAuth().getUserType() == UserType.SILENCED) {
-            throw new PostException(PostException.PostExceptionType.USER_SILENCED);
-        }
-        Optional<Post> post = postRepository.findByPostId(commentDTO.getPostId());
-        if (post.isEmpty()) {
+
+        UserInfo senderInfo = optionalSenderInfo.get();
+        checkSilence(senderInfo);
+
+        Optional<Post> optionalPost = postRepository.findByPostId(commentDTO.getPostId());
+        if (optionalPost.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+        Post post = optionalPost.get();
         auditPostContent(commentDTO.getContent());
-        if (post.get().getIsFrozen()) {
+        if (post.getIsFrozen()) {
             throw new PostException(PostException.PostExceptionType.POST_FROZEN);
         }
-        Comment comment = new Comment(post.get(), userInfo.get(),
+        Comment newComment = new Comment(post, optionalSenderInfo.get(),
                 commentDTO.getQuoteId(), commentDTO.getContent());
-        post.get().addComment(comment);
-        userInfo.get().getUserStatistic().addComment();
-        userStatisticRepository.save(userInfo.get().getUserStatistic());
-        commentRepository.save(comment);
-        Long newCommentId = comment.getId();
-        postRepository.save(post.get());
-
-        Long postUserId = post.get().getUserInfo().getId();
+        post.addComment(newComment);
+        post.setLastCommentTime(newComment.getTime());
+        optionalSenderInfo.get().getUserStatistic().addComment();
+        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
+        commentRepository.save(newComment);
+        Long newCommentId = newComment.getId();
+        postRepository.save(post);
+        recommendService.updatePreferredWordList(userId, commentDTO.getPostId(), PreferDegree.REPLY);
+        Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
             replyRecordService.postReplyRecord(userId, reply);
         }
-        if (comment.getQuoteId() != 0) {
+        if (newComment.getQuoteId() != 0) {
             List<Comment> finder =
-                    post.get().getComments().stream().filter(
-                            c -> c.getId().equals(comment.getQuoteId())
+                    post.getComments().stream().filter(
+                            c -> c.getId().equals(newComment.getQuoteId())
                     ).collect(Collectors.toList());
             if (finder.size() != 1) throw new PostException(PostException.PostExceptionType.QUOTE_OUT_OF_BOUND);
             Comment target = finder.get(0);
@@ -199,22 +196,11 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        for (MultipartFile imageFile : commentDTO.getUploadFiles()) {
-            String newName = ImageUtil.getNewImageName(imageFile);
-            try {
-                ImageUtil.uploadImage(imageFile, newName, imageFolderName);
-            } catch (ImageAuditException e) {
-                if (e.getResult().isConfirmed()) {
-                    throw new PostException(PostException.PostExceptionType.ILLEGAL_IMAGE);
-                }
-            } catch (ImageUploadException e) {
-                throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
-            }
-            String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
-            comment.getImageUrl().add(imageUrl);
-        }
+        addAndUploadImage(newComment, commentDTO.getUploadFiles());
 
-        return comment;
+        redisUtil.addCommentCounter();
+        redisUtil.addActiveUserCounter(userId);
+        return newComment;
     }
 
     @Override
@@ -267,6 +253,8 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
+            recommendService.updatePreferredWordList(userId, postId, PreferDegree.BROWSE);
+            redisUtil.addViewCounter();
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
 
@@ -296,24 +284,30 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public void deleteComment(Long commentId, Long userId) throws PostException {
-        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        Optional<UserInfo> optionalViewerInfo = userInfoRepository.findByUserId(userId);
+        if (optionalViewerInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
-        Optional<Comment> comment = commentRepository.findById(commentId);
-        if (comment.isEmpty()) {
+        UserInfo viewerInfo = optionalViewerInfo.get();
+
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
         }
-        Post post = comment.get().getPost();
-        if ((comment.get().getUserInfo() != userInfo.get() || post.getIsFrozen()) &&
-                userInfo.get().getUserAuth().getUserType() != UserType.ADMIN) {
+        Comment comment = optionalComment.get();
+        UserInfo senderInfo = comment.getUserInfo();
+
+        Post post = comment.getPost();
+        // Non-admin trying to delete a frozen post or deleting someone else's post.
+        if ((!senderInfo.getId().equals(viewerInfo.getId()) || post.getIsFrozen()) &&
+                viewerInfo.getUserAuth().getUserType() != UserType.ADMIN) {
             throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
-        post.deleteComment(comment.get());
-        comment.get().getUserInfo().getUserStatistic().subComment();
-        userStatisticRepository.save(comment.get().getUserInfo().getUserStatistic());
+        post.deleteComment(comment);
+        senderInfo.getUserStatistic().subComment();
+        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
         postRepository.save(post);
-        commentRepository.delete(comment.get());
+        commentRepository.delete(comment);
     }
 
     @Override
@@ -372,6 +366,30 @@ public class PostServiceImpl implements PostService {
         TextAuditResult textAuditResult = TextAuditUtil.auditText(text);
         if (textAuditResult.getResultType() == TextAuditResultType.NOT_OK) {
             throw new PostException(PostException.PostExceptionType.ILLEGAL_TEXT);
+        }
+    }
+
+    private void checkSilence(UserInfo senderInfo) {
+        if (senderInfo.getUserAuth().getUserType() == UserType.SILENCED) {
+            throw new PostException(PostException.PostExceptionType.USER_SILENCED);
+        }
+    }
+
+    private void addAndUploadImage(Comment comment, List<MultipartFile> images) {
+        List<String> imageUrlList = comment.getImageUrl();
+        for (MultipartFile imageFile : images) {
+            String newName = ImageUtil.getNewImageName(imageFile);
+            try {
+                ImageUtil.uploadImage(imageFile, newName, imageFolderName);
+            } catch (ImageAuditException e) {
+                if (e.getResult().isConfirmed()) {
+                    throw new PostException(PostException.PostExceptionType.ILLEGAL_IMAGE);
+                }
+            } catch (ImageUploadException e) {
+                throw new PostException(PostException.PostExceptionType.UPLOAD_IMAGE_FAILED);
+            }
+            String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
+            imageUrlList.add(imageUrl);
         }
     }
 }

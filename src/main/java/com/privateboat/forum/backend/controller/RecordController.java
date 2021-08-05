@@ -46,8 +46,8 @@ public class RecordController {
     @GetMapping(value = "/notifications/approvals")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<PageDTO<ApprovalRecordDTO>> getApprovalRecords(@RequestAttribute Long userId,
-                                                               @RequestParam int page,
-                                                               @RequestParam int pageSize) {
+                                                                  @RequestParam int page,
+                                                                  @RequestParam int pageSize) {
         try {
             Page<ApprovalRecordDTO> ret = approvalRecordService.getApprovalRecords(userId, PageRequest.of(page, pageSize)).map(
                     approvalNotification -> modelMapper.map(approvalNotification, ApprovalRecordDTO.class)

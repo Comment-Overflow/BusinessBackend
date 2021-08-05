@@ -10,6 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,7 +25,7 @@ public class UserInfo implements Serializable {
     @Column(nullable = false)
     private String userName;
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private Gender gender;
 
     private String brief;
@@ -39,6 +40,9 @@ public class UserInfo implements Serializable {
     @OneToOne(fetch = FetchType.EAGER, mappedBy = "userInfo",
             cascade = CascadeType.PERSIST)
     UserStatistic userStatistic;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    List<PreferredWord> preferredWordList;
 
     public UserInfo() {
         this.userName = "ykfg_" + RandomStringUtils.randomAlphanumeric(5);
