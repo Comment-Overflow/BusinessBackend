@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
+import com.privateboat.forum.backend.dto.response.HotPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
@@ -29,13 +30,10 @@ public class PostController {
     ResponseEntity<?> getPosts(PostTag tag,
                                            @RequestParam("pageNum") Integer pageNum,
                                            @RequestParam("pageSize") Integer pageSize,
-                                           @RequestParam("followingOnly") Boolean followingOnly,
                                            @RequestAttribute Long userId) {
         try {
             Page<Post> posts;
-            if (followingOnly) {
-                posts = postService.findFollowingOnly(pageNum, pageSize, userId);
-            } else if (tag == null) {
+            if (tag == null) {
                 posts = postService.findAll(pageNum, pageSize, userId);
             } else {
                 posts = postService.findByTag(tag, pageNum, pageSize, userId);
@@ -184,5 +182,11 @@ public class PostController {
         }
     }
 
-
+    @GetMapping(value = "/posts/hot-list")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
+    ResponseEntity<List<HotPostDTO>> getHotList(
+            @RequestParam Integer pageNum,
+            @RequestParam Integer pageSize) {
+        return ResponseEntity.ok(postService.getHotList(pageNum, pageSize));
+    }
 }

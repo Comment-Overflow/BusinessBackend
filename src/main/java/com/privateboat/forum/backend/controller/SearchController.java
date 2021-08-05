@@ -2,7 +2,6 @@ package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
-import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.JWTUtil;
@@ -44,6 +43,17 @@ public class SearchController {
         // Record the time and search key of this search.
         searchService.addSearchHistory(userId, searchKey, postTag);
         return ResponseEntity.ok(comments);
+    }
+
+    @GetMapping(value = "/comments/followed-users")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
+    ResponseEntity<List<SearchedCommentDTO>> getFollowingComments(
+            @RequestAttribute Long userId,
+            @RequestParam Integer pageNum,
+            @RequestParam Integer pageSize) {
+        return ResponseEntity.ok(searchService.searchCommentsByFollowingUsers(
+                userId, PageRequest.of(pageNum, pageSize)
+        ));
     }
 
     @GetMapping(value = "/users")

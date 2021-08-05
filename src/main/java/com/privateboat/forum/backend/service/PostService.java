@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.service;
 
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
+import com.privateboat.forum.backend.dto.response.HotPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
@@ -19,7 +20,6 @@ public interface PostService {
     Page<Post> findAll(Integer pageNum, Integer pageSize, Long userId) throws PostException;
     Page<Post> findOnesPosts(Long userId, Integer pageNum, Integer pageSize, Long myUserId);
     Page<Post> findStarredPosts(Long userId, Integer pageNum, Integer pageSize);
-    Page<Post> findFollowingOnly(Integer pageNum, Integer pageSize, Long userId);
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
     Post getPost(Long postId, Long userId) throws PostException;
@@ -30,4 +30,5 @@ public interface PostService {
     void deletePost(Long postId, Long userId) throws PostException;
     void deleteComment(Long commentId, Long userId) throws PostException;
     void setPostTransientField(Post post, UserInfo userInfo);
+    List<HotPostDTO> getHotList(Integer pageNum, Integer pageSize);
 }

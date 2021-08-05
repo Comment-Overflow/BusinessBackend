@@ -33,6 +33,11 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
             @Param("isDeleted") Boolean isDeleted,
             Pageable pageable);
 
+    @Query(value = "select c from Comment c, FollowRecord record " +
+            "where record.fromUser.id = ?1 and record.toUserId = c.userInfo.id and c.isDeleted = false " +
+            "order by c.time desc")
+    Page<Comment> findByFollowingOnly(Long userId, Pageable pageable);
+
     Page<Comment> findByPostIdAndIsDeleted(Long postId, Boolean isDeleted, Pageable pageable);
 
     Page<Comment> findByUserInfoIdAndFloorIsNotAndIsDeletedOrderByTimeDesc(Long userId, Integer floor, Boolean isDeleted, Pageable pageable);
