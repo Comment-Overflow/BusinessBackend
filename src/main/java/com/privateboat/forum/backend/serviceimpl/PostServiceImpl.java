@@ -11,13 +11,14 @@ import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.StarRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
+import com.privateboat.forum.backend.enumerate.PreferDegree;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
+import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
-import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.ImageUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService {
     private final StarRecordRepository starRecordRepository;
     private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
+    private final RecommendService recommendService;
 
     private final Environment environment;
     private static final String imageFolderName = "comment/";
@@ -128,7 +130,7 @@ public class PostServiceImpl implements PostService {
         userStatisticRepository.save(userInfo.get().getUserStatistic());
         post.setHostComment(hostComment);
         post.addComment(hostComment);
-
+        post.setKeyWordList(recommendService.addNewPost(newPostDTO.getTag(), post.getId(), newPostDTO.getTitle(), newPostDTO.getContent()));
         for (MultipartFile imageFile : newPostDTO.getUploadFiles()) {
             String newName = ImageUtil.getNewImageName(imageFile);
             if (!ImageUtil.uploadImage(imageFile, newName, imageFolderName)) {
@@ -166,7 +168,7 @@ public class PostServiceImpl implements PostService {
         commentRepository.save(comment);
         Long newCommentId = comment.getId();
         postRepository.save(post.get());
-
+        recommendService.updatePreferredWordList(userId, commentDTO.getPostId(), PreferDegree.REPLY);
         Long postUserId = post.get().getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
@@ -252,6 +254,7 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
+            recommendService.updatePreferredWordList(userId, postId, PreferDegree.BROWSE);
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
 

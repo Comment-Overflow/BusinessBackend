@@ -5,6 +5,7 @@ import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.PostRepository;
+import com.privateboat.forum.backend.util.Constant;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityNotFoundException;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -32,6 +36,13 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public Page<Post> findAll(Pageable pageable) {
         return postDAO.findByIsDeletedOrderByPostTimeDesc(false, pageable);
+    }
+
+    @Override
+    public List<Post> findAllRecentPost() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.WEEK_OF_YEAR, Constant.RECOMMEND_EXPIRED_TIME);
+        return postDAO.findAllByPostTimeAfter(new Timestamp(calendar.getTime().getTime()));
     }
 
     @Override

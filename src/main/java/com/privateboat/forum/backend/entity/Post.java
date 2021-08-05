@@ -48,6 +48,9 @@ public class Post {
     @Transient
     private Boolean isStarred;
 
+    @OneToMany(cascade = CascadeType.ALL)
+    List<KeyWord> KeyWordList;
+
     public Post(String title, PostTag tag) {
         this.title = title;
         this.tag = tag;
