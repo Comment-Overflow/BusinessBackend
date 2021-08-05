@@ -14,14 +14,13 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class RedisUtil {
     private final StringRedisTemplate stringRedisTemplate;
-    private final RedisTemplate<String, Object> redisTemplate;
 
     static private final String postString = "day-posts";
     static private final String commentString = "day-comments";
     static private final String userString = "day-users";
     static private final String activeUserString = "day-active-users";
-    static private final String viewsString = "day-views";
     static private final String approvalString = "day-approvals";
+    static private final String viewsString = "day-views";
     static private final String recordArrayKey = "record";
 
 
@@ -43,8 +42,8 @@ public class RedisUtil {
         dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(commentString))));
         dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(userString))));
         dailyList.add((long) BitSet.valueOf(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(activeUserString)).getBytes()).cardinality());
-        dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(viewsString))));
         dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(approvalString))));
+        dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(viewsString))));
         return dailyList;
     }
 
