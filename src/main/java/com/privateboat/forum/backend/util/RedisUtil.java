@@ -49,12 +49,12 @@ public class RedisUtil {
     }
 
     private void clearDailyListInRedis() {
-        stringRedisTemplate.opsForValue().set(postString, "", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(commentString, "", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(userString, "", 2, TimeUnit.DAYS);
+        stringRedisTemplate.opsForValue().set(postString, "0", 2, TimeUnit.DAYS);
+        stringRedisTemplate.opsForValue().set(commentString, "0", 2, TimeUnit.DAYS);
+        stringRedisTemplate.opsForValue().set(userString, "0", 2, TimeUnit.DAYS);
         stringRedisTemplate.opsForValue().set(activeUserString, "", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(viewsString, "", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(approvalString, "", 2, TimeUnit.DAYS);
+        stringRedisTemplate.opsForValue().set(viewsString, "0", 2, TimeUnit.DAYS);
+        stringRedisTemplate.opsForValue().set(approvalString, "0", 2, TimeUnit.DAYS);
     }
 
     @Scheduled(cron = "0 0 0 * * *")
