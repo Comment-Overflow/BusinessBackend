@@ -33,6 +33,10 @@ public class ImageAuditResult {
                 isTerrorism == ImageAuditResultType.CONFIRM;
     }
 
+    public static ImageAuditResult pass() {
+        return new ImageAuditResult();
+    }
+
     private ImageAuditResultType getType(Integer score) {
         if (score > CONFIRM_THRESHOLD) {
             return ImageAuditResultType.CONFIRM;
@@ -41,5 +45,12 @@ public class ImageAuditResult {
         } else {
             return ImageAuditResultType.OK;
         }
+    }
+
+    private ImageAuditResult() {
+        this.isTerrorism = ImageAuditResultType.OK;
+        this.isPolitics = ImageAuditResultType.OK;
+        this.isAds = ImageAuditResultType.OK;
+        this.isPorn = ImageAuditResultType.OK;
     }
 }
