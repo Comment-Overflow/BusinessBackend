@@ -41,12 +41,12 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<Post> findAll(Pageable pageable) {
-        return postDAO.findByIsDeletedOrderByPostTimeDesc(false, pageable);
+        return postDAO.findByIsDeletedOrderByLastCommentTimeDesc(false, pageable);
     }
 
     @Override
     public Page<Post> findByTag(PostTag tag, Pageable pageable) {
-        return postDAO.findByTagAndIsDeletedOrderByPostTimeDesc(tag, false, pageable);
+        return postDAO.findByTagAndIsDeletedOrderByLastCommentTimeDesc(tag, false, pageable);
     }
 
     @Override
