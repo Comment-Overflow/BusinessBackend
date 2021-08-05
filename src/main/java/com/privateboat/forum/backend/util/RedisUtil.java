@@ -1,7 +1,9 @@
 package com.privateboat.forum.backend.util;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -30,29 +32,51 @@ public class RedisUtil {
     }
 
     private void setRecordList(List<Long> recordList) {
+        ListOperations<String, String> listOperations = stringRedisTemplate.opsForList();
         for (int index = 0; index < 24; index++) {
-            stringRedisTemplate.opsForList().set(recordArrayKey, index, recordList.get(index).toString());
+            listOperations.set(recordArrayKey, index, recordList.get(index).toString());
         }
     }
 
     private List<Long> dailyList() {
         List<Long> dailyList = new ArrayList<>();
-        dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(postString))));
-        dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(commentString))));
-        dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(userString))));
-        dailyList.add((long) BitSet.valueOf(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(activeUserString)).getBytes()).cardinality());
-        dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(approvalString))));
-        dailyList.add(Long.parseLong(Objects.requireNonNull(stringRedisTemplate.opsForValue().get(viewsString))));
+        ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+        dailyList.add(Long.parseLong(Objects.requireNonNull(valueOperations.get(postString))));
+        dailyList.add(Long.parseLong(Objects.requireNonNull(valueOperations.get(commentString))));
+        dailyList.add(Long.parseLong(Objects.requireNonNull(valueOperations.get(userString))));
+        dailyList.add((long) BitSet.valueOf(Objects.requireNonNull(valueOperations.get(activeUserString)).getBytes()).cardinality());
+        dailyList.add(Long.parseLong(Objects.requireNonNull(valueOperations.get(approvalString))));
+        dailyList.add(Long.parseLong(Objects.requireNonNull(valueOperations.get(viewsString))));
         return dailyList;
     }
 
     private void clearDailyListInRedis() {
-        stringRedisTemplate.opsForValue().set(postString, "0", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(commentString, "0", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(userString, "0", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(activeUserString, "", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(viewsString, "0", 2, TimeUnit.DAYS);
-        stringRedisTemplate.opsForValue().set(approvalString, "0", 2, TimeUnit.DAYS);
+        ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+        valueOperations.set(postString, "0", 2, TimeUnit.DAYS);
+        valueOperations.set(commentString, "0", 2, TimeUnit.DAYS);
+        valueOperations.set(userString, "0", 2, TimeUnit.DAYS);
+        valueOperations.set(activeUserString, "", 2, TimeUnit.DAYS);
+        valueOperations.set(viewsString, "0", 2, TimeUnit.DAYS);
+        valueOperations.set(approvalString, "0", 2, TimeUnit.DAYS);
+    }
+
+    public void initializeRecord() {
+        ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+        ListOperations<String, String> listOperations = stringRedisTemplate.opsForList();
+
+        valueOperations.setIfAbsent(postString, "0", 2, TimeUnit.DAYS);
+        valueOperations.setIfAbsent(commentString, "0", 2, TimeUnit.DAYS);
+        valueOperations.setIfAbsent(userString, "0", 2, TimeUnit.DAYS);
+        valueOperations.setIfAbsent(activeUserString, "", 2, TimeUnit.DAYS);
+        valueOperations.setIfAbsent(viewsString, "0", 2, TimeUnit.DAYS);
+        valueOperations.setIfAbsent(approvalString, "0", 2, TimeUnit.DAYS);
+
+        Long size = listOperations.size(recordArrayKey);
+        if (size == null || size != 24) {
+            stringRedisTemplate.delete(recordArrayKey);
+            List<String> initRecordList = new ArrayList<>(Collections.nCopies(24, "0"));
+            listOperations.rightPushAll(recordArrayKey, initRecordList);
+        }
     }
 
     @Scheduled(cron = "0 0 0 * * *")
