@@ -68,6 +68,11 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
+    public Page<Comment> findByFollowingOnly(Long userId, Pageable pageable) {
+        return commentDAO.findByFollowingOnly(userId, pageable);
+    }
+
+    @Override
     public Page<Comment> getMyComments(Long userId, Pageable pageable) {
         return commentDAO.findByUserInfoIdAndFloorIsNotAndIsDeletedOrderByTimeDesc(userId, 0,false, pageable);
     }

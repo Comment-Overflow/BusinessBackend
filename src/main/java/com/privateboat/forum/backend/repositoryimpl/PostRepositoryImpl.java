@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.repositoryimpl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dao.PostDAO;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.enumerate.PostTag;
@@ -10,17 +11,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.privateboat.forum.backend.util.Constant.REDIS_HOT_LIST_KEY;
 
 @Repository
 @AllArgsConstructor
 public class PostRepositoryImpl implements PostRepository {
     private final PostDAO postDAO;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Override
     public Optional<Post> findByPostId(Long postId) {
@@ -35,11 +42,6 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public Page<Post> findAll(Pageable pageable) {
         return postDAO.findByIsDeletedOrderByPostTimeDesc(false, pageable);
-    }
-
-    @Override
-    public Page<Post> findFollowingOnly(Long userId, Pageable pageable) {
-        return postDAO.findByFollowing(userId, pageable);
     }
 
     @Override
@@ -68,8 +70,21 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<Post> getHotPosts(Integer limit) {
+    public List<Post> generateHotPosts(Integer limit) {
         PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Order.desc("hotIndex")));
         return postDAO.findAll(pageRequest).getContent();
+    }
+
+    @Override
+    public List<Post> getHotPosts(Pageable pageable) {
+        long pageNum = pageable.getPageNumber();
+        long pageSize = pageable.getPageSize();
+        long startIndex = pageNum * pageSize;
+        return Objects.requireNonNull(redisTemplate
+                .opsForList()
+                .range(REDIS_HOT_LIST_KEY, startIndex, startIndex + pageSize))
+                .stream()
+                .map(object -> objectMapper.convertValue(object, Post.class))
+                .collect(Collectors.toList());
     }
 }

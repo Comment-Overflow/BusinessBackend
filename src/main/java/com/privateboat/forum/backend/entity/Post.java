@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,9 +55,10 @@ public class Post {
     @Transient
     private Boolean isStarred;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Basic(fetch = FetchType.LAZY)
     @Formula("(comment_count + approval_count) * 100 / POWER((DATE_PART('hour', now() - post_time) + 2), 1.8)")
-    Double hotIndex;
+    Integer hotIndex;
 
     public Post(String title, PostTag tag) {
         this.title = title;

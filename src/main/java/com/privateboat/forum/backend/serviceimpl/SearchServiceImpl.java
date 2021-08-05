@@ -45,6 +45,13 @@ public class SearchServiceImpl implements SearchService {
         return wrapSearchedCommentsWithPost(searchedComments);
     }
 
+    @Override
+    public List<SearchedCommentDTO> searchCommentsByFollowingUsers(Long userId, Pageable pageable) {
+        List<Comment> searchedComments = commentRepository.findByFollowingOnly(userId, pageable).getContent();
+        removeQuoteId(searchedComments);
+        return wrapSearchedCommentsWithPost(searchedComments);
+    }
+
     private List<SearchedCommentDTO> wrapSearchedCommentsWithPost(List<Comment> comments) {
         return comments.stream().map(comment -> {
             Post parentPost = comment.getPost();
