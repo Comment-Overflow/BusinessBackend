@@ -12,7 +12,11 @@ public interface SearchService {
 
     List<SearchedCommentDTO> searchCommentsByPostTag(PostTag postTag, String searchKey, Pageable pageable);
 
+    List<SearchedCommentDTO> searchCommentsByFollowingUsers(Long userId, Pageable pageable);
+
     void addSearchHistory(Long userId, String searchKey, PostTag postTag);
 
     List<UserCardInfoDTO> searchUsers(Long userId, String searchKey);
+
+
 }

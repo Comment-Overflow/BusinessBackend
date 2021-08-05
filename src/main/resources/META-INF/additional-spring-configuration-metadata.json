@@ -4,6 +4,16 @@
       "name": "com.privateboat.forum.backend.image-base-url",
       "type": "java.lang.String",
       "description": "Description for com.privateboat.forum.backend.image-base-url."
+    },
+    {
+      "name": "com.privateboat.forum.backend.compute-hot-list",
+      "type": "java.lang.String",
+      "description": "Description for com.privateboat.forum.backend.compute-hot-list."
+    },
+    {
+      "name": "com.privateboat.forum.backend.compute-hot-list-rate",
+      "type": "java.lang.String",
+      "description": "Description for com.privateboat.forum.backend.compute-hot-list-rate."
     }
   ]
 }

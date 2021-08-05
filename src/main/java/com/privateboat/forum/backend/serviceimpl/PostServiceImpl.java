@@ -4,6 +4,7 @@ import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.dto.response.HotPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
@@ -17,13 +18,14 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
-import com.privateboat.forum.backend.util.image.ImageAuditException;
-import com.privateboat.forum.backend.util.image.ImageUploadException;
-import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
 import com.privateboat.forum.backend.util.audit.TextAuditUtil;
+import com.privateboat.forum.backend.util.image.ImageAuditException;
+import com.privateboat.forum.backend.util.image.ImageUploadException;
+import com.privateboat.forum.backend.util.image.ImageUtil;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -100,20 +102,6 @@ public class PostServiceImpl implements PostService {
             setPostTransientField(post, userInfo);
         }
         return new PageImpl<>(postList);
-    }
-
-    @Override
-    public Page<Post> findFollowingOnly(Integer pageNum, Integer pageSize, Long userId) {
-        Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
-            throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
-        }
-        Pageable pageable = PageRequest.of(pageNum, pageSize);
-        Page<Post> posts = postRepository.findFollowingOnly(userId, pageable);
-        for (Post post: posts.getContent()) {
-            setPostTransientField(post, userInfo.get());
-        }
-        return posts;
     }
 
     @Transactional
@@ -352,9 +340,18 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void setPostTransientField(Post post, UserInfo userInfo) {
-        Comment hostComment = post.getComments().get(0);
-        hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
+        post.getHostComment().setApprovalStatus(
+                approvalRecordRepository.checkIfHaveApproved(userInfo, post.getHostComment()));
         post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
+    }
+
+    @Override
+    public List<HotPostDTO> getHotList(Integer pageNum, Integer pageSize) {
+        List<Post> hottestPosts = postRepository.getHotPosts(PageRequest.of(pageNum, pageSize));
+        return hottestPosts.stream().map(post -> {
+            setPostTransientField(post, post.getUserInfo());
+            return new HotPostDTO(post);
+        }).collect(Collectors.toList());
     }
 
     public List<SearchedCommentDTO> wrapSearchedCommentsWithPost(List<Comment> comments) {
