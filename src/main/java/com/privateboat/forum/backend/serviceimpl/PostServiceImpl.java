@@ -249,7 +249,7 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
-            redisUtil.addViewCounter();
+            redisUtil.addViewCounter(userId, postId);
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
 

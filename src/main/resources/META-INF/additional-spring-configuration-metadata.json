@@ -14,6 +14,11 @@
       "name": "com.privateboat.forum.backend.compute-hot-list-rate",
       "type": "java.lang.String",
       "description": "Description for com.privateboat.forum.backend.compute-hot-list-rate."
+    },
+    {
+      "name": "com.privateboat.forum.backend.update-record-counter-rate",
+      "type": "java.lang.String",
+      "description": "Description for com.privateboat.forum.backend.update-record-counter-rate."
     }
   ]
 }
