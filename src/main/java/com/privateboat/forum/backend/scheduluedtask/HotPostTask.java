@@ -31,16 +31,18 @@ public class HotPostTask {
     void getHostPostList() {
         List<Post> hottestPosts = postRepository.generateHotPosts(LIMIT);
 
-        redisTemplate.execute(new SessionCallback<List<Object>>() {
-            @Nullable
-            @Override
-            public List<Object> execute(@NonNull RedisOperations operations) throws DataAccessException {
-                operations.multi();
-                operations.delete(REDIS_HOT_LIST_KEY);
-                operations.opsForList().rightPushAll(REDIS_HOT_LIST_KEY, hottestPosts);
-                operations.exec();
-                return null;
-            }
-        });
+        if (!hottestPosts.isEmpty()) {
+            redisTemplate.execute(new SessionCallback<List<Object>>() {
+                @Nullable
+                @Override
+                public List<Object> execute(@NonNull RedisOperations operations) throws DataAccessException {
+                    operations.multi();
+                    operations.delete(REDIS_HOT_LIST_KEY);
+                    operations.opsForList().rightPushAll(REDIS_HOT_LIST_KEY, hottestPosts);
+                    operations.exec();
+                    return null;
+                }
+            });
+        }
     }
 }

@@ -31,6 +31,8 @@ public class Post {
     private Integer commentCount;
     @Column(nullable = false)
     private Timestamp postTime;
+    @Column(nullable = false)
+    private Timestamp lastCommentTime;
     @Enumerated(EnumType.ORDINAL)
     @Column(nullable = false)
     private PostTag tag;
@@ -61,13 +63,15 @@ public class Post {
     Integer hotIndex;
 
     public Post(String title, PostTag tag) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         this.title = title;
         this.tag = tag;
         this.commentCount = 0;
         this.approvalCount = 0;
         this.isDeleted = false;
         this.isFrozen = false;
-        this.postTime = new Timestamp(System.currentTimeMillis());
+        this.postTime = now;
+        this.lastCommentTime = now;
         this.comments = new ArrayList<>();
     }
 
