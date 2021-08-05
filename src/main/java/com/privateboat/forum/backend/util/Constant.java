@@ -1,6 +1,5 @@
 package com.privateboat.forum.backend.util;
 
-import java.sql.Timestamp;
 
 public class Constant {
     public static final Integer EMAIL_EXPIRE_MINUTES = 5;
@@ -14,4 +13,6 @@ public class Constant {
     public static final Integer RECOMMEND_EXPIRED_TIME = -2;
     public static final Integer CB_RECOMMEND_POST_NUMBER = 10;
     public static final Integer POST_KEYS_WORDS = 10;
+
+    public static final String REDIS_HOT_LIST_KEY = "hot-post-list";
 }

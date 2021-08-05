@@ -50,7 +50,8 @@ public class FollowRecordServiceImpl implements FollowRecordService {
                     userInfo.getBrief(),
                     userInfo.getUserStatistic().getCommentCount(),
                     userInfo.getUserStatistic().getFollowerCount(),
-                    followRecord.getFollowStatus()
+                    followRecord.getFollowStatus(),
+                    userInfo.getUserAuth().getUserType()
             );
         }));
     }
@@ -70,7 +71,8 @@ public class FollowRecordServiceImpl implements FollowRecordService {
                     userInfo.getBrief(),
                     userInfo.getUserStatistic().getCommentCount(),
                     userInfo.getUserStatistic().getFollowerCount(),
-                    followRecord.getFollowStatus()
+                    followRecord.getFollowStatus(),
+                    userInfo.getUserAuth().getUserType()
             );
         }));
     }

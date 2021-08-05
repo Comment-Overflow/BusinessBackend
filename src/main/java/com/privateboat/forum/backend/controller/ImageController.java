@@ -1,6 +1,6 @@
 package com.privateboat.forum.backend.controller;
 
-import com.privateboat.forum.backend.util.ImageUtil;
+import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.JWTUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

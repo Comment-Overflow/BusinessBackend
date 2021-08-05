@@ -13,6 +13,7 @@ public class SearchedCommentDTO {
     Comment hostComment;
     Comment searchedComment;
     Boolean isStarred;
+    Boolean isFrozen;
 
     public SearchedCommentDTO(Post post, Comment searchedComment) {
         this.id = post.getId();
@@ -21,5 +22,6 @@ public class SearchedCommentDTO {
         this.hostComment = post.getHostComment();
         this.searchedComment = searchedComment;
         this.isStarred = post.getIsStarred();
+        this.isFrozen = post.getIsFrozen();
     }
 }

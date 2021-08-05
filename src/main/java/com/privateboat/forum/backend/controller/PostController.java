@@ -2,6 +2,7 @@ package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.request.NewCommentDTO;
 import com.privateboat.forum.backend.dto.request.NewPostDTO;
+import com.privateboat.forum.backend.dto.response.HotPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.Comment;
@@ -18,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
@@ -27,23 +27,20 @@ public class PostController {
 
     @GetMapping(value = "/posts")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<Post>> getPosts(PostTag tag,
+    ResponseEntity<?> getPosts(PostTag tag,
                                            @RequestParam("pageNum") Integer pageNum,
                                            @RequestParam("pageSize") Integer pageSize,
-                                           @RequestParam("followingOnly") Boolean followingOnly,
                                            @RequestAttribute Long userId) {
         try {
             Page<Post> posts;
-            if (followingOnly) {
-                posts = postService.findFollowingOnly(pageNum, pageSize, userId);
-            } else if (tag == null) {
+            if (tag == null) {
                 posts = postService.findAll(pageNum, pageSize, userId);
             } else {
                 posts = postService.findByTag(tag, pageNum, pageSize, userId);
             }
             return ResponseEntity.ok(new PageDTO<>(posts));
         } catch (PostException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
@@ -78,26 +75,33 @@ public class PostController {
 
     @PostMapping(value = "/post")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Post> postPost(NewPostDTO newPostDTO,
+    ResponseEntity<?> postPost(NewPostDTO newPostDTO,
                                   @RequestAttribute Long userId) {
         try {
             Post post = postService.postPost(userId, newPostDTO);
             post.setIsStarred(false);
             return ResponseEntity.ok(post);
         } catch (PostException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            if (e.getType() == PostException.PostExceptionType.USER_SILENCED) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
     @PostMapping(value = "/comment")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Integer> postComment(NewCommentDTO newCommentDTO,
+    ResponseEntity<?> postComment(NewCommentDTO newCommentDTO,
                                      @RequestAttribute Long userId) {
         try {
             Comment comment = postService.postComment(userId, newCommentDTO);
             return ResponseEntity.ok(comment.getFloor());
         } catch (PostException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            if (e.getType() == PostException.PostExceptionType.USER_SILENCED) {
+
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
@@ -178,5 +182,11 @@ public class PostController {
         }
     }
 
-
+    @GetMapping(value = "/posts/hot-list")
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
+    ResponseEntity<List<HotPostDTO>> getHotList(
+            @RequestParam Integer pageNum,
+            @RequestParam Integer pageSize) {
+        return ResponseEntity.ok(postService.getHotList(pageNum, pageSize));
+    }
 }

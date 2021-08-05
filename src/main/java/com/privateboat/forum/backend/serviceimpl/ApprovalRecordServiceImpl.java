@@ -3,16 +3,15 @@ package com.privateboat.forum.backend.serviceimpl;
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.ApprovalRecord;
 import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
-import com.privateboat.forum.backend.repository.ApprovalRecordRepository;
-import com.privateboat.forum.backend.repository.CommentRepository;
-import com.privateboat.forum.backend.repository.UserInfoRepository;
-import com.privateboat.forum.backend.repository.UserStatisticRepository;
+import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +24,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Transactional
 public class ApprovalRecordServiceImpl implements ApprovalRecordService {
+    private final RedisUtil redisUtil;
     private final UserInfoRepository userInfoRepository;
     private final ApprovalRecordRepository approvalRecordRepository;
     private final CommentRepository commentRepository;
@@ -44,7 +44,9 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         ApprovalStatus status = approvalRecordReceiveDTO.getStatus();
         if(status == ApprovalStatus.APPROVAL){
+            Post post = newComment.getPost();
             newComment.addApproval();
+            post.incrementApproval();
             if(!fromUserId.equals(approvalRecordReceiveDTO.getToUserId())) {
                 userStatisticRepository.setFlag(approvalRecordReceiveDTO.getToUserId(), RecordType.APPROVAL);
             }
@@ -65,12 +67,15 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
         approvalRecordRepository.save(newApprovalRecord);
+        redisUtil.addApprovalCount();
     }
 
     @Override
     public void deleteApprovalRecord(Long fromUserId, ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
         Comment comment = commentRepository.getById(approvalRecordReceiveDTO.getCommentId());
         if (approvalRecordReceiveDTO.getStatus() == ApprovalStatus.APPROVAL) {
+            Post post = comment.getPost();
+            post.decrementApproval();
             comment.subApproval();
             userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
         } else {
