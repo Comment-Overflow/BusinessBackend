@@ -12,6 +12,7 @@ import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import org.ansj.app.keyword.KeyWordComputer;
 import org.ansj.app.keyword.Keyword;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final PreferredWordRepository preferredWordRepository;
     private final PostRepository postRepository;
     private final UserInfoRepository userInfoRepository;
+    private final RedisUtil redisUtil;
 
     /**
      * get Content Based Recommendations
@@ -43,7 +45,7 @@ public class RecommendServiceImpl implements RecommendService {
             }
         }
         removeZeroItems(CBRecommendMap);
-        removeReadItems(CBRecommendMap);
+        removeReadItems(userId, CBRecommendMap);
         return CBRecommendMap.entrySet().stream().sorted(Map.Entry.comparingByValue())
                 .limit(Constant.CB_RECOMMEND_POST_NUMBER)
                 .map(Map.Entry::getKey)
@@ -111,7 +113,7 @@ public class RecommendServiceImpl implements RecommendService {
         map.entrySet().removeIf(e -> e.getValue() == 0);
     }
 
-    private void removeReadItems(HashMap<Post, Long> map) {
-        //remove have read posts
+    private void removeReadItems(Long userId, HashMap<Post, Long> map) {
+        map.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
     }
 }

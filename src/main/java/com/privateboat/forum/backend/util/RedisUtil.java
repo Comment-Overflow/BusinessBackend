@@ -149,11 +149,12 @@ public class RedisUtil {
         return result;
     }
 
-    public List<Long> filterReadPosts(Long userId, List<Long> postList) {
+    public Boolean filterReadPosts(Long userId, Long postId) {
         ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
         String key = viewRecordPrefix + userId.toString();
-        return postList.stream().filter(
-                id -> Boolean.FALSE.equals(valueOperations.getBit(key, id))
-        ).collect(Collectors.toList());
+//        return postList.stream().filter(
+//                id -> Boolean.FALSE.equals(valueOperations.getBit(key, id))
+//        ).collect(Collectors.toList());
+        return Boolean.TRUE.equals(valueOperations.getBit(key, postId));
     }
 }
