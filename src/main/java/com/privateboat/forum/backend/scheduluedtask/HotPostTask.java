@@ -5,6 +5,7 @@ import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.repository.PostRepository;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
@@ -18,6 +19,7 @@ import java.util.List;
 
 import static com.privateboat.forum.backend.util.Constant.REDIS_HOT_LIST_KEY;
 
+@Slf4j
 @Component
 @ConditionalOnProperty(prefix = "com.privateboat.forum.backend", name = "compute-hot-list-rate")
 @AllArgsConstructor
@@ -29,7 +31,9 @@ public class HotPostTask {
 
     @Scheduled(fixedRateString = "${com.privateboat.forum.backend.compute-hot-list-rate}")
     void getHostPostList() {
+        log.info("HotPost: generating hot posts...");
         List<Post> hottestPosts = postRepository.generateHotPosts(LIMIT);
+        log.info(hottestPosts.size() + " posts found, saving to redis...");
 
         if (!hottestPosts.isEmpty()) {
             redisTemplate.execute(new SessionCallback<List<Object>>() {
@@ -44,5 +48,6 @@ public class HotPostTask {
                 }
             });
         }
+        log.info("All hot posts were saved.");
     }
 }

@@ -6,8 +6,10 @@ import com.privateboat.forum.backend.dto.response.*;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
+import com.privateboat.forum.backend.enumerate.MQMethod;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
+import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.service.*;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
@@ -30,6 +32,7 @@ public class RecordController {
     ReplyRecordService replyRecordService;
     FollowRecordService followRecordService;
     UserStatisticService userStatisticService;
+    MQSender mqSender;
 
 
     @GetMapping(value = "/notifications/new_records")
@@ -64,7 +67,8 @@ public class RecordController {
     ResponseEntity<String> postApprovalRecord(@RequestAttribute Long userId,
                                               @RequestBody ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
         try{
-            approvalRecordService.postApprovalRecord(userId, approvalRecordReceiveDTO);
+            // approvalRecordService.postApprovalRecord(userId, approvalRecordReceiveDTO);
+            mqSender.sendApprovalMessage(userId, approvalRecordReceiveDTO, MQMethod.POST);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -77,7 +81,8 @@ public class RecordController {
     ResponseEntity<String> deleteApprovalRecord(@RequestAttribute Long userId,
                                                 @RequestBody ApprovalRecordReceiveDTO approvalRecordReceiveDTO) {
         try {
-            approvalRecordService.deleteApprovalRecord(userId, approvalRecordReceiveDTO);
+            // approvalRecordService.deleteApprovalRecord(userId, approvalRecordReceiveDTO);
+            mqSender.sendApprovalMessage(userId, approvalRecordReceiveDTO, MQMethod.DELETE);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -121,7 +126,8 @@ public class RecordController {
                                           @RequestParam Long toUserId,
                                           @RequestParam Long postId) {
         try {
-            starRecordService.postStarRecord(userId, toUserId, postId);
+            // starRecordService.postStarRecord(userId, toUserId, postId);
+            mqSender.sendStarMessage(userId, toUserId, postId, MQMethod.POST);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -134,7 +140,8 @@ public class RecordController {
     ResponseEntity<String> deleteStarRecord(@RequestAttribute Long userId,
                                             @RequestParam Long postId) {
         try {
-            starRecordService.deleteStarRecord(userId, postId);
+            // starRecordService.deleteStarRecord(userId, postId);
+            mqSender.sendStarMessage(userId, 0L, postId, MQMethod.DELETE);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -204,7 +211,8 @@ public class RecordController {
     ResponseEntity<String> postFollowRecord(@RequestAttribute Long userId,
                                             @RequestParam Long toUserId) {
         try {
-            followRecordService.postFollowRecord(userId, toUserId);
+            // followRecordService.postFollowRecord(userId, toUserId);
+            mqSender.sendFollowMessage(userId, toUserId, MQMethod.POST);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -217,7 +225,8 @@ public class RecordController {
     ResponseEntity<String> deleteFollowRecord(@RequestAttribute Long userId,
                                               @RequestParam Long toUserId){
         try {
-            followRecordService.deleteFollowRecord(userId, toUserId);
+            // followRecordService.deleteFollowRecord(userId, toUserId);
+            mqSender.sendFollowMessage(userId, toUserId, MQMethod.DELETE);
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());

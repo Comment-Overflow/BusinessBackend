@@ -12,6 +12,7 @@ import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
+import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
@@ -46,6 +47,7 @@ public class PostServiceImpl implements PostService {
     private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
     private final RedisUtil redisUtil;
+    private final MQSender mqSender;
 
     private final Environment environment;
     private static final String imageFolderName = "comment/";
@@ -172,7 +174,8 @@ public class PostServiceImpl implements PostService {
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
-            replyRecordService.postReplyRecord(userId, reply);
+            // replyRecordService.postReplyRecord(userId, reply);
+            mqSender.sendReplyMessage(userId, reply);
         }
         if (newComment.getQuoteId() != 0) {
             List<Comment> finder =
@@ -188,7 +191,8 @@ public class PostServiceImpl implements PostService {
                         commentDTO.getPostId(),
                         newCommentId,
                         commentDTO.getQuoteId());
-                replyRecordService.postReplyRecord(userId, reply);
+                // replyRecordService.postReplyRecord(userId, reply);
+                mqSender.sendReplyMessage(userId, reply);
             }
         }
 
