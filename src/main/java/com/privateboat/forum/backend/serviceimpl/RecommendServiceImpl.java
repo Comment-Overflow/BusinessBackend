@@ -3,17 +3,21 @@ package com.privateboat.forum.backend.serviceimpl;
 import com.privateboat.forum.backend.entity.KeyWord;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.PreferredWord;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.PreferDegree;
 import com.privateboat.forum.backend.repository.PostRepository;
 import com.privateboat.forum.backend.repository.PreferredWordRepository;
+import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import org.ansj.app.keyword.KeyWordComputer;
 import org.ansj.app.keyword.Keyword;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,6 +27,8 @@ import java.util.stream.Collectors;
 public class RecommendServiceImpl implements RecommendService {
     private final PreferredWordRepository preferredWordRepository;
     private final PostRepository postRepository;
+    private final UserInfoRepository userInfoRepository;
+    private final RedisUtil redisUtil;
 
     /**
      * get Content Based Recommendations
@@ -39,7 +45,7 @@ public class RecommendServiceImpl implements RecommendService {
             }
         }
         removeZeroItems(CBRecommendMap);
-        removeReadItems(CBRecommendMap);
+        removeReadItems(userId, CBRecommendMap);
         return CBRecommendMap.entrySet().stream().sorted(Map.Entry.comparingByValue())
                 .limit(Constant.CB_RECOMMEND_POST_NUMBER)
                 .map(Map.Entry::getKey)
@@ -47,7 +53,9 @@ public class RecommendServiceImpl implements RecommendService {
     }
 
     @Override
+    @Transactional
     public void updatePreferredWordList(Long userId, Long postId, PreferDegree preferDegree){
+        UserInfo user = userInfoRepository.getById(userId);
         Post post = postRepository.getByPostId(postId);
         PostTag postTag = post.getTag();
         List<KeyWord> keyWordList = post.getKeyWordList();
@@ -72,7 +80,7 @@ public class RecommendServiceImpl implements RecommendService {
                 preferredWordRepository.updatePreferredWord(wordWithId.getId(), wordWithId.getScore() + score);
             } else {
                 PreferredWord newPreferredWord = new PreferredWord(userId, word, score, postTag);
-                preferredWordRepository.addPreferredWord(newPreferredWord);
+                user.getPreferredWordList().add(newPreferredWord);
             }
         }
     }
@@ -105,7 +113,7 @@ public class RecommendServiceImpl implements RecommendService {
         map.entrySet().removeIf(e -> e.getValue() == 0);
     }
 
-    private void removeReadItems(HashMap<Post, Long> map) {
-        //remove have read posts
+    private void removeReadItems(Long userId, HashMap<Post, Long> map) {
+        map.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
     }
 }
