@@ -41,12 +41,4 @@ public class PreferredWord {
         String getWord();
         Long getScore();
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if(o.getClass().equals(String.class)) {
-            return word.equals(o);
-        }
-        return false;
-    }
 }
