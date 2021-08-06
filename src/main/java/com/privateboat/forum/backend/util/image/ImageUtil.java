@@ -85,8 +85,14 @@ public class ImageUtil {
         request.setBucketName(BUCKET_NAME);
         request.setDetectType("porn,terrorist,ads,politics");
         request.setObjectKey(key);
-        
-        ImageAuditingResponse response = client.imageAuditing(request);
-        return new ImageAuditResult(response);
+
+        try {
+            ImageAuditingResponse response = client.imageAuditing(request);
+            return new ImageAuditResult(response);
+        } catch (CosServiceException e) {
+            return ImageAuditResult.pass();
+        }
+
+
     }
 }

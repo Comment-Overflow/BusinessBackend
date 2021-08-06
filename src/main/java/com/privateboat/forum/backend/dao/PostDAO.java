@@ -12,8 +12,6 @@ import java.util.List;
 
 public interface PostDAO extends JpaRepository<Post, Long> {
     Page<Post> findByUserInfo_IdAndIsDeletedOrderByPostTimeDesc(Long userId, Boolean isDeleted, Pageable pageable);
-    Page<Post> findByIsDeletedOrderByPostTimeDesc(Boolean isDeleted, Pageable pageable);
-    Page<Post> findByTagAndIsDeletedOrderByPostTimeDesc(PostTag tag, Boolean isDeleted, Pageable pageable);
     List<Post> findAllByPostTimeAfter(Timestamp postTime);
     Page<Post> findByIsDeletedOrderByLastCommentTimeDesc(boolean b, Pageable pageable);
     Page<Post> findByTagAndIsDeletedOrderByLastCommentTimeDesc(PostTag tag, boolean b, Pageable pageable);
