@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -23,6 +22,7 @@ public class RedisUtil {
     static private final String approvalString = "day-approvals";
     static private final String viewsString = "day-views";
     static private final String recordArrayKey = "record";
+    static private final String viewRecordPrefix = "view-record-";
 
 
     private List<Long> recordList() {
@@ -79,8 +79,7 @@ public class RedisUtil {
         }
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
-    void dailyRecordUpdate() {
+    public void dailyRecordUpdate() {
         List<Long> dailyList = dailyList();
         List<Long> record = recordList();
 
@@ -126,8 +125,10 @@ public class RedisUtil {
         stringRedisTemplate.opsForValue().setBit(activeUserString, userId, true);
     }
 
-    public void addViewCounter() {
-        stringRedisTemplate.opsForValue().increment(viewsString);
+    public void addViewCounter(Long userId, Long postId) {
+        ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+        valueOperations.increment(viewsString);
+        valueOperations.setBit(viewRecordPrefix + userId.toString(), postId, true);
     }
 
     public void addApprovalCount() {
@@ -146,5 +147,14 @@ public class RedisUtil {
             }
         }
         return result;
+    }
+
+    public Boolean filterReadPosts(Long userId, Long postId) {
+        ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+        String key = viewRecordPrefix + userId.toString();
+//        return postList.stream().filter(
+//                id -> Boolean.FALSE.equals(valueOperations.getBit(key, id))
+//        ).collect(Collectors.toList());
+        return Boolean.TRUE.equals(valueOperations.getBit(key, postId));
     }
 }

@@ -254,7 +254,7 @@ public class PostServiceImpl implements PostService {
             commentList.remove(host);
             commentList.add(0, host);
             recommendService.updatePreferredWordList(userId, postId, PreferDegree.BROWSE);
-            redisUtil.addViewCounter();
+            redisUtil.addViewCounter(userId, postId);
             return new PageDTO<>(commentList, comments.getTotalElements());
         }
 

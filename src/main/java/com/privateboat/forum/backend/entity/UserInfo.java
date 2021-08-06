@@ -41,7 +41,8 @@ public class UserInfo implements Serializable {
             cascade = CascadeType.PERSIST)
     UserStatistic userStatistic;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     List<PreferredWord> preferredWordList;
 
     public UserInfo() {

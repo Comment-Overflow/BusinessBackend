@@ -19,8 +19,10 @@ public class RecommendController {
     private final RecommendService recommendService;
 
     @GetMapping(value = "/recommendations")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.PASS)
-    ResponseEntity<List<Post>> getRecommendations(@RequestParam Long userId) {
+    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
+    ResponseEntity<List<Post>> getRecommendations(@RequestAttribute Long userId,
+                                                  @RequestParam("pageNum") Integer page,
+                                                  @RequestParam("pageSize") Integer pageSize) {
         try {
             return ResponseEntity.ok(recommendService.getCBRecommendations(userId));
         } catch (RuntimeException e) {
