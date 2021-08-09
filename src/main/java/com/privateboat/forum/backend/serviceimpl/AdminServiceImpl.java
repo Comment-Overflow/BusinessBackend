@@ -21,10 +21,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void silenceUser(Long operatorId, Long userId) throws AdminException {
-        UserAuth operatorAuth = userAuthRepository.getByUserId(operatorId);
-        if (operatorAuth == null || operatorAuth.getUserType() != UserType.ADMIN) {
-            throw new AdminException(AdminException.AdminExceptionType.OPERATOR_NOT_ADMIN);
-        }
+        checkOperator(operatorId);
         UserAuth userAuth = userAuthRepository.getByUserId(userId);
         if (userAuth == null || userAuth.getUserType() != UserType.USER) {
             throw new AdminException(AdminException.AdminExceptionType.INVALID_SILENCE_TARGET);
@@ -35,10 +32,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void freeUser(Long operatorId, Long freeUserId) throws AdminException {
-        UserAuth operatorAuth = userAuthRepository.getByUserId(operatorId);
-        if (operatorAuth == null || operatorAuth.getUserType() != UserType.ADMIN) {
-            throw new AdminException(AdminException.AdminExceptionType.OPERATOR_NOT_ADMIN);
-        }
+        checkOperator(operatorId);
         UserAuth userAuth = userAuthRepository.getByUserId(freeUserId);
         if (userAuth == null ||
                 (userAuth.getUserType() != UserType.SILENCED &&
@@ -51,10 +45,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void freezePost(Long operatorId, Long postId) throws AdminException, PostException {
-        UserAuth operatorAuth = userAuthRepository.getByUserId(operatorId);
-        if (operatorAuth == null || operatorAuth.getUserType() != UserType.ADMIN) {
-            throw new AdminException(AdminException.AdminExceptionType.OPERATOR_NOT_ADMIN);
-        }
+        checkOperator(operatorId);
         Post post = postRepository.getByPostId(postId);
         if (post == null) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
@@ -65,15 +56,19 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void releasePost(Long operatorId, Long postId) throws AdminException, PostException {
-        UserAuth operatorAuth = userAuthRepository.getByUserId(operatorId);
-        if (operatorAuth == null || operatorAuth.getUserType() != UserType.ADMIN) {
-            throw new AdminException(AdminException.AdminExceptionType.OPERATOR_NOT_ADMIN);
-        }
+        checkOperator(operatorId);
         Post post = postRepository.getByPostId(postId);
         if (post == null) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
         post.setIsFrozen(false);
         postRepository.save(post);
+    }
+
+    private void checkOperator(Long operatorId) {
+        UserAuth operatorAuth = userAuthRepository.getByUserId(operatorId);
+        if (operatorAuth == null || operatorAuth.getUserType() != UserType.ADMIN) {
+            throw new AdminException(AdminException.AdminExceptionType.OPERATOR_NOT_ADMIN);
+        }
     }
 }
