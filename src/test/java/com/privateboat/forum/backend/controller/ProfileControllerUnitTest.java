@@ -101,6 +101,6 @@ class ProfileControllerUnitTest {
                 .param("userName", "wxp")
                 .param("brief", "hello world")
                 .param("gender", "transition"))
-                .andExpect(status().isInternalServerError());
+                    .andExpect(status().isBadRequest());
     }
 }

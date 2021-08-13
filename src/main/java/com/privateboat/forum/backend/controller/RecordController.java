@@ -1,9 +1,7 @@
 package com.privateboat.forum.backend.controller;
 
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
-import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.*;
-import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.exception.PostException;

@@ -14,8 +14,8 @@ import com.privateboat.forum.backend.repository.ChatRepository;
 import com.privateboat.forum.backend.repository.MessageRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.serviceimpl.ChatServiceImpl;
-import com.privateboat.forum.backend.util.image.ImageUtil;
 import com.privateboat.forum.backend.util.OffsetBasedPageRequest;
+import com.privateboat.forum.backend.util.image.ImageUtil;
 import org.joda.time.DateTimeUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -194,12 +194,8 @@ class ChatServiceUnitTest {
         // Do the test.
         // Mock static class ImageUtil
         try(MockedStatic<ImageUtil> mockedImageUtil = Mockito.mockStatic(ImageUtil.class)) {
-            mockedImageUtil.when(() -> ImageUtil.uploadImage(
-                    ArgumentMatchers.any(),
-                    ArgumentMatchers.any(),
-                    ArgumentMatchers.any()))
-                    .thenReturn(true);
-            mockedImageUtil.when(() -> ImageUtil.getNewImageName(ArgumentMatchers.any()))
+
+        mockedImageUtil.when(() -> ImageUtil.getNewImageName(ArgumentMatchers.any()))
                     .thenReturn("");
 
             ImageMessageDTO imageMessageDTO = new ImageMessageDTO();

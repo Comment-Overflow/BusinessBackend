@@ -17,7 +17,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Post {
     @Id
@@ -69,6 +68,19 @@ public class Post {
         Timestamp now = new Timestamp(System.currentTimeMillis());
         this.title = title;
         this.tag = tag;
+        this.commentCount = 0;
+        this.approvalCount = 0;
+        this.isDeleted = false;
+        this.isFrozen = false;
+        this.postTime = now;
+        this.lastCommentTime = now;
+        this.comments = new ArrayList<>();
+    }
+
+    public Post() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        this.title = "";
+        this.tag = PostTag.LIFE;
         this.commentCount = 0;
         this.approvalCount = 0;
         this.isDeleted = false;

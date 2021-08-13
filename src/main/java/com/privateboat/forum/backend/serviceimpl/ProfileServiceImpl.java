@@ -76,7 +76,6 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         userInfoRepository.save(userInfo);
-        UserInfo.UserNameAndAvatarUrl userNameAndAvatarUrl = projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
         return projectionFactory.createProjection(UserInfo.UserNameAndAvatarUrl.class, userInfo);
     }
 
