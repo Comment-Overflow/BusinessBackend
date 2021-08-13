@@ -8,6 +8,7 @@ import com.privateboat.forum.backend.exception.AuthException;
 import com.privateboat.forum.backend.repository.UserAuthRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.serviceimpl.AuthServiceImpl;
+import com.privateboat.forum.backend.util.RedisUtil;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,9 @@ public class AuthServiceImplUnitTest {
 
     @Mock
     private BCryptPasswordEncoder encoder;
+
+    @Mock
+    private RedisUtil redisUtil;
 
     @BeforeEach
     void setUp() {

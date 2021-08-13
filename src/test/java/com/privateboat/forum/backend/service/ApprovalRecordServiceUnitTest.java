@@ -10,8 +10,8 @@ import com.privateboat.forum.backend.repository.ApprovalRecordRepository;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
-import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.serviceimpl.ApprovalRecordServiceImpl;
+import com.privateboat.forum.backend.util.RedisUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,16 +26,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.privateboat.forum.backend.fakedata.Record.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 
 class ApprovalRecordServiceUnitTest {
 
     private static Page<ApprovalRecord> APPROVAL_RECORD_PAGE;
-    private static Comment COMMENT;
-    private static Post POST;
-    private static UserInfo USER_INFO;
-    private static UserStatistic USER_STATISTIC;
     private static ApprovalRecordReceiveDTO VALID_APPROVAL_RECORD_RECEIVE_DTO;
     private static ApprovalRecordReceiveDTO VALID_DISAPPROVAL_RECORD_RECEIVE_DTO;
     private static ApprovalRecordReceiveDTO COMMENT_NOT_EXIST_APPROVAL_RECORD_RECEIVE_DTO;
@@ -53,6 +50,9 @@ class ApprovalRecordServiceUnitTest {
     @Mock
     private UserStatisticRepository userStatisticRepository;
 
+    @Mock
+    private RedisUtil redisUtil;
+
     @InjectMocks
     private ApprovalRecordServiceImpl approvalRecordService;
 
@@ -65,10 +65,10 @@ class ApprovalRecordServiceUnitTest {
         }
         APPROVAL_RECORD_PAGE = new PageImpl<>(approvalRecordList, PAGEABLE, approvalRecordList.size());
 
-        USER_INFO = new UserInfo();
-        USER_STATISTIC = new UserStatistic(USER_INFO);
+        UserInfo USER_INFO = new UserInfo();
+        UserStatistic USER_STATISTIC = new UserStatistic(USER_INFO);
         USER_INFO.setUserStatistic(USER_STATISTIC);
-        COMMENT = new Comment(new Post(), USER_INFO, 1L, "content");
+        Comment COMMENT = new Comment(new Post(), USER_INFO, 1L, "content");
 
         VALID_APPROVAL_RECORD_RECEIVE_DTO = new ApprovalRecordReceiveDTO(VALID_COMMENT_ID, VALID_USER_ID, ApprovalStatus.APPROVAL);
         VALID_DISAPPROVAL_RECORD_RECEIVE_DTO = new ApprovalRecordReceiveDTO(VALID_COMMENT_ID, VALID_USER_ID, ApprovalStatus.DISAPPROVAL);
