@@ -13,6 +13,7 @@ import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.serviceimpl.PostServiceImpl;
+import com.privateboat.forum.backend.util.RedisUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,6 +79,12 @@ public class PostServiceImplUnitTest {
 
     @Mock
     private ReplyRecordService replyRecordService;
+
+    @Mock
+    private RedisUtil redisUtil;
+
+    @Mock
+    private RecommendService recommendService;
 
     @BeforeEach
     void setUp() {
