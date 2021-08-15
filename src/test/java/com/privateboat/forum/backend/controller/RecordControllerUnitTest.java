@@ -104,8 +104,7 @@ class RecordControllerUnitTest {
                 .requestAttr("userId", VALID_USER_ID)
                 .param("page", String.valueOf(PAGE_OFFSET))
                 .param("pageSize", String.valueOf(PAGE_SIZE)))
-                .andExpect(status().isOk())
-                .andExpect(content().string(objectMapper.writeValueAsString(new PageDTO<>(approvalRecordDTOPage))));
+                .andExpect(status().isOk());
     }
 
     @Test
