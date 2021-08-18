@@ -9,6 +9,7 @@ import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
+import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.util.RedisUtil;
@@ -29,6 +30,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
     private final ApprovalRecordRepository approvalRecordRepository;
     private final CommentRepository commentRepository;
     private final UserStatisticRepository userStatisticRepository;
+    private final MQSender mqSender;
 
     @Override
     public Page<ApprovalRecord> getApprovalRecords(Long userId, Pageable pageable) {
@@ -68,6 +70,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
         approvalRecordRepository.save(newApprovalRecord);
         redisUtil.addApprovalCount();
+        updateCache(newComment.getPost().getId(), newComment.getFloor(), 8);
     }
 
     @Override
@@ -83,6 +86,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         }
         commentRepository.save(comment);
         approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
+        updateCache(comment.getPost().getId(), comment.getFloor(), 8);
     }
 
     @Override
@@ -90,5 +94,10 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         UserInfo userInfo = userInfoRepository.getById(userId);
         Comment comment = commentRepository.getById(commentId);
         return approvalRecordRepository.checkIfHaveApproved(userInfo, comment);
+    }
+
+    private void updateCache(Long postId, Integer commentFloor, Integer pageSize) {
+        Integer pageNum = commentFloor / pageSize;
+        mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
     }
 }

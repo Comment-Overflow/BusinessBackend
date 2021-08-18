@@ -201,6 +201,7 @@ public class PostServiceImpl implements PostService {
         }
 
         addAndUploadImage(newComment, commentDTO.getUploadFiles());
+        updateCache(post.getId(), newComment.getFloor(), 8);
 
         redisUtil.addCommentCounter();
         redisUtil.addActiveUserCounter(userId);
@@ -232,7 +233,7 @@ public class PostServiceImpl implements PostService {
         }
         Sort.Direction direction = policy == SortPolicy.EARLIEST ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, "floor"));
-        Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
+        PageDTO<Comment> comments = commentRepository.findByPostId(postId, pageable);
 
         Comment host = null;
         for (Comment comment: comments.getContent()) {
@@ -259,10 +260,10 @@ public class PostServiceImpl implements PostService {
             commentList.add(0, host);
             recommendService.updatePreferredWordList(userId, postId, PreferDegree.BROWSE);
             redisUtil.addViewCounter(userId, postId);
-            return new PageDTO<>(commentList, comments.getTotalElements());
+            return new PageDTO<>(commentList, comments.getSize());
         }
 
-        return new PageDTO<>(comments);
+        return comments;
     }
 
     @Transactional
@@ -312,6 +313,7 @@ public class PostServiceImpl implements PostService {
         userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
         postRepository.save(post);
         commentRepository.delete(comment);
+        mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
     }
 
     @Override
@@ -395,5 +397,10 @@ public class PostServiceImpl implements PostService {
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
             imageUrlList.add(imageUrl);
         }
+    }
+
+    private void updateCache(Long postId, Integer commentFloor, Integer pageSize) {
+        Integer pageNum = commentFloor / pageSize;
+        mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
     }
 }

@@ -151,8 +151,8 @@ public class PostServiceImplUnitTest {
                 .thenReturn(Optional.of(COMMENT));
         Mockito.when(commentRepository.findById(WRONG_COMMENT_ID))
                 .thenReturn(Optional.empty());
-        Mockito.when(commentRepository.findByPostId(POST_ID, SORTED_PAGEABLE))
-                .thenReturn(COMMENT_PAGE);
+//        Mockito.when(commentRepository.findByPostId(POST_ID, SORTED_PAGEABLE))
+//                .thenReturn(COMMENT_PAGE);
 
     }
 
