@@ -19,11 +19,6 @@
       "name": "com.privateboat.forum.backend.update-record-counter-rate",
       "type": "java.lang.String",
       "description": "Description for com.privateboat.forum.backend.update-record-counter-rate."
-    },
-    {
-      "name": "management.endpoints.web.exposure.include",
-      "type": "java.lang.String",
-      "description": "Description for management.endpoints.web.exposure.include."
     }
   ]
 }
