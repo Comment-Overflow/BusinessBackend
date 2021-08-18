@@ -68,7 +68,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         RedisSerializer<Object> jsonSerializer = new GenericJackson2JsonRedisSerializer();
         RedisSerializationContext.SerializationPair<Object> pair = RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer);
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig().serializeValuesWith(pair);
-        defaultCacheConfig.entryTtl(Duration.ofDays(14));
+        defaultCacheConfig.entryTtl(Duration.ofMinutes(30));
         return new RedisCacheManager(redisCacheWriter, defaultCacheConfig);
     }
 
