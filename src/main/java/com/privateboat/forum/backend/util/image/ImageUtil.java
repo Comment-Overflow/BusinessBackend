@@ -1,6 +1,7 @@
 package com.privateboat.forum.backend.util.image;
 
 import com.privateboat.forum.backend.cloudclient.TencentCOSClient;
+import com.privateboat.forum.backend.configuration.GeneralConfig;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.exception.CosServiceException;
@@ -81,18 +82,20 @@ public class ImageUtil {
     }
 
     static private ImageAuditResult auditImage(String key) {
-        ImageAuditingRequest request = new ImageAuditingRequest();
-        request.setBucketName(BUCKET_NAME);
-        request.setDetectType("porn,terrorist,ads,politics");
-        request.setObjectKey(key);
+        if (GeneralConfig.enableAudition) {
+            ImageAuditingRequest request = new ImageAuditingRequest();
+            request.setBucketName(BUCKET_NAME);
+            request.setDetectType("porn,terrorist,ads,politics");
+            request.setObjectKey(key);
 
-        try {
-            ImageAuditingResponse response = client.imageAuditing(request);
-            return new ImageAuditResult(response);
-        } catch (CosServiceException e) {
+            try {
+                ImageAuditingResponse response = client.imageAuditing(request);
+                return new ImageAuditResult(response);
+            } catch (CosServiceException e) {
+                return ImageAuditResult.pass();
+            }
+        } else {
             return ImageAuditResult.pass();
         }
-
-
     }
 }
