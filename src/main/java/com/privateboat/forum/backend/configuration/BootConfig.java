@@ -19,5 +19,9 @@ public class BootConfig implements ApplicationRunner {
         log.info("检查Redis数据库初始化");
         redisUtil.initializeRecord();
         log.info("Redis数据库初始化检查完成");
+
+        if (!GeneralConfig.enableAudition) {
+            log.info("图片与文字审核已禁用");
+        }
     }
 }

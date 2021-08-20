@@ -22,7 +22,6 @@ public class BusinessBackendApplication {
             String processedArg = arg.substring(2);
             if (processedArg.equals("disable-audition")) {
                 GeneralConfig.enableAudition = false;
-                log.info("Text and image audition disabled");
                 break;
             }
         }
