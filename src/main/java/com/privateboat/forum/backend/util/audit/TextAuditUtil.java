@@ -18,11 +18,12 @@ public class TextAuditUtil {
 
     public static TextAuditResult auditText(String text) {
         JSONObject response = client.textCensorUserDefined(text);
-        log.info("Text audit: \n" + response.toString());
 
+        // Treat the result as ok on error.
         if (response.has("conclusionType")) {
             return TextAuditResult.ok();
         }
+
         int conclusionId = response.getInt("conclusionType");
         if (conclusionId == OK_CONCLUSION_ID || conclusionId == SUSPECT_CONCLUSION_ID) {
             return TextAuditResult.ok();
