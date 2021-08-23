@@ -15,7 +15,9 @@ import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -97,7 +99,10 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
     }
 
     private void updateCache(Long postId, Integer commentFloor, Integer pageSize) {
-        Integer pageNum = commentFloor / pageSize;
-        mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
+        int pageNum = commentFloor / pageSize;
+        Pageable pageable = PageRequest.of(pageNum, pageSize,
+                Sort.by(Sort.Direction.ASC, "floor"));
+        // mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
+        commentRepository.updateCommentCache(postId, pageable);
     }
 }
