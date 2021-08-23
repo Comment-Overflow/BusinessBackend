@@ -23,6 +23,7 @@ public class RedisConfig {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(Objects.requireNonNull(env.getProperty("spring.redis.host")));
         configuration.setPort(Integer.parseInt(Objects.requireNonNull(env.getProperty("spring.redis.port"))));
+        configuration.setPassword("comment_overflow123");
         return new LettuceConnectionFactory(configuration);
     }
 
