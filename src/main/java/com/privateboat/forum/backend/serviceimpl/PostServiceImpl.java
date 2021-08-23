@@ -400,7 +400,10 @@ public class PostServiceImpl implements PostService {
     }
 
     private void updateCache(Long postId, Integer commentFloor, Integer pageSize) {
-        Integer pageNum = commentFloor / pageSize;
-        mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
+        int pageNum = commentFloor / pageSize;
+        Pageable pageable = PageRequest.of(pageNum, pageSize,
+                Sort.by(Sort.Direction.ASC, "floor"));
+        // mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
+        commentRepository.updateCommentCache(postId, pageable);
     }
 }
