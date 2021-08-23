@@ -8,6 +8,7 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.PostRepository;
 import com.privateboat.forum.backend.util.Constant;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

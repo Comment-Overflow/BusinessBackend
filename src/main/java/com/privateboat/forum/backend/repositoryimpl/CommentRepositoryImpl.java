@@ -2,15 +2,21 @@ package com.privateboat.forum.backend.repositoryimpl;
 
 import com.privateboat.forum.backend.dao.CommentDAO;
 import com.privateboat.forum.backend.dto.QuoteDTO;
+import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Repository
@@ -19,8 +25,22 @@ public class CommentRepositoryImpl implements CommentRepository  {
     private final CommentDAO commentDAO;
 
     @Override
-    public Page<Comment> findByPostId(Long postId, Pageable pageable) {
-        return commentDAO.findByPostId(postId, pageable);
+    @Cacheable(value = "post-cache", key = "#p0 + '-' + #p1.pageNumber + '-' + #p1.pageSize")
+    public PageDTO<Comment> findByPostId(Long postId, Pageable pageable) {
+        System.out.println("entering database...");
+        Page<Comment> commentPage = commentDAO.findByPostId(postId, pageable);
+        for (Comment comment : commentPage.getContent()) {
+            comment.setUserInfo((UserInfo) Hibernate.unproxy(comment.getUserInfo()));
+            comment.setImageUrl(new ArrayList<>(comment.getImageUrl()));
+        }
+        return new PageDTO<>(commentPage);
+    }
+
+    @Override
+    @CachePut(value = "post-cache", key = "#p0 + '-' + #p1.pageNumber + '-' + #p1.pageSize")
+    public PageDTO<Comment> updateCommentCache(Long postId, Pageable pageable) {
+        // Calling function annotated by @Cacheable in the same class won't be cached.
+        return findByPostId(postId, pageable);
     }
 
     @Override
@@ -77,6 +97,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
         return commentDAO.findByUserInfoIdAndFloorIsNotAndIsDeletedOrderByTimeDesc(userId, 0,false, pageable);
     }
 
+    @Override
     public void delete(Comment comment) {
         comment.setIsDeleted(true);
         commentDAO.save(comment);

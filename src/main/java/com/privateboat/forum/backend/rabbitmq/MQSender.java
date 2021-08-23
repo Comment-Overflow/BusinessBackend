@@ -4,10 +4,7 @@ import com.privateboat.forum.backend.configuration.RabbitMQConfig;
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.enumerate.MQMethod;
-import com.privateboat.forum.backend.rabbitmq.bean.ApprovalBean;
-import com.privateboat.forum.backend.rabbitmq.bean.FollowBean;
-import com.privateboat.forum.backend.rabbitmq.bean.ReplyBean;
-import com.privateboat.forum.backend.rabbitmq.bean.StarBean;
+import com.privateboat.forum.backend.rabbitmq.bean.*;
 import com.privateboat.forum.backend.util.JacksonUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -40,6 +37,12 @@ public class MQSender {
         ReplyBean replyBean = new ReplyBean(userId ,dto);
         String msg = JacksonUtil.bean2Json(replyBean);
         amqpTemplate.convertAndSend(RabbitMQConfig.REPLY_QUEUE, msg);
+    }
+
+    public void sendCacheUpdateMessage(Long postId, Integer pageNum, Integer pageSize) {
+        CommentCacheUpdateBean bean = new CommentCacheUpdateBean(postId, pageNum, pageSize);
+        String msg = JacksonUtil.bean2Json(bean);
+        amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_CACHE_UPDATE_QUEUE, msg);
     }
 
 }

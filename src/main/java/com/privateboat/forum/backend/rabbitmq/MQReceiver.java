@@ -3,18 +3,20 @@ package com.privateboat.forum.backend.rabbitmq;
 import com.privateboat.forum.backend.configuration.RabbitMQConfig;
 import com.privateboat.forum.backend.enumerate.MQMethod;
 import com.privateboat.forum.backend.exception.RabbitMQException;
-import com.privateboat.forum.backend.rabbitmq.bean.ApprovalBean;
-import com.privateboat.forum.backend.rabbitmq.bean.FollowBean;
-import com.privateboat.forum.backend.rabbitmq.bean.ReplyBean;
-import com.privateboat.forum.backend.rabbitmq.bean.StarBean;
+import com.privateboat.forum.backend.rabbitmq.bean.*;
+import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.service.FollowRecordService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.service.StarRecordService;
 import com.privateboat.forum.backend.util.JacksonUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -25,6 +27,7 @@ public class MQReceiver {
     private final ApprovalRecordService approvalRecordService;
     private final StarRecordService starRecordService;
     private final ReplyRecordService replyRecordService;
+    private final CommentRepository commentRepository;
 
     @RabbitListener(queues = RabbitMQConfig.FOLLOW_QUEUE)
     public void followHandler(String msg) {
@@ -72,6 +75,17 @@ public class MQReceiver {
         checkNullBean(bean);
         assert bean != null;
         replyRecordService.postReplyRecord(bean.getUserId(), bean.getDto());
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.COMMENT_CACHE_UPDATE_QUEUE)
+    public void CacheUpdateHandler(String msg) {
+        log.info("Update post caching...");
+        CommentCacheUpdateBean bean = JacksonUtil.json2Bean(msg, CommentCacheUpdateBean.class);
+        checkNullBean(bean);
+        assert bean != null;
+        Pageable pageable = PageRequest.of(bean.getPageNum(), bean.getPageSize(),
+                Sort.by(Sort.Direction.ASC, "floor"));
+        commentRepository.updateCommentCache(bean.getPostId(), pageable);
     }
 
     void checkNullBean(Object bean) throws RabbitMQException {
