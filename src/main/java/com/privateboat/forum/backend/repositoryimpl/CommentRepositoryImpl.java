@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -29,9 +30,17 @@ public class CommentRepositoryImpl implements CommentRepository  {
     public PageDTO<Comment> findByPostId(Long postId, Pageable pageable) {
         System.out.println("entering database...");
         Page<Comment> commentPage = commentDAO.findByPostId(postId, pageable);
-        for (Comment comment : commentPage.getContent()) {
+        List<Comment> contentList = commentPage.getContent();
+        for (Comment comment : contentList) {
             comment.setUserInfo((UserInfo) Hibernate.unproxy(comment.getUserInfo()));
             comment.setImageUrl(new ArrayList<>(comment.getImageUrl()));
+        }
+
+        Comment firstComment = contentList.get(0);
+        if (firstComment.getFloor() == 0) {
+            List<Comment> newContentList = new ArrayList<>(contentList);
+            newContentList.set(0, (Comment) Hibernate.unproxy(firstComment));
+            return new PageDTO<>(newContentList, commentPage.getTotalElements());
         }
         return new PageDTO<>(commentPage);
     }
