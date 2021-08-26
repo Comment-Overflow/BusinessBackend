@@ -9,7 +9,7 @@ import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.PostTag;
-import com.privateboat.forum.backend.enumerate.PreferDegree;
+import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
@@ -48,6 +48,7 @@ public class PostServiceImpl implements PostService {
     private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
     private final RecommendService recommendService;
+    private final PreferencePostRepository preferencePostRepository;
 
     private final RedisUtil redisUtil;
 
@@ -172,7 +173,7 @@ public class PostServiceImpl implements PostService {
         commentRepository.save(newComment);
         Long newCommentId = newComment.getId();
         postRepository.save(post);
-        recommendService.updatePreferredWordList(userId, commentDTO.getPostId(), PreferDegree.REPLY);
+        recommendService.updateRecommendSystem(userId, commentDTO.getPostId(), PreferenceDegree.REPLY);
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
@@ -253,7 +254,7 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
-            recommendService.updatePreferredWordList(userId, postId, PreferDegree.BROWSE);
+            recommendService.updateRecommendSystem(userId, postId, PreferenceDegree.BROWSE);
             redisUtil.addViewCounter(userId, postId);
             return new PageDTO<>(commentList, comments.getTotalElements());
         }

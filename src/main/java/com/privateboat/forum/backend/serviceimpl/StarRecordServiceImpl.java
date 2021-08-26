@@ -1,7 +1,7 @@
 package com.privateboat.forum.backend.serviceimpl;
 
 import com.privateboat.forum.backend.entity.StarRecord;
-import com.privateboat.forum.backend.enumerate.PreferDegree;
+import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
@@ -37,7 +37,7 @@ public class StarRecordServiceImpl implements StarRecordService {
 
     @Override
     public void postStarRecord(Long fromUserId, Long toUserId, Long postId) throws UserInfoException, PostException {
-        recommendService.updatePreferredWordList(fromUserId, postId, PreferDegree.STAR);
+        recommendService.updateRecommendSystem(fromUserId, postId, PreferenceDegree.STAR);
 
         StarRecord newStarRecord = new StarRecord();
 

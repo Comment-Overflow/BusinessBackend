@@ -1,12 +1,12 @@
 package com.privateboat.forum.backend.util;
 
 import com.privateboat.forum.backend.configuration.DataSourceConfig;
+import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import org.ansj.app.keyword.Keyword;
 import org.ansj.domain.Term;
 import org.ansj.library.StopLibrary;
 import org.ansj.splitWord.Analysis;
-import org.ansj.splitWord.analysis.NlpAnalysis;
-import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,12 +16,14 @@ import java.util.*;
 public class RecommendUtil<T extends Analysis> {
 
     private static final Map<String, Double> POS_SCORE = new HashMap<>();
+    public static final Map<PreferenceDegree, Integer> DEGREE2VALUE = new HashMap<>();
+    public static final Map<Integer, PreferenceDegree> VALUE2DEGREE = new HashMap<>();
 
     private static final String PREFERENCE_POST_TABLE = "preference_post";
     private static final String USER_ID_COLUMN = "user_id";
     private static final String POST_ID_COLUMN = "post_id";
-    private static final String PREFERENCE_COLUMN = "prefer_degree";
-    private static final String TIMESTAMP_COLUMN = "browse_timestamp";
+    private static final String PREFERENCE_COLUMN = "preference_degree";
+    private static final String TIMESTAMP_COLUMN = "browse_time";
 
     private T analysisType;
 
@@ -32,12 +34,10 @@ public class RecommendUtil<T extends Analysis> {
         this.analysisType = analysisType;
     }
 
-//    public RecommendUtil(){
-//        this.analysisType = (T) new NlpAnalysis();
-//    }
 
-    public MySQLJDBCDataModel getDataSource(){
-        return new MySQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
+    public PostgreSQLJDBCDataModel getDataSource(){
+//        ConnectionPoolDataSource connectionPoolDataSource = new ConnectionPoolDataSource(dataSourceConfig.getDataSource());
+        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
     }
 
     public List<Keyword> computeArticleTfidf(String title, String content, int nKeyword) {
@@ -99,5 +99,14 @@ public class RecommendUtil<T extends Analysis> {
         POS_SCORE.put("nz", 3.0D);
         POS_SCORE.put("v", 0.2D);
         POS_SCORE.put("kw", 6.0D);
+
+        // begin initiate PRE2VALUE convert map
+        DEGREE2VALUE.put(PreferenceDegree.BROWSE, 1);
+        DEGREE2VALUE.put(PreferenceDegree.REPLY, 2);
+        DEGREE2VALUE.put(PreferenceDegree.STAR, 3);
+
+        VALUE2DEGREE.put(1, PreferenceDegree.BROWSE);
+        VALUE2DEGREE.put(2, PreferenceDegree.REPLY);
+        VALUE2DEGREE.put(3, PreferenceDegree.STAR);
     }
 }

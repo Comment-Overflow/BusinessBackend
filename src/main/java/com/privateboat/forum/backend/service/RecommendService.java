@@ -10,6 +10,6 @@ import java.util.List;
 public interface RecommendService {
     List<Post> getCBRecommendations(Long userId);
     List<Post> getCFRecommendations(Long userId);
-    void updatePreferredWordList(Long userId, Long postId, PreferenceDegree preferenceDegree);
+    void updateRecommendSystem(Long userId, Long postId, PreferenceDegree preferenceDegree);
     List<KeyWord> addNewPost(PostTag postTag, Long postId, String title, String content);
 }
