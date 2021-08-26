@@ -13,10 +13,10 @@ import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
+import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
-import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
 import com.privateboat.forum.backend.util.audit.TextAuditUtil;
@@ -45,12 +45,12 @@ public class PostServiceImpl implements PostService {
     private final UserInfoRepository userInfoRepository;
     private final ApprovalRecordRepository approvalRecordRepository;
     private final StarRecordRepository starRecordRepository;
-    private final ReplyRecordService replyRecordService;
     private final UserStatisticRepository userStatisticRepository;
     private final RecommendService recommendService;
     private final PreferencePostRepository preferencePostRepository;
 
     private final RedisUtil redisUtil;
+    private final MQSender mqSender;
 
     private final Environment environment;
     private static final String imageFolderName = "comment/";
@@ -117,14 +117,18 @@ public class PostServiceImpl implements PostService {
         UserInfo senderInfo = optionalSenderInfo.get();
         checkSilence(senderInfo);
 
+        String newTitle = newPostDTO.getTitle();
         // Audit post title.
+        if (newTitle == null || newTitle.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.EMPTY_TITLE);
+        }
         auditPostContent(newPostDTO.getTitle());
         // Audit post content.
         if (!newPostDTO.getContent().isEmpty()) {
             auditPostContent(newPostDTO.getContent());
         }
 
-        Post newPost = new Post(newPostDTO.getTitle(), newPostDTO.getTag());
+        Post newPost = new Post(newTitle, newPostDTO.getTag());
         Comment hostComment = new Comment(newPost, senderInfo, 0L, newPostDTO.getContent());
         newPost.setHostComment(hostComment);
         newPost.addComment(hostComment);
@@ -177,7 +181,8 @@ public class PostServiceImpl implements PostService {
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
-            replyRecordService.postReplyRecord(userId, reply);
+            // replyRecordService.postReplyRecord(userId, reply);
+            mqSender.sendReplyMessage(userId, reply);
         }
         if (newComment.getQuoteId() != 0) {
             List<Comment> finder =
@@ -193,7 +198,8 @@ public class PostServiceImpl implements PostService {
                         commentDTO.getPostId(),
                         newCommentId,
                         commentDTO.getQuoteId());
-                replyRecordService.postReplyRecord(userId, reply);
+                // replyRecordService.postReplyRecord(userId, reply);
+                mqSender.sendReplyMessage(userId, reply);
             }
         }
 

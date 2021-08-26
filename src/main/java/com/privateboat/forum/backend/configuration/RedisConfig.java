@@ -1,25 +1,29 @@
 package com.privateboat.forum.backend.configuration;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.cache.interceptor.KeyGenerator;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Method;
+import java.util.Objects;
 
 @Configuration
+@AllArgsConstructor
 public class RedisConfig {
+    Environment env;
+
     @Bean
     public LettuceConnectionFactory connectionFactory() {
-        return new LettuceConnectionFactory();
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(Objects.requireNonNull(env.getProperty("spring.redis.host")));
+        configuration.setPort(Integer.parseInt(Objects.requireNonNull(env.getProperty("spring.redis.port"))));
+        return new LettuceConnectionFactory(configuration);
     }
 
     @Bean
