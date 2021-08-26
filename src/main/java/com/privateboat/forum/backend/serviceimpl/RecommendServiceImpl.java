@@ -5,17 +5,32 @@ import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.PreferredWord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
-import com.privateboat.forum.backend.enumerate.PreferDegree;
+import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import com.privateboat.forum.backend.repository.PostRepository;
+import com.privateboat.forum.backend.repository.PreferencePostRepository;
 import com.privateboat.forum.backend.repository.PreferredWordRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
+import com.privateboat.forum.backend.util.RecommendUtil;
 import com.privateboat.forum.backend.util.RedisUtil;
-import org.ansj.app.keyword.KeyWordComputer;
 import org.ansj.app.keyword.Keyword;
 import lombok.AllArgsConstructor;
+import org.ansj.splitWord.analysis.NlpAnalysis;
+import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
+import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.EuclideanDistanceSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.UncenteredCosineSimilarity;
+import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+import org.apache.mahout.cf.taste.recommender.Recommender;
+import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +44,8 @@ public class RecommendServiceImpl implements RecommendService {
     private final PostRepository postRepository;
     private final UserInfoRepository userInfoRepository;
     private final RedisUtil redisUtil;
+    private final RecommendUtil<NlpAnalysis> recommendUtil;
+    private final PreferencePostRepository preferencePostRepository;
 
     /**
      * get Content Based Recommendations
@@ -44,8 +61,8 @@ public class RecommendServiceImpl implements RecommendService {
                 CBRecommendMap.put(post, getScore(preferredWordMap.get(post.getTag()), keyWordList));
             }
         }
-        removeZeroItems(CBRecommendMap);
-        removeReadItems(userId, CBRecommendMap);
+        CBRecommendMap.entrySet().removeIf(e -> e.getValue() == 0);
+        CBRecommendMap.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
         return CBRecommendMap.entrySet().stream().sorted(Map.Entry.comparingByValue())
                 .limit(Constant.CB_RECOMMEND_POST_NUMBER)
                 .map(Map.Entry::getKey)
@@ -53,8 +70,33 @@ public class RecommendServiceImpl implements RecommendService {
     }
 
     @Override
+    public List<Post> getCFRecommendations(Long userId) {
+        List<RecommendedItem> rawCFRecommendList = new ArrayList<>();
+        try {
+            PostgreSQLJDBCDataModel dataModel = recommendUtil.getDataSource();
+            UserSimilarity similarity = new
+                    EuclideanDistanceSimilarity(dataModel);
+//                    LogLikelihoodSimilarity(dataModel);
+//                    PearsonCorrelationSimilarity(dataModel);
+//                    UncenteredCosineSimilarity(dataModel);
+
+            UserNeighborhood neighborhood = new NearestNUserNeighborhood(2, similarity, dataModel);
+
+            Recommender recommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
+            rawCFRecommendList = recommender.recommend(userId, Constant.CF_RECOMMEND_POST_NUMBER);
+        } catch (TasteException e) {
+            LogUtil.error(e);
+            e.printStackTrace();
+        }
+        List<Post> CFRecommendList = rawCFRecommendList.stream().map(item -> postRepository.getByPostId(item.getItemID())).collect(Collectors.toList());
+        CFRecommendList.removeIf(item -> redisUtil.filterReadPosts(userId, item.getId()));
+        return CFRecommendList;
+    }
+
+    @Override
     @Transactional
-    public void updatePreferredWordList(Long userId, Long postId, PreferDegree preferDegree){
+    public void updateRecommendSystem(Long userId, Long postId, PreferenceDegree preferenceDegree){
+        //Content-Based Recommendation
         UserInfo user = userInfoRepository.getById(userId);
         Post post = postRepository.getByPostId(postId);
         PostTag postTag = post.getTag();
@@ -63,7 +105,7 @@ public class RecommendServiceImpl implements RecommendService {
         for (KeyWord keyWord : keyWordList) {
             String word = keyWord.getWord();
             Long score = keyWord.getScore();
-            switch (preferDegree) {
+            switch (preferenceDegree) {
                 //once one REPLYs or STARs, he must have BROWSED
                 case REPLY:
                     score *= 1;
@@ -83,12 +125,14 @@ public class RecommendServiceImpl implements RecommendService {
                 user.getPreferredWordList().add(newPreferredWord);
             }
         }
+
+        //Collaborative-filter recommendation
+        preferencePostRepository.addPreferencePostRecord(userId, postId, preferenceDegree);
     }
 
     @Override
     public List<KeyWord> addNewPost(PostTag postTag, Long postId, String title, String content) {
-        KeyWordComputer keyWordComputer = new KeyWordComputer(Constant.POST_KEYS_WORDS);
-        List<Keyword> keyWordList = keyWordComputer.computeArticleTfidf(title, content);
+        List<Keyword> keyWordList = recommendUtil.computeArticleTfidf(title, content, Constant.POST_KEYS_WORDS);
         List<KeyWord> ret = new LinkedList<>();
         for(Keyword keyword : keyWordList) {
             LogUtil.debug(keyword.toString());
@@ -107,13 +151,5 @@ public class RecommendServiceImpl implements RecommendService {
             }
         }
         return score;
-    }
-
-    private void removeZeroItems(HashMap<Post, Long> map) {
-        map.entrySet().removeIf(e -> e.getValue() == 0);
-    }
-
-    private void removeReadItems(Long userId, HashMap<Post, Long> map) {
-        map.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
     }
 }
