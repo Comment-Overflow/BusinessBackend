@@ -105,17 +105,6 @@ public class PostController {
         }
     }
 
-    @GetMapping(value = "/post")
-    @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<Post> getPost(@RequestParam("postId") Long postId,
-                                 @RequestAttribute Long userId) {
-        try {
-            return ResponseEntity.ok(postService.getPost(postId, userId));
-        } catch (PostException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
-    }
-
     @GetMapping(value = "/post/comments")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
     ResponseEntity<PageDTO<Comment>> getPostComments(@RequestParam("postId") Long postId,

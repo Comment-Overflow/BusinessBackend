@@ -35,7 +35,7 @@ public class RecordController {
 
     @GetMapping(value = "/notifications/new_records")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<UserStatistic.NewlyRecord> getNewlyRecords(@RequestAttribute Long userId) {
+    ResponseEntity<UserStatistic.NewRecord> getNewRecords(@RequestAttribute Long userId) {
         try {
             return ResponseEntity.ok(userStatisticService.getNewlyRecords(userId));
         } catch (RuntimeException e) {
