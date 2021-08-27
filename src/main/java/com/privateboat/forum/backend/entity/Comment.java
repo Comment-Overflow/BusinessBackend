@@ -24,6 +24,8 @@ import java.util.List;
 @Table(
         indexes = {
                 @Index(columnList = "isDeleted, time, user_id, floor"),
+                @Index(columnList = "time"),
+                @Index(columnList = "isDeleted")
         }
 )
 public class Comment {
