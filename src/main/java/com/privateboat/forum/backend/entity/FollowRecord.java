@@ -10,7 +10,11 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 @Setter
-@Table
+@Table(
+        indexes = {
+                @Index(columnList = "toUserId, from_user_id")
+        }
+)
 public class FollowRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

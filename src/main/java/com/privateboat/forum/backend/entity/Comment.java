@@ -21,6 +21,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(
+        indexes = {
+                @Index(columnList = " isDeleted, user_id, floor"),
+                @Index(columnList = "time")
+        }
+)
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

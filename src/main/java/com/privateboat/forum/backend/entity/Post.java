@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Formula;
 
@@ -18,6 +17,12 @@ import java.util.List;
 @Getter
 @Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(
+        indexes = {
+                @Index(columnList = "isDeleted, user_info_id"),
+                @Index(columnList = "postTime")
+        }
+)
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
