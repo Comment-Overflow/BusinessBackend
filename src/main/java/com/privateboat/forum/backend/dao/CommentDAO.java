@@ -13,12 +13,11 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
     @EntityGraph(attributePaths = "userInfo")
     Page<Comment> findByPostId(Long postId, Pageable pageable);
 
-//    @Query("select c from Comment c where " +
-//            "(lower(c.post.title) like lower(concat('%', :searchKey, '%')) and c.floor = 0 " +
-//            "or lower(c.content) like lower(concat('%', :searchKey, '%'))) and " +
-//            "c.post.isDeleted = :isDeleted " +
-//            "order by c.time desc")
-    @Query("select c from Comment c where lower(c.content) like lower(concat('%', :searchKey, '%')) and c.isDeleted = :isDeleted order by c. time desc")
+    @Query("select c from Comment c where " +
+            "(lower(c.post.title) like lower(concat('%', :searchKey, '%')) and c.floor = 0 " +
+            "or lower(c.content) like lower(concat('%', :searchKey, '%'))) and " +
+            "c.post.isDeleted = :isDeleted " +
+            "order by c.time desc")
     Page<Comment> findByContentContainingOrPostTitleContainingAndPostIsDeleted(
             @Param("searchKey") String searchKey,
             @Param("isDeleted") Boolean isDeleted,

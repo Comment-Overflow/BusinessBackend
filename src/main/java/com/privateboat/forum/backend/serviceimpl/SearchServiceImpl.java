@@ -11,6 +11,7 @@ import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.SearchService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional
 @Service
 @AllArgsConstructor
@@ -30,10 +32,20 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<SearchedCommentDTO> searchComments(String searchKey, Pageable pageable) {
+        long a = System.currentTimeMillis();
         List<Comment> searchedComments = commentRepository.findByContentContainingOrPostTitleContainingAndIsDeleted(
                 searchKey, false, pageable).getContent();
+        long b = System.currentTimeMillis();
+        log.info(String.format("<findByPostTag> elapsed time: %d%n", b - a));
+
         removeQuoteId(searchedComments);
-        return wrapSearchedCommentsWithPost(searchedComments);
+
+        a = System.currentTimeMillis();
+        List<SearchedCommentDTO> ret = wrapSearchedCommentsWithPost(searchedComments);
+        b = System.currentTimeMillis();
+        log.info(String.format("<wrapSearchedCommentsWithPost> elapsed time: %d%n", b - a));
+
+        return ret;
     }
 
     @Override
