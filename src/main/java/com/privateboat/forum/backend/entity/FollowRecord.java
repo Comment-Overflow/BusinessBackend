@@ -12,7 +12,9 @@ import java.sql.Timestamp;
 @Setter
 @Table(
         indexes = {
-                @Index(columnList = "toUserId, from_user_id")
+                @Index(columnList = "toUserId, from_user_id"),
+                @Index(columnList = "from_user_id"),
+                @Index(columnList = "toUserId")
         }
 )
 public class FollowRecord {

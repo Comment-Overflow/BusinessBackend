@@ -10,7 +10,10 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @Table(
-        indexes = {@Index(columnList = "from_user_id, post_id")}
+        indexes = {
+                @Index(columnList = "from_user_id, post_id"),
+                @Index(columnList = "toUserId, timestamp")
+        }
 )
 public class StarRecord {
     @Id
