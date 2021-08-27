@@ -9,7 +9,9 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 @Setter
-@Table
+@Table(
+        indexes = {@Index(columnList = "from_user_id, post_id")}
+)
 public class StarRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

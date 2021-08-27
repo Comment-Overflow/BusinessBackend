@@ -4,7 +4,6 @@ import com.privateboat.forum.backend.dao.CommentDAO;
 import com.privateboat.forum.backend.dto.QuoteDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
-import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.CommentRepository;
@@ -32,7 +31,6 @@ public class CommentRepositoryImpl implements CommentRepository  {
         Page<Comment> commentPage = commentDAO.findByPostId(postId, pageable);
         List<Comment> contentList = commentPage.getContent();
         for (Comment comment : contentList) {
-            comment.setUserInfo((UserInfo) Hibernate.unproxy(comment.getUserInfo()));
             comment.setImageUrl(new ArrayList<>(comment.getImageUrl()));
         }
 

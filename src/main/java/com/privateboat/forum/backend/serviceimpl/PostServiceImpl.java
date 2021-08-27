@@ -233,18 +233,24 @@ public class PostServiceImpl implements PostService {
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
+
+
         Optional<Post> optionalPost = postRepository.findByPostId(postId);
         if (optionalPost.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+
+
         Sort.Direction direction = policy == SortPolicy.EARLIEST ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, "floor"));
+
+
         PageDTO<Comment> comments = commentRepository.findByPostId(postId, pageable);
         comments.setSize(optionalPost.get().getCommentCount().longValue());
 
+
         Comment host = null;
         for (Comment comment: comments.getContent()) {
-            if (comment.getFloor() == 0) host = comment;
             comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
             if (comment.getIsDeleted()) {
                 comment.setContent("");
@@ -252,6 +258,7 @@ public class PostServiceImpl implements PostService {
                 comment.setQuoteId(0L);
                 continue;
             }
+
             if (comment.getQuoteId() != 0) {
                 Comment quoteComment = commentRepository.getById(comment.getQuoteId());
                 QuoteDTO quoteDTO = new QuoteDTO(quoteComment);
@@ -260,7 +267,10 @@ public class PostServiceImpl implements PostService {
                 }
                 comment.setQuoteDTO(quoteDTO);
             }
+
+            if (comment.getFloor() == 0) host = comment;
         }
+
         if (host != null) {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
