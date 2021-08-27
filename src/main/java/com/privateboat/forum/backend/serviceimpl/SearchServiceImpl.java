@@ -7,7 +7,6 @@ import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
-import com.privateboat.forum.backend.repository.SearchHistoryRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.SearchService;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     private final CommentRepository commentRepository;
-    private final SearchHistoryRepository searchHistoryRepository;
     private final UserInfoRepository userInfoRepository;
     private final FollowRecordRepository followRecordRepository;
     private final PostService postService;
@@ -58,12 +56,6 @@ public class SearchServiceImpl implements SearchService {
             postService.setPostTransientField(parentPost, comment.getUserInfo());
             return new SearchedCommentDTO(parentPost, comment);
         }).collect(Collectors.toList());
-    }
-
-    @Override
-    public void addSearchHistory(Long userId, String searchKey, PostTag postTag) {
-        SearchHistory searchHistory = new SearchHistory(userId, searchKey, postTag);
-        searchHistoryRepository.save(searchHistory);
     }
 
     @Override

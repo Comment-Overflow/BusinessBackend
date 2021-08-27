@@ -39,9 +39,6 @@ public class SearchController {
             comments = searchService.searchCommentsByPostTag(postTag, searchKey,
                     PageRequest.of(pageNum, pageSize));
         }
-
-        // Record the time and search key of this search.
-        searchService.addSearchHistory(userId, searchKey, postTag);
         return ResponseEntity.ok(comments);
     }
 
