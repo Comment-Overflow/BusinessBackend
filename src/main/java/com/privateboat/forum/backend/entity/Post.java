@@ -19,8 +19,7 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(
         indexes = {
-                @Index(columnList = "isDeleted, user_info_id"),
-                @Index(columnList = "postTime")
+                @Index(columnList = "isDeleted, user_info_id, postTime"),
         }
 )
 public class Post {

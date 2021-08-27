@@ -23,8 +23,7 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(
         indexes = {
-                @Index(columnList = " isDeleted, user_id, floor"),
-                @Index(columnList = "time")
+                @Index(columnList = "isDeleted, time, user_id, floor"),
         }
 )
 public class Comment {
