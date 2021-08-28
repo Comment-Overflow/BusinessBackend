@@ -17,7 +17,7 @@ public class UserStatisticServiceImpl implements UserStatisticService {
     private final UserStatisticRepository userStatisticRepository;
 
     @Override
-    public UserStatistic.NewlyRecord getNewlyRecords(Long userId) throws UserInfoException {
+    public UserStatistic.NewRecord getNewlyRecords(Long userId) throws UserInfoException {
         return userStatisticRepository.getNewlyRecordByUserId(userId);
     }
 }

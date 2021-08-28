@@ -11,7 +11,12 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 @Setter
-@Table
+@Table(
+        indexes = {
+                @Index(columnList = "from_user_id, comment_id"),
+                @Index(columnList = "toUserId, timestamp, approvalStatus")
+        }
+)
 @NoArgsConstructor
 public class ApprovalRecord {
     @Id

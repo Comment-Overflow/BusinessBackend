@@ -4,19 +4,16 @@ import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
 import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.SearchHistory;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
-import com.privateboat.forum.backend.repository.SearchHistoryRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.serviceimpl.SearchServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -41,9 +38,6 @@ public class SearchServiceImplUnitTest {
 
     @Mock
     private CommentRepository commentRepository;
-
-    @Mock
-    private SearchHistoryRepository searchHistoryRepository;
 
     @Mock
     private FollowRecordRepository followRecordRepository;
@@ -82,7 +76,7 @@ public class SearchServiceImplUnitTest {
 
     @Test
     void testSearchComments() {
-        given(commentRepository.findByContentContainingOrPostTitleContainingAndIsDeleted(
+        given(commentRepository.findByContentContainingAndIsDeleted(
                 "abc",
                 false,
                 PAGE_REQUEST)
@@ -93,7 +87,7 @@ public class SearchServiceImplUnitTest {
                                 comment.getPost().getTitle().contains("abc")
                         ).collect(Collectors.toList())
                 ));
-        List<SearchedCommentDTO> searchedComments = searchService.searchComments("abc", PAGE_REQUEST);
+        List<SearchedCommentDTO> searchedComments = searchService.searchAllComments(USER_ID,"abc", PAGE_REQUEST);
         for (SearchedCommentDTO parentPost: searchedComments) {
             Comment comment = parentPost.getSearchedComment();
             assertTrue(comment.getContent().contains("abc") || comment.getPost().getTitle().contains("abc"));
@@ -117,12 +111,6 @@ public class SearchServiceImplUnitTest {
                     comment.getPost().getTitle().contains("abc")) &&
                     comment.getPost().getTag().equals(PostTag.LIFE));
         }
-    }
-
-    @Test
-    void addSearchHistory() {
-        searchService.addSearchHistory(USER_ID, "abc", PostTag.LIFE);
-        Mockito.verify(searchHistoryRepository).save(any(SearchHistory.class));
     }
 
     @Test

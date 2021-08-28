@@ -1,6 +1,11 @@
 package com.privateboat.forum.backend.util;
 
+import com.privateboat.forum.backend.dto.response.PageDTO;
+import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.Post;
+import com.privateboat.forum.backend.rabbitmq.bean.CommentCacheUpdateBean;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -157,4 +162,14 @@ public class RedisUtil {
 //        ).collect(Collectors.toList());
         return Boolean.TRUE.equals(valueOperations.getBit(key, postId));
     }
+
+    public void evictPostCommentsCache(Long postId) {
+        String keyPrefix = "post-cache::" + postId.toString() + "-*";
+        Set<String> keys = stringRedisTemplate.keys(keyPrefix);
+        if (keys != null) {
+            stringRedisTemplate.delete(keys);
+        }
+    }
+
+
 }

@@ -54,7 +54,7 @@ public class UserStatistic implements Serializable {
         this.isNewlyStarred = false;
     }
 
-    public interface NewlyRecord {
+    public interface NewRecord {
         Boolean getIsNewlyApproved();
         Boolean getIsNewlyReplied();
         Boolean getIsNewlyStarred();

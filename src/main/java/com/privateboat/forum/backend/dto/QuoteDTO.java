@@ -1,9 +1,12 @@
 package com.privateboat.forum.backend.dto;
 
 import com.privateboat.forum.backend.entity.Comment;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class QuoteDTO {
     private Long commentId;
     private String title;

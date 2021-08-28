@@ -97,4 +97,23 @@ public class PostRepositoryImpl implements PostRepository {
                 .map(object -> objectMapper.convertValue(object, Post.class))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Page<Post> findByTitleContainingAndIsDeletedOrderByPostTime(String searchKey,
+                                                                       boolean isDeleted,
+                                                                       Pageable pageable) {
+        return postDAO.findByTitleContainingAndIsDeletedOrderByPostTime(
+                searchKey, isDeleted, pageable
+        );
+    }
+
+    @Override
+    public Page<Post> findByTitleContainingAndTagAndIsDeletedOrderByPostTime(String searchKey,
+                                                                             PostTag tag,
+                                                                             boolean isDeleted,
+                                                                             Pageable pageable) {
+        return postDAO.findByTitleContainingAndTagAndIsDeletedOrderByPostTime(
+                searchKey, tag, isDeleted, pageable
+        );
+    }
 }

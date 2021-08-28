@@ -2,7 +2,6 @@ package com.privateboat.forum.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dto.response.ApprovalRecordDTO;
-import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.ApprovalRecord;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -69,11 +67,11 @@ class RecordControllerUnitTest {
     @Test
     void testGetNewlyRecords() throws Exception {
         //get valid NewlyRecord
-        given(userStatisticService.getNewlyRecords(VALID_USER_ID)).willReturn(userStatisticNewlyRecord);
+        given(userStatisticService.getNewlyRecords(VALID_USER_ID)).willReturn(USER_STATISTIC_NEW_RECORD);
         mvc.perform(get("/notifications/new_records")
                 .requestAttr("userId", VALID_USER_ID))
                 .andExpect(status().isOk())
-                .andExpect(content().string(objectMapper.writeValueAsString(userStatisticNewlyRecord)));
+                .andExpect(content().string(objectMapper.writeValueAsString(USER_STATISTIC_NEW_RECORD)));
 
         //get NOT_EXIST_USER NewlyRecord
         Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))

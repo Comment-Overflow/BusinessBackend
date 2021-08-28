@@ -3,10 +3,12 @@ package com.privateboat.forum.backend.controller;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
 import com.privateboat.forum.backend.dto.response.UserCardInfoDTO;
 import com.privateboat.forum.backend.enumerate.PostTag;
+import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.service.SearchService;
 import com.privateboat.forum.backend.util.JWTUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +26,7 @@ public class SearchController {
 
     @GetMapping(value = "/comments")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.BOTH)
-    ResponseEntity<List<SearchedCommentDTO>> searchComments(
+    ResponseEntity<?> searchComments(
             @RequestAttribute Long userId,
             @RequestParam @Nullable PostTag postTag,
             @RequestParam String searchKey,
@@ -32,16 +34,18 @@ public class SearchController {
             @RequestParam Integer pageSize) {
 
         List<SearchedCommentDTO> comments;
-        if (postTag == null) {
-            comments = searchService.searchComments(searchKey,
-                    PageRequest.of(pageNum, pageSize));
-        } else {
-            comments = searchService.searchCommentsByPostTag(postTag, searchKey,
-                    PageRequest.of(pageNum, pageSize));
+        try {
+            if (postTag == null) {
+                comments = searchService.searchAllComments(userId, searchKey,
+                        PageRequest.of(pageNum, pageSize));
+            } else {
+                comments = searchService.searchCommentsByPostTag(userId, postTag, searchKey,
+                        PageRequest.of(pageNum, pageSize));
+            }
+        } catch (UserInfoException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        // Record the time and search key of this search.
-        searchService.addSearchHistory(userId, searchKey, postTag);
         return ResponseEntity.ok(comments);
     }
 

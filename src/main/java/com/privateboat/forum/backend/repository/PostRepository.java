@@ -5,6 +5,7 @@ import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,4 +21,6 @@ public interface PostRepository {
     void delete(Post post);
     List<Post> generateHotPosts(Integer limit);
     List<Post> getHotPosts(Pageable pageable);
+    Page<Post> findByTitleContainingAndIsDeletedOrderByPostTime(String searchKey, boolean b, Pageable pageable);
+    Page<Post> findByTitleContainingAndTagAndIsDeletedOrderByPostTime(String searchKey, PostTag tag, boolean b, Pageable pageable);
 }

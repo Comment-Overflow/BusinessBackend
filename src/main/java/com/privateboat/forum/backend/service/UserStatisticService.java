@@ -3,5 +3,5 @@ package com.privateboat.forum.backend.service;
 import com.privateboat.forum.backend.entity.UserStatistic;
 
 public interface UserStatisticService {
-    UserStatistic.NewlyRecord getNewlyRecords(Long userId);
+    UserStatistic.NewRecord getNewlyRecords(Long userId);
 }
