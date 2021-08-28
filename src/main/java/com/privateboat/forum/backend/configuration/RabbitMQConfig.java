@@ -9,18 +9,23 @@ public class RabbitMQConfig {
 
     public static final String RECORD_EXCHANGE = "record-exchange";
     public static final String CACHE_EXCHANGE = "cache-exchange";
+    public static final String STATISTIC_EXCHANGE = "statistic";
 
     public static final String FOLLOW_QUEUE = "follow-queue";
     public static final String APPROVAL_QUEUE = "approval-queue";
     public static final String STAR_QUEUE = "star-queue";
     public static final String REPLY_QUEUE = "reply-queue";
     public static final String COMMENT_CACHE_UPDATE_QUEUE = "cache-queue";
+    public static final String POST_QUEUE = "post-queue";
+    public static final String COMMENT_QUEUE = "comment-queue";
 
     public static final String FOLLOW_KEY = "follow";
     public static final String APPROVAL_KEY = "approval";
     public static final String STAR_KEY = "star";
     public static final String REPLY_KEY = "reply";
     public static final String CACHE_KEY = "cache";
+    public static final String POST_KEY = "post";
+    public static final String COMMENT_KEY = "comment";
 
     @Bean
     public Queue followQueue() {
@@ -48,6 +53,16 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue postQueue() {
+        return new Queue(POST_QUEUE, true);
+    }
+
+    @Bean
+    public Queue commentQueue() {
+        return new Queue(COMMENT_QUEUE, true);
+    }
+
+    @Bean
     public DirectExchange recordExchange() {
         return new DirectExchange(RECORD_EXCHANGE);
     }
@@ -55,6 +70,11 @@ public class RabbitMQConfig {
     @Bean
     public DirectExchange cacheExchange() {
         return new DirectExchange(CACHE_EXCHANGE);
+    }
+
+    @Bean
+    public DirectExchange statisticExchange() {
+        return new DirectExchange(STATISTIC_EXCHANGE);
     }
 
     @Bean
@@ -80,5 +100,15 @@ public class RabbitMQConfig {
     @Bean
     public Binding cacheBinding() {
         return BindingBuilder.bind(cacheQueue()).to(cacheExchange()).with(CACHE_KEY);
+    }
+
+    @Bean
+    public Binding postBinding() {
+        return BindingBuilder.bind(postQueue()).to(statisticExchange()).with(POST_KEY);
+    }
+
+    @Bean
+    public Binding commentBinding() {
+        return BindingBuilder.bind(commentQueue()).to(statisticExchange()).with(COMMENT_KEY);
     }
 }

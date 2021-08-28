@@ -1,10 +1,12 @@
 package com.privateboat.forum.backend.rabbitmq;
 
 import com.privateboat.forum.backend.configuration.RabbitMQConfig;
+import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.enumerate.MQMethod;
 import com.privateboat.forum.backend.exception.RabbitMQException;
 import com.privateboat.forum.backend.rabbitmq.bean.*;
 import com.privateboat.forum.backend.repository.CommentRepository;
+import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.service.FollowRecordService;
 import com.privateboat.forum.backend.service.ReplyRecordService;
@@ -28,10 +30,11 @@ public class MQReceiver {
     private final StarRecordService starRecordService;
     private final ReplyRecordService replyRecordService;
     private final CommentRepository commentRepository;
+    private final UserStatisticRepository userStatisticRepository;
 
     @RabbitListener(queues = RabbitMQConfig.FOLLOW_QUEUE)
     public void followHandler(String msg) {
-        log.info("Follow message received!");
+        // log.info("Follow message received!");
         FollowBean bean = JacksonUtil.json2Bean(msg, FollowBean.class);
         checkNullBean(bean);
         assert bean != null;
@@ -44,7 +47,7 @@ public class MQReceiver {
 
     @RabbitListener(queues = RabbitMQConfig.APPROVAL_QUEUE)
     public void approvalHandler(String msg) {
-        log.info("Approval message received!");
+        // log.info("Approval message received!");
         ApprovalBean bean = JacksonUtil.json2Bean(msg, ApprovalBean.class);
         checkNullBean(bean);
         assert bean != null;
@@ -57,7 +60,7 @@ public class MQReceiver {
 
     @RabbitListener(queues = RabbitMQConfig.STAR_QUEUE)
     public void starHandler(String msg) {
-        log.info("Star message received!");
+        // log.info("Star message received!");
         StarBean bean = JacksonUtil.json2Bean(msg, StarBean.class);
         checkNullBean(bean);
         assert bean != null;
@@ -70,7 +73,7 @@ public class MQReceiver {
 
     @RabbitListener(queues = RabbitMQConfig.REPLY_QUEUE)
     public void ReplyHandler(String msg) {
-        log.info("Reply message received!");
+        // log.info("Reply message received!");
         ReplyBean bean = JacksonUtil.json2Bean(msg, ReplyBean.class);
         checkNullBean(bean);
         assert bean != null;
@@ -79,13 +82,43 @@ public class MQReceiver {
 
     @RabbitListener(queues = RabbitMQConfig.COMMENT_CACHE_UPDATE_QUEUE)
     public void CacheUpdateHandler(String msg) {
-        log.info("Update post caching...");
+        // log.info("Update post caching...");
         CommentCacheUpdateBean bean = JacksonUtil.json2Bean(msg, CommentCacheUpdateBean.class);
         checkNullBean(bean);
         assert bean != null;
         Pageable pageable = PageRequest.of(bean.getPageNum(), bean.getPageSize(),
                 Sort.by(Sort.Direction.ASC, "floor"));
         commentRepository.updateCommentCache(bean.getPostId(), pageable);
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.POST_QUEUE)
+    public void PostStatisticHandler(String msg) {
+        log.info("updating post statistics...");
+        StatisticBean bean = JacksonUtil.json2Bean(msg, StatisticBean.class);
+        checkNullBean(bean);
+        assert bean != null;
+        UserStatistic statistic = userStatisticRepository.getByUserId(bean.getUserId());
+        if (bean.getIncrement()) {
+            statistic.addPost();
+        } else {
+            statistic.subPost();
+        }
+        userStatisticRepository.save(statistic);
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.COMMENT_QUEUE)
+    public void CommentStatisticHandler(String msg) {
+        log.info("updating comment statistics...");
+        StatisticBean bean = JacksonUtil.json2Bean(msg, StatisticBean.class);
+        checkNullBean(bean);
+        assert bean != null;
+        UserStatistic statistic = userStatisticRepository.getByUserId(bean.getUserId());
+        if (bean.getIncrement()) {
+            statistic.addComment();
+        } else {
+            statistic.subComment();
+        }
+        userStatisticRepository.save(statistic);
     }
 
     void checkNullBean(Object bean) throws RabbitMQException {

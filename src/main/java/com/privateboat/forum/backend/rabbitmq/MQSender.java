@@ -45,4 +45,28 @@ public class MQSender {
         amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_CACHE_UPDATE_QUEUE, msg);
     }
 
+    public void addPostCount(Long userId) {
+        StatisticBean bean = new StatisticBean(userId, true);
+        String msg = JacksonUtil.bean2Json(bean);
+        amqpTemplate.convertAndSend(RabbitMQConfig.POST_QUEUE, msg);
+    }
+
+    public void addCommentCount(Long userId) {
+        StatisticBean bean = new StatisticBean(userId, true);
+        String msg = JacksonUtil.bean2Json(bean);
+        amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_QUEUE, msg);
+    }
+
+    public void subPostCount(Long userId) {
+        StatisticBean bean = new StatisticBean(userId, false);
+        String msg = JacksonUtil.bean2Json(bean);
+        amqpTemplate.convertAndSend(RabbitMQConfig.POST_QUEUE, msg);
+    }
+
+    public void subCommentCount(Long userId) {
+        StatisticBean bean = new StatisticBean(userId, false);
+        String msg = JacksonUtil.bean2Json(bean);
+        amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_QUEUE, msg);
+    }
+
 }
