@@ -48,6 +48,7 @@ public class SearchServiceImpl implements SearchService {
                     log.info(String.format("<findByPostTag> elapsed time: %d%n", b - a));
                 }
         );
+        commentThread.start();
 
         Thread postThread = new Thread(
                 () -> {
@@ -56,6 +57,7 @@ public class SearchServiceImpl implements SearchService {
                     ).getContent());
                 }
         );
+        postThread.start();
 
         try {
             commentThread.join();
