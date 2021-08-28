@@ -35,13 +35,14 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<SearchedCommentDTO> searchComments(String searchKey, Pageable pageable) {
-        AtomicReference<List<Comment>> searchedComments = new AtomicReference<>();
-        AtomicReference<List<Post>> searchedPosts = new AtomicReference<>();
+        // Get half of the results from post, half of them from comment.
+        AtomicReference<List<Comment>> searchedCommentsReference = new AtomicReference<>();
+        AtomicReference<List<Post>> searchedPostsReference = new AtomicReference<>();
 
         Thread commentThread = new Thread(
                 () -> {
                     long a = System.currentTimeMillis();
-                    searchedComments.set(commentRepository.findByContentContainingAndIsDeleted(
+                    searchedCommentsReference.set(commentRepository.findByContentContainingAndIsDeleted(
                             searchKey, false, pageable).getContent());
                     long b = System.currentTimeMillis();
                     log.info(String.format("<findByPostTag> elapsed time: %d%n", b - a));
@@ -50,7 +51,7 @@ public class SearchServiceImpl implements SearchService {
 
         Thread postThread = new Thread(
                 () -> {
-                    searchedPosts.set(postRepository.findByTitleContainingAndIsDeletedOrderByPostTime(
+                    searchedPostsReference.set(postRepository.findByTitleContainingAndIsDeletedOrderByPostTime(
                             searchKey, false, pageable
                     ).getContent());
                 }
@@ -60,15 +61,21 @@ public class SearchServiceImpl implements SearchService {
             commentThread.join();
             postThread.join();
         } catch (InterruptedException e) {
-            // TODO: handle error gracefully
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
+        List<SearchedCommentDTO> searchedPosts = searchedPostsReference.get().stream().map(
+                (post) -> new SearchedCommentDTO(post, post.getHostComment())
+        ).collect(Collectors.toList());
+        List<SearchedCommentDTO> searchedComments = searchedCommentsReference.get().stream().map(
+                (comment) -> new SearchedCommentDTO(comment.getPost(), comment)
+        ).collect(Collectors.toList());
+
         // TODO: merge the results
-        removeQuoteId(searchedComments.get());
+        removeQuoteId(searchedCommentsReference.get());
 
         long a = System.currentTimeMillis();
-        List<SearchedCommentDTO> ret = wrapSearchedCommentsWithPost(searchedComments.get());
+        List<SearchedCommentDTO> ret = wrapSearchedCommentsWithPost(searchedCommentsReference.get());
         long b = System.currentTimeMillis();
         log.info(String.format("<wrapSearchedCommentsWithPost> elapsed time: %d%n", b - a));
 
