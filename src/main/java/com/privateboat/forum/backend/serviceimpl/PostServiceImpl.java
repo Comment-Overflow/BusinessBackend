@@ -254,6 +254,7 @@ public class PostServiceImpl implements PostService {
 
         Comment host = null;
         for (Comment comment: comments.getContent()) {
+            comment.setUserInfo(userInfoRepository.getById(comment.getUserInfo().getId()));
             comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
             if (comment.getIsDeleted()) {
                 comment.setContent("");
