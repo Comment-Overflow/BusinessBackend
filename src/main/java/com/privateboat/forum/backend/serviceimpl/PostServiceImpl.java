@@ -13,17 +13,18 @@ import com.privateboat.forum.backend.enumerate.PreferDegree;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
 import com.privateboat.forum.backend.enumerate.UserType;
 import com.privateboat.forum.backend.exception.PostException;
+import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
+import com.privateboat.forum.backend.util.RedisUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
 import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import com.privateboat.forum.backend.util.image.ImageAuditException;
 import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
-import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
@@ -63,7 +64,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findByTag(tag, pageable);
         for (Post post: posts.getContent()) {
-            setPostTransientField(post, userInfo.get());
+            setPostApprovalStatusAndIsStarred(post, userInfo.get());
         }
         return posts;
     }
@@ -77,7 +78,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findAll(pageable);
         for (Post post: posts.getContent()) {
-            setPostTransientField(post, userInfo.get());
+            setPostApprovalStatusAndIsStarred(post, userInfo.get());
         }
         return posts;
     }
@@ -87,7 +88,7 @@ public class PostServiceImpl implements PostService {
         UserInfo userInfo = userInfoRepository.getById(myUserId);
         Page<Post> postPage = postRepository.findByUserId(userId, PageRequest.of(pageNum, pageSize));
         for(Post post: postPage.getContent()) {
-            setPostTransientField(post, userInfo);
+            setPostApprovalStatusAndIsStarred(post, userInfo);
         }
         return postPage;
     }
@@ -101,7 +102,7 @@ public class PostServiceImpl implements PostService {
             postList.add(starRecord.getPost());
         }
         for (Post post : postList) {
-            setPostTransientField(post, userInfo);
+            setPostApprovalStatusAndIsStarred(post, userInfo);
         }
         return new PageImpl<>(postList);
     }
@@ -334,10 +335,24 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<SearchedCommentDTO> findMyComments(Long userId, Integer pageNum, Integer pageSize) {
-        List<Comment> myComments = commentRepository.getMyComments(userId, PageRequest.of(pageNum, pageSize)).getContent();
-        removeQuoteId(myComments);
-        return wrapSearchedCommentsWithPost(myComments);
+    public List<SearchedCommentDTO> findOnesComments(Long targetId, Long viewerId, Integer pageNum, Integer pageSize) {
+        Optional<UserInfo> optionalViewerInfo = userInfoRepository.findByUserId(viewerId);
+        if (optionalViewerInfo.isEmpty()) {
+            throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+        }
+        UserInfo viewerInfo = optionalViewerInfo.get();
+
+        List<Comment> targetComments = commentRepository.getOnesComments(targetId, PageRequest.of(pageNum, pageSize)).getContent();
+        removeQuoteId(targetComments);
+        return targetComments.stream().map(comment -> {
+            Post parentPost = comment.getPost();
+            setPostApprovalStatusAndIsStarred(parentPost, viewerInfo);
+
+            SearchedCommentDTO dto = new SearchedCommentDTO(parentPost, comment);
+            // isStarred is no longer set upon constructor invocation.
+            dto.setIsStarred(parentPost.getIsStarred());
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -356,7 +371,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void setPostTransientField(Post post, UserInfo userInfo) {
+    public void setPostApprovalStatusAndIsStarred(Post post, UserInfo userInfo) {
         post.getHostComment().setApprovalStatus(
                 approvalRecordRepository.checkIfHaveApproved(userInfo, post.getHostComment()));
         post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
@@ -366,16 +381,8 @@ public class PostServiceImpl implements PostService {
     public List<HotPostDTO> getHotList(Integer pageNum, Integer pageSize) {
         List<Post> hottestPosts = postRepository.getHotPosts(PageRequest.of(pageNum, pageSize));
         return hottestPosts.stream().map(post -> {
-            setPostTransientField(post, post.getUserInfo());
+            setPostApprovalStatusAndIsStarred(post, post.getUserInfo());
             return new HotPostDTO(post);
-        }).collect(Collectors.toList());
-    }
-
-    public List<SearchedCommentDTO> wrapSearchedCommentsWithPost(List<Comment> comments) {
-        return comments.stream().map(comment -> {
-            Post parentPost = comment.getPost();
-            setPostTransientField(parentPost, comment.getUserInfo());
-            return new SearchedCommentDTO(parentPost, comment);
         }).collect(Collectors.toList());
     }
 

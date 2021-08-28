@@ -122,13 +122,15 @@ public class PostController {
         }
     }
 
-    @GetMapping(value = "/comments/{userId}")
+    @GetMapping(value = "/comments/{targetId}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<List<SearchedCommentDTO>> getMyComments(@PathVariable Long userId,
-                                                   @RequestParam("pageNum") Integer pageNum,
-                                                   @RequestParam("pageSize") Integer pageSize) {
+    ResponseEntity<List<SearchedCommentDTO>> getMyComments(
+            @PathVariable Long targetId,
+            @RequestAttribute(name = "userId") Long viewerId,
+            @RequestParam("pageNum") Integer pageNum,
+            @RequestParam("pageSize") Integer pageSize) {
         try {
-            List<SearchedCommentDTO> myComments = postService.findMyComments(userId, pageNum, pageSize);
+            List<SearchedCommentDTO> myComments = postService.findOnesComments(targetId, viewerId, pageNum, pageSize);
             return ResponseEntity.ok(myComments);
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());

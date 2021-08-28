@@ -89,7 +89,7 @@ public class SearchServiceImpl implements SearchService {
     private List<SearchedCommentDTO> wrapSearchedCommentsWithPost(List<Comment> comments) {
         return comments.stream().map(comment -> {
             Post parentPost = comment.getPost();
-            postService.setPostTransientField(parentPost, comment.getUserInfo());
+            postService.setPostApprovalStatusAndIsStarred(parentPost, comment.getUserInfo());
             return new SearchedCommentDTO(parentPost, comment);
         }).collect(Collectors.toList());
     }

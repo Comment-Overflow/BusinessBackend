@@ -100,7 +100,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
-    public Page<Comment> getMyComments(Long userId, Pageable pageable) {
+    public Page<Comment> getOnesComments(Long userId, Pageable pageable) {
         return commentDAO.findByUserInfoIdAndFloorGreaterThanAndIsDeletedOrderByTimeDesc(userId, 0, false, pageable);
     }
 

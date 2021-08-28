@@ -19,7 +19,7 @@ public interface CommentRepository {
     Page<Comment> findByContentContainingAndIsDeleted(String searchKey, Boolean isDeleted, Pageable pageable);
     Page<Comment> findByPostTag(PostTag tag, String searchKey, Pageable pageable);
     Page<Comment> findByFollowingOnly(Long userId, Pageable pageable);
-    Page<Comment> getMyComments(Long userId, Pageable pageable);
+    Page<Comment> getOnesComments(Long userId, Pageable pageable);
     QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
     void delete(Comment comment);
     PageDTO<Comment> updateCommentCache(Long postId, Pageable pageable);
