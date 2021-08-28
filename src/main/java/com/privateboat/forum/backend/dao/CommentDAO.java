@@ -17,7 +17,7 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
             "lower(c.content) like lower(concat('%', :searchKey, '%')) and c.floor > 0 and " +
             "c.post.isDeleted = :isDeleted " +
             "order by c.time desc")
-    Page<Comment> findByContentContainingOrPostTitleContainingAndPostIsDeleted(
+    Page<Comment> findByContentContainingAndPostIsDeleted(
             @Param("searchKey") String searchKey,
             @Param("isDeleted") Boolean isDeleted,
             Pageable pageable);
@@ -27,7 +27,7 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
             "lower(c.content) like lower(concat('%', :searchKey, '%')) and c.floor > 0 and " +
             "c.post.isDeleted = :isDeleted " +
             "order by c.time desc")
-    Page<Comment> findByPostTagAndContentContainingOrPostTitleContainingAndPostIsDeleted(
+    Page<Comment> findByPostTagAndContentContainingAndPostIsDeleted(
             @Param("postTag") PostTag postTag,
             @Param("searchKey") String searchKey,
             @Param("isDeleted") Boolean isDeleted,

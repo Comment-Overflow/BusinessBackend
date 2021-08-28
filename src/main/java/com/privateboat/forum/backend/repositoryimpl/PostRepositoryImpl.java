@@ -8,7 +8,6 @@ import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.PostRepository;
 import com.privateboat.forum.backend.util.Constant;
 import lombok.AllArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -97,5 +96,24 @@ public class PostRepositoryImpl implements PostRepository {
                 .stream()
                 .map(object -> objectMapper.convertValue(object, Post.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Post> findByTitleContainingAndIsDeletedOrderByPostTime(String searchKey,
+                                                                       boolean isDeleted,
+                                                                       Pageable pageable) {
+        return postDAO.findByTitleContainingAndIsDeletedOrderByPostTime(
+                searchKey, isDeleted, pageable
+        );
+    }
+
+    @Override
+    public Page<Post> findByTitleContainingAndTagAndIsDeletedOrderByPostTime(String searchKey,
+                                                                             PostTag tag,
+                                                                             boolean isDeleted,
+                                                                             Pageable pageable) {
+        return postDAO.findByTitleContainingAndTagAndIsDeletedOrderByPostTime(
+                searchKey, tag, isDeleted, pageable
+        );
     }
 }

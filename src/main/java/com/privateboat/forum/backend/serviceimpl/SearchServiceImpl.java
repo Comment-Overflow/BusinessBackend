@@ -7,6 +7,7 @@ import com.privateboat.forum.backend.enumerate.FollowStatus;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.FollowRecordRepository;
+import com.privateboat.forum.backend.repository.PostRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.SearchService;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,23 +28,48 @@ import java.util.stream.Collectors;
 public class SearchServiceImpl implements SearchService {
 
     private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
     private final UserInfoRepository userInfoRepository;
     private final FollowRecordRepository followRecordRepository;
     private final PostService postService;
 
     @Override
     public List<SearchedCommentDTO> searchComments(String searchKey, Pageable pageable) {
+        AtomicReference<List<Comment>> searchedComments = new AtomicReference<>();
+        AtomicReference<List<Post>> searchedPosts = new AtomicReference<>();
+
+        Thread commentThread = new Thread(
+                () -> {
+                    long a = System.currentTimeMillis();
+                    searchedComments.set(commentRepository.findByContentContainingAndIsDeleted(
+                            searchKey, false, pageable).getContent());
+                    long b = System.currentTimeMillis();
+                    log.info(String.format("<findByPostTag> elapsed time: %d%n", b - a));
+                }
+        );
+
+        Thread postThread = new Thread(
+                () -> {
+                    searchedPosts.set(postRepository.findByTitleContainingAndIsDeletedOrderByPostTime(
+                            searchKey, false, pageable
+                    ).getContent());
+                }
+        );
+
+        try {
+            commentThread.join();
+            postThread.join();
+        } catch (InterruptedException e) {
+            // TODO: handle error gracefully
+            e.printStackTrace();
+        }
+
+        // TODO: merge the results
+        removeQuoteId(searchedComments.get());
+
         long a = System.currentTimeMillis();
-        List<Comment> searchedComments = commentRepository.findByContentContainingOrPostTitleContainingAndIsDeleted(
-                searchKey, false, pageable).getContent();
+        List<SearchedCommentDTO> ret = wrapSearchedCommentsWithPost(searchedComments.get());
         long b = System.currentTimeMillis();
-        log.info(String.format("<findByPostTag> elapsed time: %d%n", b - a));
-
-        removeQuoteId(searchedComments);
-
-        a = System.currentTimeMillis();
-        List<SearchedCommentDTO> ret = wrapSearchedCommentsWithPost(searchedComments);
-        b = System.currentTimeMillis();
         log.info(String.format("<wrapSearchedCommentsWithPost> elapsed time: %d%n", b - a));
 
         return ret;

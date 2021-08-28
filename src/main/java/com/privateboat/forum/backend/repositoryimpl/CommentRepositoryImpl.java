@@ -75,11 +75,11 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
-    public Page<Comment> findByContentContainingOrPostTitleContainingAndIsDeleted(
+    public Page<Comment> findByContentContainingAndIsDeleted(
             String searchKey,
             Boolean isDeleted,
             Pageable pageable) {
-        return commentDAO.findByContentContainingOrPostTitleContainingAndPostIsDeleted(
+        return commentDAO.findByContentContainingAndPostIsDeleted(
                 searchKey,
                 false,
                 pageable);
@@ -87,7 +87,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
 
     @Override
     public Page<Comment> findByPostTag(PostTag postTag, String searchKey, Pageable pageable) {
-        return commentDAO.findByPostTagAndContentContainingOrPostTitleContainingAndPostIsDeleted(
+        return commentDAO.findByPostTagAndContentContainingAndPostIsDeleted(
                 postTag,
                 searchKey,
                 false,
