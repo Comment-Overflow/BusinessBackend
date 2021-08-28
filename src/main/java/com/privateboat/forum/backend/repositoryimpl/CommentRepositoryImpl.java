@@ -30,6 +30,9 @@ public class CommentRepositoryImpl implements CommentRepository  {
         System.out.println("entering database...");
         Page<Comment> commentPage = commentDAO.findByPostId(postId, pageable);
         List<Comment> contentList = commentPage.getContent();
+        if (contentList.size() == 0) {
+            return new PageDTO<>(commentPage);
+        }
         for (Comment comment : contentList) {
             comment.setImageUrl(new ArrayList<>(comment.getImageUrl()));
         }

@@ -134,9 +134,11 @@ public class PostServiceImpl implements PostService {
         newPost.setKeyWordList(recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent()));
 
         // Change user statistics.
-        UserStatistic senderStatistic = senderInfo.getUserStatistic();
-        senderStatistic.addPost();
-        userStatisticRepository.save(senderStatistic);
+        mqSender.addPostCount(userId);
+//        UserStatistic senderStatistic = senderInfo.getUserStatistic();
+//        senderStatistic.addPost();
+//        userStatisticRepository.save(senderStatistic);
+
 
         addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
 
@@ -171,8 +173,9 @@ public class PostServiceImpl implements PostService {
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.addComment(newComment);
         post.setLastCommentTime(newComment.getTime());
-        optionalSenderInfo.get().getUserStatistic().addComment();
-        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
+//        optionalSenderInfo.get().getUserStatistic().addComment();
+//        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
+        mqSender.addCommentCount(userId);
         commentRepository.save(newComment);
         Long newCommentId = newComment.getId();
         postRepository.save(post);
@@ -298,8 +301,9 @@ public class PostServiceImpl implements PostService {
                 userInfo.get().getUserAuth().getUserType() != UserType.ADMIN) {
             throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
-        post.get().getUserInfo().getUserStatistic().subPost();
-        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
+//        post.get().getUserInfo().getUserStatistic().subPost();
+//        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
+        mqSender.subPostCount(userId);
         postRepository.delete(post.get());
     }
 
@@ -326,8 +330,9 @@ public class PostServiceImpl implements PostService {
             throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
         post.deleteComment(comment);
-        senderInfo.getUserStatistic().subComment();
-        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
+//        senderInfo.getUserStatistic().subComment();
+//        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
+        mqSender.subCommentCount(userId);
         postRepository.save(post);
         commentRepository.delete(comment);
         mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
