@@ -87,7 +87,7 @@ public class SearchServiceImplUnitTest {
                                 comment.getPost().getTitle().contains("abc")
                         ).collect(Collectors.toList())
                 ));
-        List<SearchedCommentDTO> searchedComments = searchService.searchComments("abc", PAGE_REQUEST);
+        List<SearchedCommentDTO> searchedComments = searchService.searchAllComments(USER_ID,"abc", PAGE_REQUEST);
         for (SearchedCommentDTO parentPost: searchedComments) {
             Comment comment = parentPost.getSearchedComment();
             assertTrue(comment.getContent().contains("abc") || comment.getPost().getTitle().contains("abc"));
