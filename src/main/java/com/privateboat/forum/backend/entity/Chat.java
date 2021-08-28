@@ -1,10 +1,8 @@
 package com.privateboat.forum.backend.entity;
 
-import com.sun.istack.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.catalina.User;
 
 import javax.persistence.*;
 
@@ -12,6 +10,12 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(
+        indexes = {
+                @Index(columnList = "user_id"),
+                @Index(columnList = "user_id, chatter_id")
+        }
+)
 public class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

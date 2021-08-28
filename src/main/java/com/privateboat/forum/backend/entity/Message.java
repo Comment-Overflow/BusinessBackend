@@ -12,6 +12,12 @@ import java.sql.Timestamp;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(
+        indexes = {
+                @Index(columnList = "sender_id, receiver_id, time"),
+                @Index(columnList = "time")
+        }
+)
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
