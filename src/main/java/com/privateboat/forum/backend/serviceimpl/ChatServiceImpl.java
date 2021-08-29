@@ -11,6 +11,7 @@ import com.privateboat.forum.backend.entity.Message;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.MessageType;
 import com.privateboat.forum.backend.exception.ChatException;
+import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.ChatRepository;
 import com.privateboat.forum.backend.repository.MessageRepository;
 import com.privateboat.forum.backend.repository.UserInfoRepository;
@@ -43,6 +44,7 @@ public class ChatServiceImpl implements ChatService {
     private final ObjectMapper objectMapper;
     private final ProjectionFactory projectionFactory;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final MQSender mqSender;
 
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
@@ -68,8 +70,8 @@ public class ChatServiceImpl implements ChatService {
         // Save message to the database.
         messageRepository.save(message);
 
-        // Update chat in database.
-        updateChatOnNewMessage(message);
+        // Update chat in database using messasge queue.
+        mqSender.updateChat(message);
 
         // Send the message to the receiver via socket.
         sendMessageToReceiver(message);
@@ -101,8 +103,8 @@ public class ChatServiceImpl implements ChatService {
         // Save message to the database.
         messageRepository.save(message);
 
-        // Update chat in database.
-        updateChatOnNewMessage(message);
+        // Update chat in database using message queue.
+        mqSender.updateChat(message);
 
         // Send the message to the receiver via socket.
         sendMessageToReceiver(message);
@@ -161,17 +163,8 @@ public class ChatServiceImpl implements ChatService {
         chatRepository.deleteChatByUserIdAndChatterId(userId, chatterId);
     }
 
-    private void sendMessageToReceiver(Message message) throws JsonProcessingException {
-        MessageDTO messageToSend = new MessageDTO(
-                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getSender()),
-                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getReceiver()),
-                message.getTime(), message.getType(), message.getContent());
-        String jsonMessage = objectMapper.writeValueAsString(messageToSend);
-        simpMessagingTemplate.convertAndSendToUser(
-                message.getReceiver().getId().toString(), receiverChannel, jsonMessage);
-    }
-
-    private void updateChatOnNewMessage(Message message) {
+    @Override
+    public void updateChatOnNewMessage(Message message) {
         UserInfo senderInfo = message.getSender();
         UserInfo receiverInfo = message.getReceiver();
         Long senderId = senderInfo.getId();
@@ -200,5 +193,15 @@ public class ChatServiceImpl implements ChatService {
             chat.setUnreadCount(chat.getUnreadCount() + 1);
             chatRepository.save(chat);
         }
+    }
+
+    private void sendMessageToReceiver(Message message) throws JsonProcessingException {
+        MessageDTO messageToSend = new MessageDTO(
+                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getSender()),
+                projectionFactory.createProjection(UserInfo.MinimalUserInfo.class, message.getReceiver()),
+                message.getTime(), message.getType(), message.getContent());
+        String jsonMessage = objectMapper.writeValueAsString(messageToSend);
+        simpMessagingTemplate.convertAndSendToUser(
+                message.getReceiver().getId().toString(), receiverChannel, jsonMessage);
     }
 }

@@ -1,16 +1,14 @@
 package com.privateboat.forum.backend.rabbitmq;
 
 import com.privateboat.forum.backend.configuration.RabbitMQConfig;
+import com.privateboat.forum.backend.entity.Message;
 import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.enumerate.MQMethod;
 import com.privateboat.forum.backend.exception.RabbitMQException;
 import com.privateboat.forum.backend.rabbitmq.bean.*;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
-import com.privateboat.forum.backend.service.ApprovalRecordService;
-import com.privateboat.forum.backend.service.FollowRecordService;
-import com.privateboat.forum.backend.service.ReplyRecordService;
-import com.privateboat.forum.backend.service.StarRecordService;
+import com.privateboat.forum.backend.service.*;
 import com.privateboat.forum.backend.util.JacksonUtil;
 import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
@@ -31,6 +29,7 @@ public class MQReceiver {
     private final ReplyRecordService replyRecordService;
     private final CommentRepository commentRepository;
     private final UserStatisticRepository userStatisticRepository;
+    private final ChatService chatService;
 
     @RabbitListener(queues = RabbitMQConfig.FOLLOW_QUEUE)
     public void followHandler(String msg) {
@@ -119,6 +118,14 @@ public class MQReceiver {
             statistic.subComment();
         }
         userStatisticRepository.save(statistic);
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.CHAT_QUEUE)
+    public void ChatHandler(String msg) {
+        Message message = JacksonUtil.json2Bean(msg, Message.class);
+        checkNullBean(message);
+        assert message != null;
+        chatService.updateChatOnNewMessage(message);
     }
 
     void checkNullBean(Object bean) throws RabbitMQException {
