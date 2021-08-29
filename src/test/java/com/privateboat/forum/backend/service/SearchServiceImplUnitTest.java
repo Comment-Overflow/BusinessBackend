@@ -66,7 +66,7 @@ public class SearchServiceImplUnitTest {
 
         COMMENT1 = new Comment(POST1, USER_INFO, 0L, CONTENT);
         COMMENT2 = new Comment(POST2, USER_INFO, 0L, CONTENT);
-        COMMENTS = new ArrayList<>() {{
+        COMMENTS = new ArrayList<Comment>() {{
             add(COMMENT1);
             add(COMMENT2);
         }};
@@ -115,11 +115,11 @@ public class SearchServiceImplUnitTest {
 
     @Test
     void testSearchUsers() {
-        List<UserInfo> userInfoList = new ArrayList<>() {{
+        List<UserInfo> userInfoList = new ArrayList<UserInfo>() {{
             add(USER_INFO);
         }};
 
-        given(userInfoRepository.findByUserNameContaining(USER_NAME)).
+        given(userInfoRepository.findByUserNameContainingIgnoreCase(USER_NAME)).
                 willReturn(userInfoList);
 
         List<UserCardInfoDTO> searchedUserInfo = searchService.searchUsers(USER_ID, USER_NAME);

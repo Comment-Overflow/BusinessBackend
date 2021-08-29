@@ -114,7 +114,7 @@ public class AuthServiceImpl implements AuthService {
     private UserAuth verifyAuth(String email, String rawPassword) throws AuthException {
         Optional<UserAuth> optionalUserAuth = userAuthRepository.findByEmail(email);
 
-        if (optionalUserAuth.isEmpty()) {
+        if (!optionalUserAuth.isPresent()) {
             throw new AuthException(AuthException.AuthExceptionType.WRONG_EMAIL);
         }
 

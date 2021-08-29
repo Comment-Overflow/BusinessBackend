@@ -10,7 +10,7 @@ public class ProfileException extends RuntimeException{
 
     private final ProfileExceptionType type;
 
-    private static final Map<ProfileExceptionType, String> map = new HashMap<>(){{
+    private static final Map<ProfileExceptionType, String> map = new HashMap<ProfileExceptionType, String>(){{
         put(ProfileExceptionType.UPLOAD_IMAGE_FAILED, "图片上传失败");
         put(ProfileExceptionType.GENDER_NOT_VALID, "性别有误");
         put(ProfileExceptionType.ILLEGAL_USER_NAME, "用户名包含不合法内容");

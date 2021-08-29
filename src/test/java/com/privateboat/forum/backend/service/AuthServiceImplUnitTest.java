@@ -67,7 +67,7 @@ public class AuthServiceImplUnitTest {
         MockitoAnnotations.openMocks(this);
 
         // JWT header
-        Map<String, Object> map = new HashMap<>() {{
+        Map<String, Object> map = new HashMap<String, Object>() {{
             put("alg", "HS256");
             put("typ", "JWT");
         }};

@@ -17,7 +17,7 @@ public class FTSUtil {
 
         return tokens.stream()
                 .map(token -> token.word)
-                .filter(lexeme -> lexeme != null && !lexeme.isBlank() && !CHINESE_PUNCTUATION.matcher(lexeme).find())
+                .filter(lexeme -> lexeme != null && !lexeme.isEmpty() && !CHINESE_PUNCTUATION.matcher(lexeme).find())
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 }

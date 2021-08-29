@@ -8,7 +8,7 @@ public class ChatException extends RuntimeException {
         CHAT_NOT_EXIST, SEND_IMAGE_FAILED
     }
 
-    private static final Map<ChatException.ChatExceptionType, String> map = new HashMap<>() {{
+    private static final Map<ChatException.ChatExceptionType, String> map = new HashMap<ChatExceptionType, String>() {{
         put(ChatExceptionType.CHAT_NOT_EXIST, "聊天不存在");
         put(ChatExceptionType.SEND_IMAGE_FAILED, "图片发送失败");
     }};

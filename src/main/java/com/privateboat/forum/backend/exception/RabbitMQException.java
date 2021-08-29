@@ -10,7 +10,7 @@ public class RabbitMQException extends RuntimeException {
 
     private final RabbitMQExceptionType type;
 
-    private static final Map<RabbitMQExceptionType, String> map = new HashMap<>() {{
+    private static final Map<RabbitMQExceptionType, String> map = new HashMap<RabbitMQExceptionType, String>() {{
         put(RabbitMQExceptionType.NULL_BEAN, "实体转换失败！");
     }};
 

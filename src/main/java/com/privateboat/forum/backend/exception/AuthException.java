@@ -13,7 +13,7 @@ public class AuthException extends RuntimeException {
         DUPLICATE_EMAIL, WRONG_EMAIL, WRONG_PASSWORD, EXPIRED_EMAIL_TOKEN, WRONG_EMAIL_TOKEN
     }
 
-    private static final Map<AuthExceptionType, String> map = new HashMap<>() {{
+    private static final Map<AuthExceptionType, String> map = new HashMap<AuthExceptionType, String>() {{
         put(AuthExceptionType.DUPLICATE_EMAIL, "该邮箱已被注册!");
         put(AuthExceptionType.WRONG_EMAIL, "用户不存在!");
         put(AuthExceptionType.WRONG_PASSWORD, "密码错误!");

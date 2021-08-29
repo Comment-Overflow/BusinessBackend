@@ -8,6 +8,7 @@ import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.model.*;
 import com.qcloud.cos.model.ciModel.auditing.ImageAuditingRequest;
 import com.qcloud.cos.model.ciModel.auditing.ImageAuditingResponse;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,7 +69,9 @@ public class ImageUtil {
 
         try {
             // Get the image in the form of byte stream.
-            return cosObjectInput.readAllBytes();
+            byte[] image = IOUtils.toByteArray(cosObjectInput);
+            cosObjectInput.close();
+            return image;
         } catch (IOException e) {
             throw new RuntimeException();
         }

@@ -11,7 +11,7 @@ public class UserInfoException extends RuntimeException {
 
     private final UserInfoExceptionType type;
 
-    private static final Map<UserInfoExceptionType, String> map = new HashMap<>() {{
+    private static final Map<UserInfoExceptionType, String> map = new HashMap<UserInfoExceptionType, String>() {{
         put(UserInfoExceptionType.USER_NOT_EXIST, "用户不存在！");
     }};
 

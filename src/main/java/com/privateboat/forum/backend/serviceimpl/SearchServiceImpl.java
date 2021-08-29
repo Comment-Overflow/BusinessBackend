@@ -45,7 +45,7 @@ public class SearchServiceImpl implements SearchService {
     public List<SearchedCommentDTO> searchAllComments(Long userId, String searchKey, Pageable pageable)
             throws UserInfoException {
         Optional<UserInfo> optionalUserInfo = userInfoRepository.findByUserId(userId);
-        if (optionalUserInfo.isEmpty()) {
+        if (!optionalUserInfo.isPresent()) {
             throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         }
         UserInfo userInfo = optionalUserInfo.get();
@@ -64,7 +64,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public List<SearchedCommentDTO> searchCommentsByPostTag(Long userId, PostTag postTag, String searchKey, Pageable pageable) {
         Optional<UserInfo> optionalUserInfo = userInfoRepository.findByUserId(userId);
-        if (optionalUserInfo.isEmpty()) {
+        if (!optionalUserInfo.isPresent()) {
             throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         }
         UserInfo userInfo = optionalUserInfo.get();
@@ -96,7 +96,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<UserCardInfoDTO> searchUsers(Long userId, String searchKey) {
-        List<UserInfo> searchedUserInfo = userInfoRepository.findByUserNameContaining(searchKey);
+        List<UserInfo> searchedUserInfo = userInfoRepository.findByUserNameContainingIgnoreCase(searchKey);
 
         return searchedUserInfo.stream().map(userInfo -> {
             FollowStatus followStatus = followRecordRepository.getFollowStatus(userId, userInfo.getId());

@@ -179,7 +179,7 @@ public class ChatServiceImpl implements ChatService {
 
         // Update sender chat in database.
         Optional<Chat> senderChatOpt = chatRepository.findByUserIdAndChatterId(senderId, receiverId);
-        if (senderChatOpt.isEmpty()) {
+        if (!senderChatOpt.isPresent()) {
             Chat newChat = new Chat(senderInfo, receiverInfo, message, 0);
             chatRepository.save(newChat);
         } else {
@@ -191,7 +191,7 @@ public class ChatServiceImpl implements ChatService {
 
         // Update receiver chat in database.
         Optional<Chat> receiverChatOpt = chatRepository.findByUserIdAndChatterId(receiverId, senderId);
-        if (receiverChatOpt.isEmpty()) {
+        if (!receiverChatOpt.isPresent()) {
             Chat newChat = new Chat(receiverInfo, senderInfo, message, 1);
             chatRepository.save(newChat);
         } else {

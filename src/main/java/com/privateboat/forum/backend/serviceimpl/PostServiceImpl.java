@@ -59,7 +59,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Page<Post> findByTag(PostTag tag, Integer pageNum, Integer pageSize, Long userId) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        if (!userInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
@@ -73,7 +73,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Page<Post> findAll(Integer pageNum, Integer pageSize, Long userId) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        if (!userInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
         Pageable pageable = PageRequest.of(pageNum, pageSize);
@@ -112,7 +112,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException {
         Optional<UserInfo> optionalSenderInfo = userInfoRepository.findByUserId(userId);
-        if (optionalSenderInfo.isEmpty()) {
+        if (!optionalSenderInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
         }
         UserInfo senderInfo = optionalSenderInfo.get();
@@ -155,7 +155,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException {
         Optional<UserInfo> optionalSenderInfo = userInfoRepository.findByUserId(userId);
-        if (optionalSenderInfo.isEmpty()) {
+        if (!optionalSenderInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
         }
 
@@ -163,7 +163,7 @@ public class PostServiceImpl implements PostService {
         checkSilence(senderInfo);
 
         Optional<Post> optionalPost = postRepository.findByPostId(commentDTO.getPostId());
-        if (optionalPost.isEmpty()) {
+        if (!optionalPost.isPresent()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
         Post post = optionalPost.get();
@@ -218,11 +218,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post getPost(Long postId, Long userId) throws PostException {
         Optional<Post> optionalPost = postRepository.findByPostId(postId);
-        if (optionalPost.isEmpty()) {
+        if (!optionalPost.isPresent()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        if (!userInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
 
@@ -235,13 +235,13 @@ public class PostServiceImpl implements PostService {
     public PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
                                                       Integer pageNum, Integer pageSize, Long userId) {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        if (!userInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
 
 
         Optional<Post> optionalPost = postRepository.findByPostId(postId);
-        if (optionalPost.isEmpty()) {
+        if (!optionalPost.isPresent()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
 
@@ -293,11 +293,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public void deletePost(Long postId, Long userId) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        if (!userInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
         Optional<Post> post = postRepository.findByPostId(postId);
-        if (post.isEmpty()) {
+        if (!post.isPresent()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
         if ((post.get().getUserInfo() != userInfo.get() || post.get().getIsFrozen()) &&
@@ -314,13 +314,13 @@ public class PostServiceImpl implements PostService {
     @Override
     public void deleteComment(Long commentId, Long userId) throws PostException {
         Optional<UserInfo> optionalViewerInfo = userInfoRepository.findByUserId(userId);
-        if (optionalViewerInfo.isEmpty()) {
+        if (!optionalViewerInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
         UserInfo viewerInfo = optionalViewerInfo.get();
 
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isEmpty()) {
+        if (!optionalComment.isPresent()) {
             throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
         }
         Comment comment = optionalComment.get();
@@ -344,7 +344,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<SearchedCommentDTO> findOnesComments(Long targetId, Long viewerId, Integer pageNum, Integer pageSize) {
         Optional<UserInfo> optionalViewerInfo = userInfoRepository.findByUserId(viewerId);
-        if (optionalViewerInfo.isEmpty()) {
+        if (!optionalViewerInfo.isPresent()) {
             throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         }
         UserInfo viewerInfo = optionalViewerInfo.get();
@@ -365,11 +365,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post getPostByComment(Long commentId, Long userId) throws PostException {
         Optional<UserInfo> userInfo = userInfoRepository.findByUserId(userId);
-        if (userInfo.isEmpty()) {
+        if (!userInfo.isPresent()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
         Optional<Comment> comment = commentRepository.findById(commentId);
-        if (comment.isEmpty()) {
+        if (!comment.isPresent()) {
             throw new PostException(PostException.PostExceptionType.COMMENT_NOT_EXIST);
         }
         Post post = comment.get().getPost();

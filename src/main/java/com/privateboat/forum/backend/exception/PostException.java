@@ -12,7 +12,7 @@ public class PostException extends RuntimeException {
 
     private final PostExceptionType type;
 
-    private static final Map<PostExceptionType, String> map = new HashMap<>() {{
+    private static final Map<PostExceptionType, String> map = new HashMap<PostExceptionType, String>() {{
         put(PostExceptionType.COMMENT_NOT_EXIST, "回复不存在！");
         put(PostExceptionType.POST_NOT_EXIST, "帖子不存在！");
         put(PostExceptionType.POST_DELETED, "帖子已经被删除！");
