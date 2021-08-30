@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.rabbitmq;
 import com.privateboat.forum.backend.configuration.RabbitMQConfig;
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.entity.Message;
 import com.privateboat.forum.backend.enumerate.MQMethod;
 import com.privateboat.forum.backend.rabbitmq.bean.*;
 import com.privateboat.forum.backend.util.JacksonUtil;
@@ -67,6 +68,11 @@ public class MQSender {
         StatisticBean bean = new StatisticBean(userId, false);
         String msg = JacksonUtil.bean2Json(bean);
         amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_QUEUE, msg);
+    }
+
+    public void updateChat(Message message) {
+        String msg = JacksonUtil.bean2Json(message);
+        amqpTemplate.convertAndSend(RabbitMQConfig.CHAT_QUEUE, msg);
     }
 
 }

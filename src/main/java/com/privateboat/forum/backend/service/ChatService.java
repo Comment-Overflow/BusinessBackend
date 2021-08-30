@@ -31,4 +31,6 @@ public interface ChatService {
     void deleteAllReadChat(Long userId);
 
     void deleteChat(Long userId, Long chatterId);
+
+    void updateChatOnNewMessage(Message message);
 }

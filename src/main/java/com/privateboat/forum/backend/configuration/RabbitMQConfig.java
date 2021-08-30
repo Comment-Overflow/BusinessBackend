@@ -10,6 +10,7 @@ public class RabbitMQConfig {
     public static final String RECORD_EXCHANGE = "record-exchange";
     public static final String CACHE_EXCHANGE = "cache-exchange";
     public static final String STATISTIC_EXCHANGE = "statistic";
+    public static final String CHAT_EXCHANGE = "chat-exchange";
 
     public static final String FOLLOW_QUEUE = "follow-queue";
     public static final String APPROVAL_QUEUE = "approval-queue";
@@ -18,6 +19,7 @@ public class RabbitMQConfig {
     public static final String COMMENT_CACHE_UPDATE_QUEUE = "cache-queue";
     public static final String POST_QUEUE = "post-queue";
     public static final String COMMENT_QUEUE = "comment-queue";
+    public static final String CHAT_QUEUE = "chat-queue";
 
     public static final String FOLLOW_KEY = "follow";
     public static final String APPROVAL_KEY = "approval";
@@ -26,6 +28,7 @@ public class RabbitMQConfig {
     public static final String CACHE_KEY = "cache";
     public static final String POST_KEY = "post";
     public static final String COMMENT_KEY = "comment";
+    public static final String CHAT_KEY = "chat";
 
     @Bean
     public Queue followQueue() {
@@ -62,6 +65,10 @@ public class RabbitMQConfig {
         return new Queue(COMMENT_QUEUE, true);
     }
 
+    @Bean Queue chatQueue() {
+        return new Queue(CHAT_QUEUE, true);
+    }
+
     @Bean
     public DirectExchange recordExchange() {
         return new DirectExchange(RECORD_EXCHANGE);
@@ -75,6 +82,11 @@ public class RabbitMQConfig {
     @Bean
     public DirectExchange statisticExchange() {
         return new DirectExchange(STATISTIC_EXCHANGE);
+    }
+
+    @Bean
+    public DirectExchange chatExchange() {
+        return new DirectExchange(CHAT_EXCHANGE);
     }
 
     @Bean
@@ -110,5 +122,10 @@ public class RabbitMQConfig {
     @Bean
     public Binding commentBinding() {
         return BindingBuilder.bind(commentQueue()).to(statisticExchange()).with(COMMENT_KEY);
+    }
+
+    @Bean
+    public Binding chatBinding() {
+        return BindingBuilder.bind(chatQueue()).to(chatExchange()).with(CHAT_KEY);
     }
 }
