@@ -6,7 +6,9 @@ import org.ansj.app.keyword.Keyword;
 import org.ansj.domain.Term;
 import org.ansj.library.StopLibrary;
 import org.ansj.splitWord.Analysis;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,11 +36,14 @@ public class RecommendUtil<T extends Analysis> {
         this.analysisType = analysisType;
     }
 
+//    public PostgreSQLJDBCDataModel getDataSource() throws TasteException {
+//        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
+//    }
 
-    public PostgreSQLJDBCDataModel getDataSource(){
-//        ConnectionPoolDataSource connectionPoolDataSource = new ConnectionPoolDataSource(dataSourceConfig.getDataSource());
-        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
+    public ReloadFromJDBCDataModel getDataSource() throws TasteException {
+            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
     }
+
 
     public List<Keyword> computeArticleTfidf(String title, String content, int nKeyword) {
         Map<String, Keyword> tm = new HashMap<>();

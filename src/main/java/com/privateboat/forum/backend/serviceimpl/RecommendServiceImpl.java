@@ -21,12 +21,14 @@ import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.EuclideanDistanceSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.UncenteredCosineSimilarity;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
@@ -73,7 +75,7 @@ public class RecommendServiceImpl implements RecommendService {
     public List<Post> getCFRecommendations(Long userId) {
         List<RecommendedItem> rawCFRecommendList = new ArrayList<>();
         try {
-            PostgreSQLJDBCDataModel dataModel = recommendUtil.getDataSource();
+            ReloadFromJDBCDataModel dataModel = recommendUtil.getDataSource();
             UserSimilarity similarity = new
                     EuclideanDistanceSimilarity(dataModel);
 //                    LogLikelihoodSimilarity(dataModel);
