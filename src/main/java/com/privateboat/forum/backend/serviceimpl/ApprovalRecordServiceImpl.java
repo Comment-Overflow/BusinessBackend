@@ -11,6 +11,7 @@ import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @Transactional
@@ -67,9 +69,10 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
         UserStatistic statistic = userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId());
+        log.info(String.format("========== Before adding: %d", statistic.getApprovalCount()));
         statistic.addApproval();
-        userStatisticRepository.save(statistic);
-        approvalRecordRepository.save(newApprovalRecord);
+        statistic = userStatisticRepository.save(statistic);
+        log.info(String.format("========== After adding: %d", statistic.getApprovalCount()));
         redisUtil.addApprovalCount();
         updateCache(newComment.getPost().getId(), newComment.getFloor(), 8);
     }
