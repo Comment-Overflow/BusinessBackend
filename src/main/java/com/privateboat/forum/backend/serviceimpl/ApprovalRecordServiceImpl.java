@@ -1,10 +1,7 @@
 package com.privateboat.forum.backend.serviceimpl;
 
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
-import com.privateboat.forum.backend.entity.ApprovalRecord;
-import com.privateboat.forum.backend.entity.Comment;
-import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
@@ -14,6 +11,7 @@ import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @Transactional
