@@ -67,7 +67,7 @@ public class RecommendServiceImpl implements RecommendService {
     public List<Post> getCFRecommendations(Long userId) {
         List<RecommendedItem> rawCFRecommendList = new ArrayList<>();
         try {
-            PostgreSQLJDBCDataModel dataModel = recommendUtil.getDataSource();
+            ReloadFromJDBCDataModel dataModel = recommendUtil.getDataSource();
             UserSimilarity similarity = new
                     EuclideanDistanceSimilarity(dataModel);
 //                    LogLikelihoodSimilarity(dataModel);

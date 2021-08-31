@@ -61,8 +61,8 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
-    public void save(UserStatistic userStatistic){
-        userStatisticDAO.saveAndFlush(userStatistic);
+    public UserStatistic save(UserStatistic userStatistic){
+        return userStatisticDAO.saveAndFlush(userStatistic);
     }
 
     @Override

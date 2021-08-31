@@ -20,6 +20,7 @@ import java.util.List;
 @Table(
         indexes = {
                 @Index(columnList = "isDeleted, user_info_id, postTime"),
+                @Index(columnList = "postTime")
         }
 )
 public class Post {

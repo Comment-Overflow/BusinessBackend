@@ -6,7 +6,6 @@ import org.ansj.app.keyword.Keyword;
 import org.ansj.domain.Term;
 import org.ansj.library.StopLibrary;
 import org.ansj.splitWord.Analysis;
-import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
@@ -33,20 +32,17 @@ public class RecommendUtil<T extends Analysis> {
     @Autowired
     DataSourceConfig dataSourceConfig;
 
-    public RecommendUtil(){
-        this.analysisType = (T) new NlpAnalysis();
-    }
     public void setAnalysisType(T analysisType) {
         this.analysisType = analysisType;
     }
 
-    public PostgreSQLJDBCDataModel getDataSource() throws TasteException {
-        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
-    }
-
-//    public ReloadFromJDBCDataModel getDataSource() throws TasteException {
-//            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
+//    public PostgreSQLJDBCDataModel getDataSource() throws TasteException {
+//        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
 //    }
+
+    public ReloadFromJDBCDataModel getDataSource() throws TasteException {
+            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
+    }
 
 
     public List<Keyword> computeArticleTfidf(String title, String content, int nKeyword) {
@@ -57,7 +53,7 @@ public class RecommendUtil<T extends Analysis> {
         for (Term term : parse) {
             double weight = this.getWeight(term, content.length(), title.length());
             if (weight != 0.0D) {
-                Keyword keyword = tm.get(term.getName());
+                Keyword keyword = (Keyword) tm.get(term.getName());
                 if (keyword == null) {
                     keyword = new Keyword(term.getName(), term.termNatures().allFreq, weight);
                     tm.put(term.getName(), keyword);
@@ -81,7 +77,7 @@ public class RecommendUtil<T extends Analysis> {
             return 0.0D;
         } else {
             String pos = term.natrue().natureStr;
-            Double posScore = POS_SCORE.get(pos);
+            Double posScore = (Double)POS_SCORE.get(pos);
             if (posScore == null) {
                 posScore = 1.0D;
             } else if (posScore == 0.0D) {
