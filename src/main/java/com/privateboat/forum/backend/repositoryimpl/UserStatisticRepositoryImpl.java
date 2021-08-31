@@ -7,6 +7,7 @@ import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
@@ -90,7 +91,7 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void addApprovalCount(Long userId) {
         UserStatistic userStatistic = userStatisticDAO.getById(userId);
         userStatistic.addApproval();
@@ -98,7 +99,7 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void subApprovalCount(Long userId) {
         UserStatistic userStatistic = userStatisticDAO.getById(userId);
         userStatistic.subApproval();
