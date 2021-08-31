@@ -6,11 +6,13 @@ import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import javax.persistence.LockModeType;
 
 @Repository
 @AllArgsConstructor
@@ -91,18 +93,12 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void addApprovalCount(Long userId) {
-        UserStatistic userStatistic = userStatisticDAO.getById(userId);
-        userStatistic.addApproval();
-        userStatisticDAO.save(userStatistic);
+        userStatisticDAO.incrementApprovalCountByUserId(userId);
     }
 
     @Override
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void subApprovalCount(Long userId) {
-        UserStatistic userStatistic = userStatisticDAO.getById(userId);
-        userStatistic.subApproval();
-        userStatisticDAO.save(userStatistic);
+        userStatisticDAO.decrementApprovalCountByUserId(userId);
     }
 }
