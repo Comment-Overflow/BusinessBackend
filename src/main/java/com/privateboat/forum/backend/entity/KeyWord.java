@@ -3,10 +3,7 @@ package com.privateboat.forum.backend.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 @Data
@@ -16,11 +13,17 @@ public class KeyWord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private Long postId;
+
+    @Column(nullable = false)
     private String word;
 
+    @Column(nullable = false)
     private Long score;
 
-    public KeyWord(String word, Long score) {
+    public KeyWord(Long postId, String word, Long score) {
+        this.postId = postId;
         this.word = word;
         this.score = score;
     }
