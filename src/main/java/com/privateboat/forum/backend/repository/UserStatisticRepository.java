@@ -9,4 +9,6 @@ public interface UserStatisticRepository {
     void save(UserStatistic userStatistic);
     void removeFlag(Long userId, RecordType recordType);
     UserStatistic.NewRecord getNewlyRecordByUserId(Long userId);
+    void addApprovalCount(Long userId);
+    void subApprovalCount(Long userId);
 }
