@@ -132,7 +132,6 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(newPost, senderInfo, 0L, newPostDTO.getContent());
         newPost.setHostComment(hostComment);
         newPost.addComment(hostComment);
-        newPost.setKeyWordList(recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent()));
 
         // Change user statistics.
         UserStatistic senderStatistic = senderInfo.getUserStatistic();
@@ -145,6 +144,7 @@ public class PostServiceImpl implements PostService {
         redisUtil.addPostCounter();
         redisUtil.addActiveUserCounter(userId);
         commentRepository.save(hostComment);
+        recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent());
         return newPost;
     }
 

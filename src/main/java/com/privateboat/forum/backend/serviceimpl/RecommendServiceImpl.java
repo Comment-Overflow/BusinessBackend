@@ -6,10 +6,7 @@ import com.privateboat.forum.backend.entity.PreferredWord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
-import com.privateboat.forum.backend.repository.PostRepository;
-import com.privateboat.forum.backend.repository.PreferencePostRepository;
-import com.privateboat.forum.backend.repository.PreferredWordRepository;
-import com.privateboat.forum.backend.repository.UserInfoRepository;
+import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
@@ -19,16 +16,10 @@ import org.ansj.app.keyword.Keyword;
 import lombok.AllArgsConstructor;
 import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.apache.mahout.cf.taste.common.TasteException;
-import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
-import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.EuclideanDistanceSimilarity;
-import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
-import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
-import org.apache.mahout.cf.taste.impl.similarity.UncenteredCosineSimilarity;
-import org.apache.mahout.cf.taste.model.JDBCDataModel;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
@@ -45,6 +36,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final PreferredWordRepository preferredWordRepository;
     private final PostRepository postRepository;
     private final UserInfoRepository userInfoRepository;
+    private final KeyWordRepository keyWordRepository;
     private final RedisUtil redisUtil;
     private final RecommendUtil<NlpAnalysis> recommendUtil;
     private final PreferencePostRepository preferencePostRepository;
@@ -59,7 +51,7 @@ public class RecommendServiceImpl implements RecommendService {
         HashMap<Post, Long> CBRecommendMap = new HashMap<>();
         for(Post post : postList) {
             if(preferredWordMap.get(post.getTag()) != null) {
-                List<KeyWord> keyWordList = post.getKeyWordList();
+                List<KeyWord> keyWordList = keyWordRepository.getKeyWordByPostId(post.getId());
                 CBRecommendMap.put(post, getScore(preferredWordMap.get(post.getTag()), keyWordList));
             }
         }
@@ -79,10 +71,10 @@ public class RecommendServiceImpl implements RecommendService {
             UserSimilarity similarity = new
                     EuclideanDistanceSimilarity(dataModel);
 //                    LogLikelihoodSimilarity(dataModel);
-//                    PearsonCorrelationSimilarity(dataModel);
+//                    PearsonCorKrelationSimilarity(dataModel);
 //                    UncenteredCosineSimilarity(dataModel);
 
-            UserNeighborhood neighborhood = new NearestNUserNeighborhood(2, similarity, dataModel);
+            UserNeighborhood neighborhood = new NearestNUserNeighborhood(Constant.NEAREST_N_USER, similarity, dataModel);
 
             Recommender recommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
             rawCFRecommendList = recommender.recommend(userId, Constant.CF_RECOMMEND_POST_NUMBER);
@@ -100,9 +92,8 @@ public class RecommendServiceImpl implements RecommendService {
     public void updateRecommendSystem(Long userId, Long postId, PreferenceDegree preferenceDegree){
         //Content-Based Recommendation
         UserInfo user = userInfoRepository.getById(userId);
-        Post post = postRepository.getByPostId(postId);
-        PostTag postTag = post.getTag();
-        List<KeyWord> keyWordList = post.getKeyWordList();
+        PostTag postTag = postRepository.getByPostId(postId).getTag();
+        List<KeyWord> keyWordList = keyWordRepository.getKeyWordByPostId(postId);
         HashMap<String, PreferredWord.wordWithId> preferredWordMap = preferredWordRepository.findAllByUserIdAndPostTag(userId, postTag);
         for (KeyWord keyWord : keyWordList) {
             String word = keyWord.getWord();
@@ -133,14 +124,14 @@ public class RecommendServiceImpl implements RecommendService {
     }
 
     @Override
-    public List<KeyWord> addNewPost(PostTag postTag, Long postId, String title, String content) {
+    public void addNewPost(PostTag postTag, Long postId, String title, String content) {
         List<Keyword> keyWordList = recommendUtil.computeArticleTfidf(title, content, Constant.POST_KEYS_WORDS);
         List<KeyWord> ret = new LinkedList<>();
         for(Keyword keyword : keyWordList) {
             LogUtil.debug(keyword.toString());
-            ret.add(new KeyWord(keyword.getName(), (long) (keyword.getScore()) * 100));
+            ret.add(new KeyWord(postId, keyword.getName(), (long) (keyword.getScore()) * 100));
         }
-        return ret;
+        keyWordRepository.saveNewPostKeyWord(ret);
     }
 
 
