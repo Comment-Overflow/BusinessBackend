@@ -1,10 +1,7 @@
 package com.privateboat.forum.backend.serviceimpl;
 
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
-import com.privateboat.forum.backend.entity.ApprovalRecord;
-import com.privateboat.forum.backend.entity.Comment;
-import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
@@ -69,7 +66,9 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-        userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
+        UserStatistic statistic = userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId());
+        statistic.addApproval();
+        userStatisticRepository.save(statistic);
         approvalRecordRepository.save(newApprovalRecord);
         redisUtil.addApprovalCount();
         updateCache(newComment.getPost().getId(), newComment.getFloor(), 8);

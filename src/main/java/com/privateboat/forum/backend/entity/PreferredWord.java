@@ -11,6 +11,11 @@ import javax.persistence.*;
 @Setter
 @Getter
 @NoArgsConstructor
+@Table(
+        indexes = {
+                @Index(columnList = "userId")
+        }
+)
 public class PreferredWord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
