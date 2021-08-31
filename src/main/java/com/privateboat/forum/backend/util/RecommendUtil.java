@@ -36,13 +36,13 @@ public class RecommendUtil<T extends Analysis> {
         this.analysisType = analysisType;
     }
 
-    public PostgreSQLJDBCDataModel getDataSource() throws TasteException {
-        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
-    }
-
-//    public ReloadFromJDBCDataModel getDataSource() throws TasteException {
-//            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
+//    public PostgreSQLJDBCDataModel getDataSource() throws TasteException {
+//        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
 //    }
+
+    public ReloadFromJDBCDataModel getDataSource() throws TasteException {
+            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
+    }
 
 
     public List<Keyword> computeArticleTfidf(String title, String content, int nKeyword) {

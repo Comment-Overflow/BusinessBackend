@@ -20,7 +20,7 @@ public class DataSourceConfig {
     public DataSource getDataSource() {
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
         dataSourceBuilder.driverClassName("org.postgresql.Driver");
-        dataSourceBuilder.url("jdbc:postgresql://123.60.57.26:5432/comment_overflow");
+        dataSourceBuilder.url("jdbc:postgresql://192.168.0.100:5432/comment_overflow");
         dataSourceBuilder.username("private_boat");
         dataSourceBuilder.password("123456");
         return dataSourceBuilder.build();
