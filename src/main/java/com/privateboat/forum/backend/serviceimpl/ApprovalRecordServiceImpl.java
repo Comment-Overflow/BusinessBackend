@@ -68,11 +68,9 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-        UserStatistic statistic = userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId());
-        log.info(String.format("========== Before adding: %d", statistic.getApprovalCount()));
-        statistic.addApproval();
-        statistic = userStatisticRepository.save(statistic);
-        log.info(String.format("========== After adding: %d", statistic.getApprovalCount()));
+        // userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
+        userStatisticRepository.addApprovalCount(approvalRecordReceiveDTO.getToUserId());
+        approvalRecordRepository.save(newApprovalRecord);
         redisUtil.addApprovalCount();
         updateCache(newComment.getPost().getId(), newComment.getFloor(), 8);
     }
@@ -84,7 +82,8 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
             Post post = comment.getPost();
             post.decrementApproval();
             comment.subApproval();
-            userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
+            // userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
+            userStatisticRepository.subApprovalCount(approvalRecordReceiveDTO.getToUserId());
         } else {
             comment.subDisapproval();
         }
