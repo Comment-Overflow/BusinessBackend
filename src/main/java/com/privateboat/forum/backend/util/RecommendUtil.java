@@ -6,6 +6,7 @@ import org.ansj.app.keyword.Keyword;
 import org.ansj.domain.Term;
 import org.ansj.library.StopLibrary;
 import org.ansj.splitWord.Analysis;
+import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
@@ -31,6 +32,10 @@ public class RecommendUtil<T extends Analysis> {
 
     @Autowired
     DataSourceConfig dataSourceConfig;
+
+    public RecommendUtil(){
+        this.analysisType = (T) new NlpAnalysis();
+    }
 
     public void setAnalysisType(T analysisType) {
         this.analysisType = analysisType;

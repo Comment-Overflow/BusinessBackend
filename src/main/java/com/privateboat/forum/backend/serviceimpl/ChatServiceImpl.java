@@ -70,8 +70,8 @@ public class ChatServiceImpl implements ChatService {
         // Save message to the database.
         messageRepository.save(message);
 
-        // Update chat in database using messasge queue.
-        mqSender.updateChat(message);
+        // Update chat in database.
+        updateChatOnNewMessage(message);
 
         // Send the message to the receiver via socket.
         sendMessageToReceiver(message);
@@ -103,8 +103,8 @@ public class ChatServiceImpl implements ChatService {
         // Save message to the database.
         messageRepository.save(message);
 
-        // Update chat in database using message queue.
-        mqSender.updateChat(message);
+        // Update chat in database.
+        updateChatOnNewMessage(message);
 
         // Send the message to the receiver via socket.
         sendMessageToReceiver(message);

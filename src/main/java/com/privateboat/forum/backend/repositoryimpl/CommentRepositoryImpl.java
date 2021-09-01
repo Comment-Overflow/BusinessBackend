@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +62,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public Comment saveAndFlush(Comment newComment) {
         return commentDAO.saveAndFlush(newComment);
     }
@@ -118,5 +120,10 @@ public class CommentRepositoryImpl implements CommentRepository  {
     public void delete(Comment comment) {
         comment.setIsDeleted(true);
         commentDAO.save(comment);
+    }
+
+    @Override
+    public boolean existsById(Long commentId) {
+        return commentDAO.existsById(commentId);
     }
 }
