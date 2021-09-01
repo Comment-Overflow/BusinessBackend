@@ -36,6 +36,7 @@ public class RecommendUtil<T extends Analysis> {
     public RecommendUtil(){
         this.analysisType = (T) new NlpAnalysis();
     }
+
     public void setAnalysisType(T analysisType) {
         this.analysisType = analysisType;
     }

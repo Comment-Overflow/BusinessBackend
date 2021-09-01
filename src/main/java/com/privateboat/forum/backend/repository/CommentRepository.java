@@ -24,4 +24,5 @@ public interface CommentRepository {
     QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
     void delete(Comment comment);
     PageDTO<Comment> updateCommentCache(Long postId, Pageable pageable);
+    boolean existsById(Long commentId);
 }

@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -188,11 +189,6 @@ public class PostServiceImpl implements PostService {
 //        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
         commentRepository.saveAndFlush(newComment);
         postRepository.saveAndFlush(post);
-        log.info("========== save and flush ==========");
-        Optional<Comment> fuck = commentRepository.findById(newComment.getId());
-        if (fuck.isEmpty()) {
-            log.info("FUCK YEAH!!!!!!!!!");
-        }
 
         // Increment comment count.
         mqSender.addCommentCount(userId);
@@ -210,7 +206,7 @@ public class PostServiceImpl implements PostService {
                     newCommentId,
                     post.getHostComment().getId()
             );
-            // replyRecordService.postReplyRecord(userId, reply);
+//             replyRecordService.postReplyRecord(userId, reply);
             mqSender.sendReplyMessage(userId, reply);
         }
 
@@ -227,7 +223,7 @@ public class PostServiceImpl implements PostService {
                         commentDTO.getPostId(),
                         newCommentId,
                         commentDTO.getQuoteId());
-                // replyRecordService.postReplyRecord(userId, reply);
+//                 replyRecordService.postReplyRecord(userId, reply);
                 mqSender.sendReplyMessage(userId, reply);
             }
         }

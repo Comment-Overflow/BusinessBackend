@@ -12,7 +12,6 @@ import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.ReplyRecordService;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -71,7 +70,6 @@ public class ReplyRecordServiceImpl implements ReplyRecordService {
         Comment comment = commentRepository.getById(replyRecordReceiveDTO.getCommentId());
         replyRecord.setComment(comment);
 
-        System.out.println("quote Id is " + replyRecordReceiveDTO.getQuoteCommentId().toString());
         replyRecord.setQuoteCommentId(replyRecordReceiveDTO.getQuoteCommentId());
 
         userStatisticRepository.setFlag(replyRecordReceiveDTO.getToUserId(), RecordType.REPLY);
