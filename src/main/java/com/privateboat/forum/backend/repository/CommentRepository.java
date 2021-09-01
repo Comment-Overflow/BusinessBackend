@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface CommentRepository {
     PageDTO<Comment> findByPostId(Long postId, Pageable pageable);
     Comment save(Comment comment);
+    Comment saveAndFlush(Comment newComment);
     Optional<Comment> findById(Long commentId);
     Comment getById(Long commentId) throws PostException;
     Page<Comment> findByContentContainingAndIsDeleted(String searchKey, Boolean isDeleted, Pageable pageable);

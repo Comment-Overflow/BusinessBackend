@@ -184,8 +184,8 @@ public class PostServiceImpl implements PostService {
         post.setLastCommentTime(newComment.getTime());
 //        optionalSenderInfo.get().getUserStatistic().addComment();
 //        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
-        commentRepository.save(newComment);
-        postRepository.save(post);
+        commentRepository.saveAndFlush(newComment);
+        postRepository.saveAndFlush(post);
 
         // Increment comment count.
         mqSender.addCommentCount(userId);
@@ -198,8 +198,8 @@ public class PostServiceImpl implements PostService {
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, post.getHostComment().getId());
-            replyRecordService.postReplyRecord(userId, reply);
-            // mqSender.sendReplyMessage(userId, reply);
+            // replyRecordService.postReplyRecord(userId, reply);
+            mqSender.sendReplyMessage(userId, reply);
         }
 
         // Reply quote, if there is any.

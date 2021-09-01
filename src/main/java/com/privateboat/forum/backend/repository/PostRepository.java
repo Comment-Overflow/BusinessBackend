@@ -5,7 +5,6 @@ import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +16,7 @@ public interface PostRepository {
     List<Post> findAllRecentPost();
     Page<Post> findByTag(PostTag tag, Pageable pageable);
     Post save(Post post);
+    Post saveAndFlush(Post post);
     Post getByPostId(Long postId) throws PostException;
     void delete(Post post);
     List<Post> generateHotPosts(Integer limit);

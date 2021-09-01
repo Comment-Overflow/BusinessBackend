@@ -61,6 +61,11 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
+    public Comment saveAndFlush(Comment newComment) {
+        return commentDAO.saveAndFlush(newComment);
+    }
+
+    @Override
     public Optional<Comment> findById(Long id){
         return commentDAO.findById(id);
     }

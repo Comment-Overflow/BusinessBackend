@@ -65,6 +65,11 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public Post saveAndFlush(Post post) {
+        return postDAO.saveAndFlush(post);
+    }
+
+    @Override
     public Post getByPostId(Long postId) throws PostException {
         try {
             return postDAO.getById(postId);
