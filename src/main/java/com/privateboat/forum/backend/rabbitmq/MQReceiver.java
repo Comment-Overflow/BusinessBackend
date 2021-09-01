@@ -2,7 +2,6 @@ package com.privateboat.forum.backend.rabbitmq;
 
 import com.privateboat.forum.backend.configuration.RabbitMQConfig;
 import com.privateboat.forum.backend.entity.Message;
-import com.privateboat.forum.backend.entity.UserStatistic;
 import com.privateboat.forum.backend.enumerate.MQMethod;
 import com.privateboat.forum.backend.exception.RabbitMQException;
 import com.privateboat.forum.backend.rabbitmq.bean.*;
@@ -10,7 +9,6 @@ import com.privateboat.forum.backend.repository.CommentRepository;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import com.privateboat.forum.backend.service.*;
 import com.privateboat.forum.backend.util.JacksonUtil;
-import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,6 +16,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
 
 @Slf4j
 @Service
@@ -103,6 +103,7 @@ public class MQReceiver {
         }
     }
 
+    @Transactional
     @RabbitListener(queues = RabbitMQConfig.COMMENT_QUEUE)
     public void CommentStatisticHandler(String msg) {
         log.info("updating comment statistics...");

@@ -166,6 +166,8 @@ public class PostServiceImpl implements PostService {
         if (optionalPost.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+
+        // Save post and new comment.
         Post post = optionalPost.get();
         auditPostContent(commentDTO.getContent());
         if (post.getIsFrozen()) {
@@ -177,17 +179,25 @@ public class PostServiceImpl implements PostService {
         post.setLastCommentTime(newComment.getTime());
 //        optionalSenderInfo.get().getUserStatistic().addComment();
 //        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
-        mqSender.addCommentCount(userId);
         commentRepository.save(newComment);
-        Long newCommentId = newComment.getId();
         postRepository.save(post);
+
+        // Increment comment count.
+        mqSender.addCommentCount(userId);
+
+        // Updating of recommendation better stuffed into message queue.
+        Long newCommentId = newComment.getId();
         recommendService.updateRecommendSystem(userId, commentDTO.getPostId(), PreferenceDegree.REPLY);
+
+        // Reply the host user (async).
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
-            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
+            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, post.getHostComment().getId());
             // replyRecordService.postReplyRecord(userId, reply);
             mqSender.sendReplyMessage(userId, reply);
         }
+
+        //
         if (newComment.getQuoteId() != 0) {
             List<Comment> finder =
                     post.getComments().stream().filter(
