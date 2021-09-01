@@ -7,7 +7,10 @@ import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.HotPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
-import com.privateboat.forum.backend.entity.*;
+import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.Post;
+import com.privateboat.forum.backend.entity.StarRecord;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import com.privateboat.forum.backend.enumerate.SortPolicy;
@@ -197,14 +200,12 @@ public class PostServiceImpl implements PostService {
             mqSender.sendReplyMessage(userId, reply);
         }
 
-        //
+        // Reply quote, if there is any.
         if (newComment.getQuoteId() != 0) {
-            List<Comment> finder =
-                    post.getComments().stream().filter(
-                            c -> c.getId().equals(newComment.getQuoteId())
-                    ).collect(Collectors.toList());
-            if (finder.size() != 1) throw new PostException(PostException.PostExceptionType.QUOTE_OUT_OF_BOUND);
-            Comment target = finder.get(0);
+            Optional<Comment> optionalTarget = commentRepository.findById(newComment.getQuoteId());
+            if (optionalTarget.isEmpty()) throw new PostException(PostException.PostExceptionType.QUOTE_OUT_OF_BOUND);
+            Comment target = optionalTarget.get();
+
             Long quoteUserId = target.getUserInfo().getId();
             if (!quoteUserId.equals(userId) && !quoteUserId.equals(postUserId)) {
                 ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(
