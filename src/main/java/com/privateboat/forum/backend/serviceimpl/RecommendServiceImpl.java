@@ -12,6 +12,7 @@ import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
 import com.privateboat.forum.backend.util.RecommendUtil;
 import com.privateboat.forum.backend.util.RedisUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.ansj.app.keyword.Keyword;
 import lombok.AllArgsConstructor;
 import org.ansj.splitWord.analysis.NlpAnalysis;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class RecommendServiceImpl implements RecommendService {
@@ -56,7 +58,7 @@ public class RecommendServiceImpl implements RecommendService {
             }
         }
         CBRecommendMap.entrySet().removeIf(e -> e.getValue() == 0);
-        CBRecommendMap.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
+//        CBRecommendMap.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
         return CBRecommendMap.entrySet().stream().sorted(Map.Entry.comparingByValue())
                 .limit(Constant.CB_RECOMMEND_POST_NUMBER)
                 .map(Map.Entry::getKey)
@@ -83,7 +85,7 @@ public class RecommendServiceImpl implements RecommendService {
             e.printStackTrace();
         }
         List<Post> CFRecommendList = rawCFRecommendList.stream().map(item -> postRepository.getByPostId(item.getItemID())).collect(Collectors.toList());
-        CFRecommendList.removeIf(item -> redisUtil.filterReadPosts(userId, item.getId()));
+//        CFRecommendList.removeIf(item -> redisUtil.filterReadPosts(userId, item.getId()));
         return CFRecommendList;
     }
 
