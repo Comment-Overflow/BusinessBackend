@@ -30,6 +30,7 @@ import com.privateboat.forum.backend.util.image.ImageAuditException;
 import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -186,6 +188,11 @@ public class PostServiceImpl implements PostService {
 //        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
         commentRepository.saveAndFlush(newComment);
         postRepository.saveAndFlush(post);
+        log.info("========== save and flush ==========");
+        Optional<Comment> fuck = commentRepository.findById(newComment.getId());
+        if (fuck.isEmpty()) {
+            log.info("FUCK YEAH!!!!!!!!!");
+        }
 
         // Increment comment count.
         mqSender.addCommentCount(userId);
@@ -197,7 +204,12 @@ public class PostServiceImpl implements PostService {
         // Reply the host user (async).
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
-            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, post.getHostComment().getId());
+            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(
+                    postUserId,
+                    commentDTO.getPostId(),
+                    newCommentId,
+                    post.getHostComment().getId()
+            );
             // replyRecordService.postReplyRecord(userId, reply);
             mqSender.sendReplyMessage(userId, reply);
         }
