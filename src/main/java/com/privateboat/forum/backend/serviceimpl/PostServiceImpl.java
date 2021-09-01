@@ -21,6 +21,7 @@ import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
+import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.util.RedisUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
@@ -52,6 +53,7 @@ public class PostServiceImpl implements PostService {
     private final UserStatisticRepository userStatisticRepository;
     private final RecommendService recommendService;
     private final PreferencePostRepository preferencePostRepository;
+    private final ReplyRecordService replyRecordService;
 
     private final RedisUtil redisUtil;
     private final MQSender mqSender;
@@ -196,8 +198,8 @@ public class PostServiceImpl implements PostService {
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
             ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, post.getHostComment().getId());
-            // replyRecordService.postReplyRecord(userId, reply);
-            mqSender.sendReplyMessage(userId, reply);
+            replyRecordService.postReplyRecord(userId, reply);
+            // mqSender.sendReplyMessage(userId, reply);
         }
 
         // Reply quote, if there is any.
