@@ -6,13 +6,9 @@ import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.UserStatisticRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.LockModeType;
 
 @Repository
 @AllArgsConstructor
@@ -100,5 +96,45 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     @Override
     public void subApprovalCount(Long userId) {
         userStatisticDAO.decrementApprovalCountByUserId(userId);
+    }
+
+    @Override
+    public void addCommentCount(Long userId) {
+        userStatisticDAO.incrementCommentCountByUserId(userId);
+    }
+
+    @Override
+    public void subCommentCount(Long userId) {
+        userStatisticDAO.decrementCommentCountByUserId(userId);
+    }
+
+    @Override
+    public void addFollowing(Long userId) {
+        userStatisticDAO.incrementFollowingCountByUserId(userId);
+    }
+
+    @Override
+    public void subFollowing(Long userId) {
+        userStatisticDAO.decrementFollowingCountByUserId(userId);
+    }
+
+    @Override
+    public void addFollower(Long userId) {
+        userStatisticDAO.incrementFollowerCountByUserId(userId);
+    }
+
+    @Override
+    public void subFollower(Long userId) {
+        userStatisticDAO.decrementFollowerCountByUserId(userId);
+    }
+
+    @Override
+    public void addPost(Long userId) {
+        userStatisticDAO.incrementPostCountByUserId(userId);
+    }
+
+    @Override
+    public void subPost(Long userId) {
+        userStatisticDAO.decrementPostCountByUserId(userId);
     }
 }

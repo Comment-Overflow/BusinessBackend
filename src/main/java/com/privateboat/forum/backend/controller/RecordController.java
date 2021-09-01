@@ -65,7 +65,6 @@ public class RecordController {
     ResponseEntity<String> postApprovalRecord(@RequestAttribute Long userId,
                                               @RequestBody ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
         try{
-//             approvalRecordService.postApprovalRecord(userId, approvalRecordReceiveDTO);
             mqSender.sendApprovalMessage(userId, approvalRecordReceiveDTO, MQMethod.POST);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (RuntimeException e) {

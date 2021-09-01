@@ -96,13 +96,11 @@ public class MQReceiver {
         StatisticBean bean = JacksonUtil.json2Bean(msg, StatisticBean.class);
         checkNullBean(bean);
         assert bean != null;
-        UserStatistic statistic = userStatisticRepository.getByUserId(bean.getUserId());
         if (bean.getIncrement()) {
-            statistic.addPost();
+            userStatisticRepository.addPost(bean.getUserId());
         } else {
-            statistic.subPost();
+            userStatisticRepository.subPost(bean.getUserId());
         }
-        userStatisticRepository.save(statistic);
     }
 
     @RabbitListener(queues = RabbitMQConfig.COMMENT_QUEUE)
@@ -111,13 +109,11 @@ public class MQReceiver {
         StatisticBean bean = JacksonUtil.json2Bean(msg, StatisticBean.class);
         checkNullBean(bean);
         assert bean != null;
-        UserStatistic statistic = userStatisticRepository.getByUserId(bean.getUserId());
         if (bean.getIncrement()) {
-            statistic.addComment();
+            userStatisticRepository.addCommentCount(bean.getUserId());
         } else {
-            statistic.subComment();
+            userStatisticRepository.subCommentCount(bean.getUserId());
         }
-        userStatisticRepository.save(statistic);
     }
 
     @RabbitListener(queues = RabbitMQConfig.CHAT_QUEUE)
