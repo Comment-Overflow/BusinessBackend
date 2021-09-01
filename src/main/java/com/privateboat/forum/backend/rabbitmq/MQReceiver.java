@@ -90,6 +90,7 @@ public class MQReceiver {
         commentRepository.updateCommentCache(bean.getPostId(), pageable);
     }
 
+    @Transactional
     @RabbitListener(queues = RabbitMQConfig.POST_QUEUE)
     public void PostStatisticHandler(String msg) {
         log.info("updating post statistics...");
