@@ -8,12 +8,15 @@ import com.qcloud.cos.exception.CosServiceException;
 import com.qcloud.cos.model.*;
 import com.qcloud.cos.model.ciModel.auditing.ImageAuditingRequest;
 import com.qcloud.cos.model.ciModel.auditing.ImageAuditingResponse;
+import com.qcloud.cos.model.ciModel.persistence.PicOperations;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 @Component
 public class ImageUtil {
@@ -37,12 +40,27 @@ public class ImageUtil {
 
         // Specify the path to store on COS. File name should include extension.
         String key = BASE_KEY + folderName + fileName;
-
+        String thumbnailKey = fileName.substring(0, fileName.lastIndexOf('.')) +
+                              "-tbn" +
+                              fileName.substring(fileName.lastIndexOf('.'));
         // Get object metadata.
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
 
         PutObjectRequest putObjectRequest = new PutObjectRequest(BUCKET_NAME, key, inputStream, objectMetadata);
+
+        // Generate thumbnail for the picture, with 40% of the original quality.
+        List<PicOperations.Rule> ruleList = new LinkedList<>();
+        PicOperations.Rule rule = new PicOperations.Rule();
+        rule.setBucket(BUCKET_NAME);
+        rule.setFileId(thumbnailKey);
+        rule.setRule("imageView2/rq/40");
+        ruleList.add(rule);
+
+        PicOperations picOperations = new PicOperations();
+        picOperations.setIsPicInfo(1);
+        picOperations.setRules(ruleList);
+        putObjectRequest.setPicOperations(picOperations);
 
         try {
             client.putObject(putObjectRequest);

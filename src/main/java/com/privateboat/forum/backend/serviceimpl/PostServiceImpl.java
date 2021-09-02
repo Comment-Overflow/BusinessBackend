@@ -185,6 +185,7 @@ public class PostServiceImpl implements PostService {
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.addComment(newComment);
         post.setLastCommentTime(newComment.getTime());
+        addAndUploadImage(newComment, commentDTO.getUploadFiles());
 //        optionalSenderInfo.get().getUserStatistic().addComment();
 //        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
         commentRepository.saveAndFlush(newComment);
@@ -228,7 +229,6 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        addAndUploadImage(newComment, commentDTO.getUploadFiles());
         updateCache(post.getId(), newComment.getFloor(), 8);
 
         redisUtil.addCommentCounter();
