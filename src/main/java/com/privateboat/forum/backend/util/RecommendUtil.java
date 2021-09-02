@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.util;
 import com.privateboat.forum.backend.configuration.DataSourceConfig;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import org.ansj.app.keyword.Keyword;
+import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 import org.ansj.library.StopLibrary;
 import org.ansj.splitWord.Analysis;
@@ -53,7 +54,12 @@ public class RecommendUtil<T extends Analysis> {
     public List<Keyword> computeArticleTfidf(String title, String content, int nKeyword) {
         Map<String, Keyword> tm = new HashMap<>();
 
-        List<Term> parse = this.analysisType.parseStr(title + '\t' + content).recognition(StopLibrary.get()).getTerms();
+        Result parseResult = this.analysisType.parseStr(title + '\t' + content);
+        if (parseResult == null) {
+            LogUtil.error("empty Result");
+        }
+        assert parseResult != null;
+        List<Term> parse = parseResult.recognition(StopLibrary.get()).getTerms();
 
         for (Term term : parse) {
             double weight = this.getWeight(term, content.length(), title.length());
