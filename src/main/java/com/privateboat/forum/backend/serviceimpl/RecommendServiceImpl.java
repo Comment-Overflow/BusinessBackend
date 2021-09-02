@@ -48,8 +48,20 @@ public class RecommendServiceImpl implements RecommendService {
      */
     @Override
     public List<Post> getCBRecommendations(Long userId) {
+        long start;
+
+        start = System.currentTimeMillis();
+        log.info("========== findAllRecentPost ==========");
         HashMap<PostTag, HashMap<String, Long>> preferredWordMap = preferredWordRepository.findAllByUserId(userId);
+        log.info(String.format("========== findAllByUserId time: %d", System.currentTimeMillis() - start));
+
+        start = System.currentTimeMillis();
+        log.info("========== findAllRecentPost ==========");
         List<Post> postList = postRepository.findAllRecentPost();
+        log.info(String.format("========== findAllRecentPost time: %d", System.currentTimeMillis() - start));
+
+        start = System.currentTimeMillis();
+        log.info("========== getKeyWordByPostId ==========");
         HashMap<Post, Long> CBRecommendMap = new HashMap<>();
         for(Post post : postList) {
             if(preferredWordMap.get(post.getTag()) != null) {
@@ -57,6 +69,8 @@ public class RecommendServiceImpl implements RecommendService {
                 CBRecommendMap.put(post, getScore(preferredWordMap.get(post.getTag()), keyWordList));
             }
         }
+        log.info(String.format("========== getKeyWordByPostId time: %d", System.currentTimeMillis() - start));
+
         CBRecommendMap.entrySet().removeIf(e -> e.getValue() == 0);
 //        CBRecommendMap.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
         return CBRecommendMap.entrySet().stream().sorted(Map.Entry.comparingByValue())
