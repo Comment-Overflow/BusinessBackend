@@ -55,6 +55,8 @@ public class RecommendUtil<T extends Analysis> {
         Map<String, Keyword> tm = new HashMap<>();
 
         List<Term> parse = this.analysisType.parseStr(title + '\t' + content).recognition(StopLibrary.get()).getTerms();
+//        List<Term> parse = this.analysisType.parseStr(title + '\t' + content).getTerms();
+
 
         for (Term term : parse) {
             double weight = this.getWeight(term, content.length(), title.length());
