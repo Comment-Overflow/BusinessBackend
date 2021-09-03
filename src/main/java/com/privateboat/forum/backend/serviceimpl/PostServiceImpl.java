@@ -138,20 +138,18 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(newPost, senderInfo, 0L, newPostDTO.getContent());
         newPost.setHostComment(hostComment);
         newPost.addComment(hostComment);
-
+        addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
+        postRepository.save(newPost);
+        commentRepository.save(hostComment);
         // Change user statistics.
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
 //        UserStatistic senderStatistic = senderInfo.getUserStatistic();
 //        senderStatistic.addPost();
 //        userStatisticRepository.save(senderStatistic);
 
-
-        addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
-
-        postRepository.save(newPost);
         redisUtil.addPostCounter();
         redisUtil.addActiveUserCounter(userId);
-        commentRepository.save(hostComment);
+
         recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent());
         return newPost;
     }
