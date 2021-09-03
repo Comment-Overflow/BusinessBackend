@@ -15,8 +15,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +63,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Comment saveAndFlush(Comment newComment) {
         return commentDAO.saveAndFlush(newComment);
     }
@@ -116,8 +117,9 @@ public class CommentRepositoryImpl implements CommentRepository  {
         return commentDAO.findByUserInfoIdAndFloorGreaterThanAndIsDeletedOrderByTimeDesc(userId, 0, false, pageable);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void delete(Comment comment) {
+    public void setIsDeletedAndFlush(Comment comment) {
         comment.setIsDeleted(true);
         commentDAO.save(comment);
     }

@@ -31,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -321,8 +320,8 @@ public class PostServiceImpl implements PostService {
         }
 //        post.get().getUserInfo().getUserStatistic().subPost();
 //        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
+        postRepository.setIsDeletedAndFlush(post.get());
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
-        postRepository.delete(post.get());
     }
 
     @Transactional
@@ -350,9 +349,9 @@ public class PostServiceImpl implements PostService {
         post.deleteComment(comment);
 //        senderInfo.getUserStatistic().subComment();
 //        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
+        postRepository.saveAndFlush(post);
+        commentRepository.setIsDeletedAndFlush(comment);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
-        postRepository.save(post);
-        commentRepository.delete(comment);
         mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
     }
 

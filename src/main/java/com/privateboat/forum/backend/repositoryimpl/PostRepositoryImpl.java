@@ -81,8 +81,9 @@ public class PostRepositoryImpl implements PostRepository {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void delete(Post post) {
+    public void setIsDeletedAndFlush(Post post) {
         post.setIsDeleted(true);
         postDAO.save(post);
     }

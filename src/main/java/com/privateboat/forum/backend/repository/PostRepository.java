@@ -18,7 +18,7 @@ public interface PostRepository {
     Post save(Post post);
     Post saveAndFlush(Post post);
     Post getByPostId(Long postId) throws PostException;
-    void delete(Post post);
+    void setIsDeletedAndFlush(Post post);
     List<Post> generateHotPosts(Integer limit);
     List<Post> getHotPosts(Pageable pageable);
     Page<Post> findByTitleContainingAndIsDeletedOrderByPostTime(String searchKey, boolean b, Pageable pageable);

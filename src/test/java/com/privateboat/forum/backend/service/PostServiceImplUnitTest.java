@@ -296,7 +296,7 @@ public class PostServiceImplUnitTest {
     void testDeletePost() {
         postService.deletePost(POST_ID, USER_ID);
         Mockito.verify(userStatisticRepository).save(any());
-        Mockito.verify(postRepository).delete(any());
+        Mockito.verify(postRepository).setIsDeletedAndFlush(any());
 
         PostException wrongPostException =
                 Assertions.assertThrows(PostException.class, () -> postService
@@ -310,7 +310,7 @@ public class PostServiceImplUnitTest {
         postService.deleteComment(COMMENT_ID, USER_ID);
         Mockito.verify(userStatisticRepository).save(any());
         Mockito.verify(postRepository).save(any());
-        Mockito.verify(commentRepository).delete(any());
+        Mockito.verify(commentRepository).setIsDeletedAndFlush(any());
 
         PostException wrongPostException =
                 Assertions.assertThrows(PostException.class, () -> postService

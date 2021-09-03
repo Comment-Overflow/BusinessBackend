@@ -14,5 +14,7 @@ public interface ApprovalRecordRepository {
 
     void save(ApprovalRecord newApprovalRecord);
 
+    void saveAndFlush(ApprovalRecord newApprovalRecord);
+
     ApprovalStatus checkIfHaveApproved(UserInfo userInfo, Comment comment);
 }

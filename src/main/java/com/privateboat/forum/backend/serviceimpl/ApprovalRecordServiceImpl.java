@@ -70,7 +70,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         // userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
         // userStatisticRepository.addApprovalCount(approvalRecordReceiveDTO.getToUserId());
-        approvalRecordRepository.save(newApprovalRecord);
+        approvalRecordRepository.saveAndFlush(newApprovalRecord);
         userStatisticRepository.updateApprovalCount(approvalRecordReceiveDTO.getToUserId());
         redisUtil.addApprovalCount();
         updateCache(newComment.getPost().getId(), newComment.getFloor(), 8);
