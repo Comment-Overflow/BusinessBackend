@@ -374,7 +374,8 @@ public class PostServiceImpl implements PostService {
         removeQuoteId(targetComments);
         return targetComments.stream().map(comment -> {
             Post parentPost = comment.getPost();
-            setPostApprovalStatusAndIsStarred(parentPost, viewerInfo);
+            setPostIsStarred(parentPost, viewerInfo);
+            setCommentApprovalStatus(comment, viewerInfo);
 
             SearchedCommentDTO dto = new SearchedCommentDTO(parentPost, comment);
             // isStarred is no longer set upon constructor invocation.
@@ -400,9 +401,18 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void setPostApprovalStatusAndIsStarred(Post post, UserInfo userInfo) {
-        post.getHostComment().setApprovalStatus(
-                approvalRecordRepository.checkIfHaveApproved(userInfo, post.getHostComment()));
+        setCommentApprovalStatus(post.getHostComment(), userInfo);
+        setPostIsStarred(post, userInfo);
+    }
+
+    @Override
+    public void setPostIsStarred(Post post, UserInfo userInfo) {
         post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
+    }
+
+    @Override
+    public void setCommentApprovalStatus(Comment comment, UserInfo userInfo) {
+        comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, comment));
     }
 
     @Override
