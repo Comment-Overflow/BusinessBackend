@@ -139,8 +139,7 @@ public class PostServiceImpl implements PostService {
         newPost.setHostComment(hostComment);
         newPost.addComment(hostComment);
         addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
-        postRepository.save(newPost);
-        commentRepository.save(hostComment);
+        postRepository.saveAndFlush(newPost);
         // Change user statistics.
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
 //        UserStatistic senderStatistic = senderInfo.getUserStatistic();
