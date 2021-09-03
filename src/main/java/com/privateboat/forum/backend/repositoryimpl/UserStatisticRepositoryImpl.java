@@ -89,52 +89,27 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
-    public void addApprovalCount(Long userId) {
-        userStatisticDAO.incrementApprovalCountByUserId(userId);
+    public void updateApprovalCount(Long userId) {
+        userStatisticDAO.updateApprovalCountByUserId(userId);
     }
 
     @Override
-    public void subApprovalCount(Long userId) {
-        userStatisticDAO.decrementApprovalCountByUserId(userId);
+    public void updateCommentCount(Long userId) {
+        userStatisticDAO.updateCommentCountByUserId(userId);
     }
 
     @Override
-    public void addCommentCount(Long userId) {
-        userStatisticDAO.incrementCommentCountByUserId(userId);
+    public void updatePostCount(Long userId) {
+        userStatisticDAO.updatePostCountByUserId(userId);
     }
 
     @Override
-    public void subCommentCount(Long userId) {
-        userStatisticDAO.decrementCommentCountByUserId(userId);
+    public void updateFollowerCount(Long userId) {
+        userStatisticDAO.updateFollowerCountByUserId(userId);
     }
 
     @Override
-    public void addFollowing(Long userId) {
-        userStatisticDAO.incrementFollowingCountByUserId(userId);
-    }
-
-    @Override
-    public void subFollowing(Long userId) {
-        userStatisticDAO.decrementFollowingCountByUserId(userId);
-    }
-
-    @Override
-    public void addFollower(Long userId) {
-        userStatisticDAO.incrementFollowerCountByUserId(userId);
-    }
-
-    @Override
-    public void subFollower(Long userId) {
-        userStatisticDAO.decrementFollowerCountByUserId(userId);
-    }
-
-    @Override
-    public void addPost(Long userId) {
-        userStatisticDAO.incrementPostCountByUserId(userId);
-    }
-
-    @Override
-    public void subPost(Long userId) {
-        userStatisticDAO.decrementPostCountByUserId(userId);
+    public void updateFollowingCount(Long userId) {
+        userStatisticDAO.updateFollowingCountByUserId(userId);
     }
 }

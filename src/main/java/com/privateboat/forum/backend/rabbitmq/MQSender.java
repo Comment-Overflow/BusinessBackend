@@ -5,6 +5,7 @@ import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.entity.Message;
 import com.privateboat.forum.backend.enumerate.MQMethod;
+import com.privateboat.forum.backend.enumerate.StatisticType;
 import com.privateboat.forum.backend.rabbitmq.bean.*;
 import com.privateboat.forum.backend.util.JacksonUtil;
 import lombok.AllArgsConstructor;
@@ -46,28 +47,10 @@ public class MQSender {
         amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_CACHE_UPDATE_QUEUE, msg);
     }
 
-    public void addPostCount(Long userId) {
-        StatisticBean bean = new StatisticBean(userId, true);
+    public void sendUpdateStatisticMessage(Long userId, StatisticType type) {
+        StatisticBean bean = new StatisticBean(userId, type);
         String msg = JacksonUtil.bean2Json(bean);
-        amqpTemplate.convertAndSend(RabbitMQConfig.POST_QUEUE, msg);
-    }
-
-    public void addCommentCount(Long userId) {
-        StatisticBean bean = new StatisticBean(userId, true);
-        String msg = JacksonUtil.bean2Json(bean);
-        amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_QUEUE, msg);
-    }
-
-    public void subPostCount(Long userId) {
-        StatisticBean bean = new StatisticBean(userId, false);
-        String msg = JacksonUtil.bean2Json(bean);
-        amqpTemplate.convertAndSend(RabbitMQConfig.POST_QUEUE, msg);
-    }
-
-    public void subCommentCount(Long userId) {
-        StatisticBean bean = new StatisticBean(userId, false);
-        String msg = JacksonUtil.bean2Json(bean);
-        amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_QUEUE, msg);
+        amqpTemplate.convertAndSend(RabbitMQConfig.STATISTIC_QUEUE, msg);
     }
 
     public void updateChat(Message message) {

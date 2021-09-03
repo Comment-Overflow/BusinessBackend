@@ -11,10 +11,7 @@ import com.privateboat.forum.backend.entity.Comment;
 import com.privateboat.forum.backend.entity.Post;
 import com.privateboat.forum.backend.entity.StarRecord;
 import com.privateboat.forum.backend.entity.UserInfo;
-import com.privateboat.forum.backend.enumerate.PostTag;
-import com.privateboat.forum.backend.enumerate.PreferenceDegree;
-import com.privateboat.forum.backend.enumerate.SortPolicy;
-import com.privateboat.forum.backend.enumerate.UserType;
+import com.privateboat.forum.backend.enumerate.*;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.rabbitmq.MQSender;
@@ -143,7 +140,7 @@ public class PostServiceImpl implements PostService {
         newPost.addComment(hostComment);
 
         // Change user statistics.
-        mqSender.addPostCount(userId);
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
 //        UserStatistic senderStatistic = senderInfo.getUserStatistic();
 //        senderStatistic.addPost();
 //        userStatisticRepository.save(senderStatistic);
@@ -192,7 +189,7 @@ public class PostServiceImpl implements PostService {
         postRepository.saveAndFlush(post);
 
         // Increment comment count.
-        mqSender.addCommentCount(userId);
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
 
         // Updating of recommendation better stuffed into message queue.
         Long newCommentId = newComment.getId();
@@ -327,7 +324,7 @@ public class PostServiceImpl implements PostService {
         }
 //        post.get().getUserInfo().getUserStatistic().subPost();
 //        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
-        mqSender.subPostCount(userId);
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
         postRepository.delete(post.get());
     }
 
@@ -356,7 +353,7 @@ public class PostServiceImpl implements PostService {
         post.deleteComment(comment);
 //        senderInfo.getUserStatistic().subComment();
 //        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
-        mqSender.subCommentCount(userId);
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
         postRepository.save(post);
         commentRepository.delete(comment);
         mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);

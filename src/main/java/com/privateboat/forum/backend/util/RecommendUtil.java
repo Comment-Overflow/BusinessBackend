@@ -54,12 +54,7 @@ public class RecommendUtil<T extends Analysis> {
     public List<Keyword> computeArticleTfidf(String title, String content, int nKeyword) {
         Map<String, Keyword> tm = new HashMap<>();
 
-        Result parseResult = this.analysisType.parseStr(title + '\t' + content);
-        if (parseResult == null) {
-            LogUtil.error("empty Result");
-        }
-        assert parseResult != null;
-        List<Term> parse = parseResult.recognition(StopLibrary.get()).getTerms();
+        List<Term> parse = this.analysisType.parseStr(title + '\t' + content).recognition(StopLibrary.get()).getTerms();
 
         for (Term term : parse) {
             double weight = this.getWeight(term, content.length(), title.length());
