@@ -91,32 +91,22 @@ public class MQReceiver {
     }
 
     @Transactional
-    @RabbitListener(queues = RabbitMQConfig.POST_QUEUE)
-    public void PostStatisticHandler(String msg) {
-        log.info("updating post statistics...");
+    @RabbitListener(queues = RabbitMQConfig.STATISTIC_QUEUE)
+    public void StatisticUpdateHandler(String msg) {
+        // log.info("updating post statistics...");
         StatisticBean bean = JacksonUtil.json2Bean(msg, StatisticBean.class);
         checkNullBean(bean);
         assert bean != null;
-        if (bean.getIncrement()) {
-            userStatisticRepository.addPost(bean.getUserId());
-        } else {
-            userStatisticRepository.subPost(bean.getUserId());
+        switch (bean.getType()) {
+            case APPROVAL: userStatisticRepository.updateApprovalCount(bean.getUserId()); break;
+            case COMMENT: userStatisticRepository.updateCommentCount(bean.getUserId()); break;
+            case POST: userStatisticRepository.updatePostCount(bean.getUserId()); break;
+            case FOLLOWER: userStatisticRepository.updateFollowerCount(bean.getUserId()); break;
+            case FOLLOWING: userStatisticRepository.updateFollowingCount(bean.getUserId()); break;
         }
     }
 
-    @Transactional
-    @RabbitListener(queues = RabbitMQConfig.COMMENT_QUEUE)
-    public void CommentStatisticHandler(String msg) {
-        log.info("updating comment statistics...");
-        StatisticBean bean = JacksonUtil.json2Bean(msg, StatisticBean.class);
-        checkNullBean(bean);
-        assert bean != null;
-        if (bean.getIncrement()) {
-            userStatisticRepository.addCommentCount(bean.getUserId());
-        } else {
-            userStatisticRepository.subCommentCount(bean.getUserId());
-        }
-    }
+
 
     @RabbitListener(queues = RabbitMQConfig.CHAT_QUEUE)
     public void ChatHandler(String msg) {

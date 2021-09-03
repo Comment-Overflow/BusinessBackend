@@ -88,8 +88,8 @@ public class FollowRecordServiceImpl implements FollowRecordService {
 
         newFollowRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-        userStatisticRepository.addFollowing(fromUserId);
-        userStatisticRepository.addFollower(toUserId);
+        userStatisticRepository.updateFollowingCount(fromUserId);
+        userStatisticRepository.updateFollowerCount(toUserId);
         userStatisticRepository.setFlag(toUserId, RecordType.FOLLOW);
 
         followRecordRepository.save(newFollowRecord);
@@ -97,8 +97,8 @@ public class FollowRecordServiceImpl implements FollowRecordService {
 
     @Override
     public void deleteFollowRecord(Long fromUserId, Long toUserId) {
-        userStatisticRepository.subFollowing(fromUserId);
-        userStatisticRepository.subFollower(toUserId);
+        userStatisticRepository.updateFollowingCount(fromUserId);
+        userStatisticRepository.updateFollowerCount(toUserId);
         followRecordRepository.deleteFollowRecord(fromUserId, toUserId);
     }
 }

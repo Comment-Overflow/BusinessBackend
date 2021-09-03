@@ -9,7 +9,7 @@ public class RabbitMQConfig {
 
     public static final String RECORD_EXCHANGE = "record-exchange";
     public static final String CACHE_EXCHANGE = "cache-exchange";
-    public static final String STATISTIC_EXCHANGE = "statistic";
+    public static final String STATISTIC_EXCHANGE = "statistic-exchange";
     public static final String CHAT_EXCHANGE = "chat-exchange";
 
     public static final String FOLLOW_QUEUE = "follow-queue";
@@ -17,8 +17,7 @@ public class RabbitMQConfig {
     public static final String STAR_QUEUE = "star-queue";
     public static final String REPLY_QUEUE = "reply-queue";
     public static final String COMMENT_CACHE_UPDATE_QUEUE = "cache-queue";
-    public static final String POST_QUEUE = "post-queue";
-    public static final String COMMENT_QUEUE = "comment-queue";
+    public static final String STATISTIC_QUEUE = "statistic-queue";
     public static final String CHAT_QUEUE = "chat-queue";
 
     public static final String FOLLOW_KEY = "follow";
@@ -26,8 +25,7 @@ public class RabbitMQConfig {
     public static final String STAR_KEY = "star";
     public static final String REPLY_KEY = "reply";
     public static final String CACHE_KEY = "cache";
-    public static final String POST_KEY = "post";
-    public static final String COMMENT_KEY = "comment";
+    public static final String STATISTIC_KEY = "statistic";
     public static final String CHAT_KEY = "chat";
 
     @Bean
@@ -56,13 +54,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue postQueue() {
-        return new Queue(POST_QUEUE, true);
-    }
-
-    @Bean
-    public Queue commentQueue() {
-        return new Queue(COMMENT_QUEUE, true);
+    public Queue statisticQueue() {
+        return new Queue(STATISTIC_QUEUE, true);
     }
 
     @Bean Queue chatQueue() {
@@ -116,12 +109,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding postBinding() {
-        return BindingBuilder.bind(postQueue()).to(statisticExchange()).with(POST_KEY);
-    }
-
-    @Bean
-    public Binding commentBinding() {
-        return BindingBuilder.bind(commentQueue()).to(statisticExchange()).with(COMMENT_KEY);
+        return BindingBuilder.bind(statisticQueue()).to(statisticExchange()).with(STATISTIC_KEY);
     }
 
     @Bean

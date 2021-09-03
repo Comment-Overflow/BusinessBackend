@@ -1,5 +1,6 @@
 package com.privateboat.forum.backend.rabbitmq.bean;
 
+import com.privateboat.forum.backend.enumerate.StatisticType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class StatisticBean {
     private Long userId;
-    private Boolean increment;
+    private StatisticType type;
 }

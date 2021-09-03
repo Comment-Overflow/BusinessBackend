@@ -9,14 +9,10 @@ public interface UserStatisticRepository {
     UserStatistic save(UserStatistic userStatistic);
     void removeFlag(Long userId, RecordType recordType);
     UserStatistic.NewRecord getNewlyRecordByUserId(Long userId);
-    void addApprovalCount(Long userId);
-    void subApprovalCount(Long userId);
-    void addCommentCount(Long userId);
-    void subCommentCount(Long userId);
-    void addFollowing(Long userId);
-    void subFollowing(Long userId);
-    void addFollower(Long userId);
-    void subFollower(Long userId);
-    void addPost(Long userId);
-    void subPost(Long userId);
+
+    void updateApprovalCount(Long userId);
+    void updateCommentCount(Long userId);
+    void updatePostCount(Long userId);
+    void updateFollowerCount(Long userId);
+    void updateFollowingCount(Long userId);
 }
