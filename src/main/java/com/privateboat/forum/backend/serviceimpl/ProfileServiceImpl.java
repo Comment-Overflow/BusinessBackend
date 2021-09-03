@@ -16,7 +16,6 @@ import com.privateboat.forum.backend.util.image.ImageAuditException;
 import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.stereotype.Service;
@@ -39,7 +38,7 @@ public class ProfileServiceImpl implements ProfileService {
         UserInfo userInfo = userInfoRepository.getById(userId);
 
         if (profileSettingRequestDTO.getAvatar() != null) {
-            String avatarFileName = String.format("%d_%s", userId, RandomStringUtils.randomAlphanumeric(6));
+            String avatarFileName = ImageUtil.getNewImageName(profileSettingRequestDTO.getAvatar());
             try {
                 ImageUtil.uploadImage(profileSettingRequestDTO.getAvatar(), avatarFileName, imageFolderName);
             } catch (ImageAuditException e) {
