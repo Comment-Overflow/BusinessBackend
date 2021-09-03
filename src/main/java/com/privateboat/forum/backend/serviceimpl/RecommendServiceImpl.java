@@ -55,6 +55,7 @@ public class RecommendServiceImpl implements RecommendService {
         start = System.currentTimeMillis();
         log.info("========== findAllRecentPost ==========");
         List<Post> postList = postRepository.findAllRecentPost();
+        log.info("list size: " + postList.size());
         log.info(String.format("========== findAllRecentPost time: %d", System.currentTimeMillis() - start));
 
         HashMap<Post, Long> CBRecommendMap = new HashMap<>();
