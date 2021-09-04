@@ -13,7 +13,7 @@ public interface PostRepository {
     Optional<Post> findByPostId(Long postId);
     Page<Post> findByUserId(Long userId, Pageable pageable);
     Page<Post> findAll(Pageable pageable);
-    List<Post> findAllRecentPost();
+    List<Post.allPostIdWithTag> findAllRecentPost();
     Page<Post> findByTag(PostTag tag, Pageable pageable);
     Post save(Post post);
     Post saveAndFlush(Post post);

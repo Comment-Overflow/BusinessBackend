@@ -118,4 +118,9 @@ public class Post {
     public void setTransientProperties() {
 
     }
+
+    public interface allPostIdWithTag {
+        Long getId();
+        PostTag getTag();
+    }
 }
