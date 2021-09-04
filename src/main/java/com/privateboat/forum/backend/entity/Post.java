@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
@@ -57,7 +58,7 @@ public class Post {
     @Column(nullable = false)
     private Boolean isFrozen;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private Comment hostComment;
     @Transient
     private Boolean isStarred;
