@@ -54,12 +54,11 @@ public class RecommendServiceImpl implements RecommendService {
 
         start = System.currentTimeMillis();
         log.info("========== findAllRecentPost ==========");
-        List<Post> postList = postRepository.findAllRecentPost();
-        log.info("list size: " + postList.size());
+        List<Post.allPostIdWithTag> postList = postRepository.findAllRecentPost();
         log.info(String.format("========== findAllRecentPost time: %d", System.currentTimeMillis() - start));
 
-        HashMap<Post, Long> CBRecommendMap = new HashMap<>();
-        for(Post post : postList) {
+        HashMap<Post.allPostIdWithTag, Long> CBRecommendMap = new HashMap<>();
+        for(Post.allPostIdWithTag post : postList) {
             if(preferredWordMap.get(post.getTag()) != null) {
                 List<KeyWord> keyWordList = keyWordRepository.getKeyWordByPostId(post.getId());
                 CBRecommendMap.put(post, getScore(preferredWordMap.get(post.getTag()), keyWordList));
@@ -70,7 +69,7 @@ public class RecommendServiceImpl implements RecommendService {
 //        CBRecommendMap.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
         return CBRecommendMap.entrySet().stream().sorted(Map.Entry.comparingByValue())
                 .limit(Constant.CB_RECOMMEND_POST_NUMBER)
-                .map(Map.Entry::getKey)
+                .map(e -> postRepository.getByPostId(e.getKey().getId()))
                 .collect(Collectors.toList());
     }
 

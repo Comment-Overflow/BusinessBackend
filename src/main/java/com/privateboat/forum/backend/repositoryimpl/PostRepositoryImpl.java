@@ -50,7 +50,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<Post> findAllRecentPost() {
+    public List<Post.allPostIdWithTag> findAllRecentPost() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.WEEK_OF_YEAR, Constant.RECOMMEND_EXPIRED_TIME);
         return postDAO.findAllByPostTimeAfter(new Timestamp(calendar.getTime().getTime()));
