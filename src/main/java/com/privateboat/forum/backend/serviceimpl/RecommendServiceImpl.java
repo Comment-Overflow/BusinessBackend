@@ -6,7 +6,9 @@ import com.privateboat.forum.backend.entity.PreferredWord;
 import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
+import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.*;
+import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
@@ -35,11 +37,12 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class RecommendServiceImpl implements RecommendService {
+    private final StarRecordRepository starRecordRepository;
+    private final ApprovalRecordRepository approvalRecordRepository;
     private final PreferredWordRepository preferredWordRepository;
     private final PostRepository postRepository;
     private final UserInfoRepository userInfoRepository;
     private final KeyWordRepository keyWordRepository;
-    private final RedisUtil redisUtil;
     private final RecommendUtil<NlpAnalysis> recommendUtil;
     private final PreferencePostRepository preferencePostRepository;
 
@@ -48,14 +51,20 @@ public class RecommendServiceImpl implements RecommendService {
      */
     @Override
     public List<Post> getCBRecommendations(Long userId) {
-        long start;
+//        long start;
+
+        Optional<UserInfo> optionalViewerInfo = userInfoRepository.findByUserId(userId);
+        if (optionalViewerInfo.isEmpty()) {
+            throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+        }
+        UserInfo viewerInfo = optionalViewerInfo.get();
 
         HashMap<PostTag, HashMap<String, Long>> preferredWordMap = preferredWordRepository.findAllByUserId(userId);
 
-        start = System.currentTimeMillis();
-        log.info("========== findAllRecentPost ==========");
+//        start = System.currentTimeMillis();
+//        log.info("========== findAllRecentPost ==========");
         List<Post.allPostIdWithTag> postList = postRepository.findAllRecentPost();
-        log.info(String.format("========== findAllRecentPost time: %d", System.currentTimeMillis() - start));
+//        log.info(String.format("========== findAllRecentPost time: %d", System.currentTimeMillis() - start));
 
         HashMap<Post.allPostIdWithTag, Long> CBRecommendMap = new HashMap<>();
         for(Post.allPostIdWithTag post : postList) {
@@ -69,12 +78,23 @@ public class RecommendServiceImpl implements RecommendService {
 //        CBRecommendMap.entrySet().removeIf(e -> redisUtil.filterReadPosts(userId, e.getKey().getId()));
         return CBRecommendMap.entrySet().stream().sorted(Map.Entry.comparingByValue())
                 .limit(Constant.CB_RECOMMEND_POST_NUMBER)
-                .map(e -> postRepository.getByPostId(e.getKey().getId()))
+                .map(e -> {
+                    Post post = postRepository.getByPostId(e.getKey().getId());
+                    starRecordRepository.setPostIsStarred(post, viewerInfo);
+                    approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
+                    return post;
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<Post> getCFRecommendations(Long userId) {
+        Optional<UserInfo> optionalViewerInfo = userInfoRepository.findByUserId(userId);
+        if (optionalViewerInfo.isEmpty()) {
+            throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+        }
+        UserInfo viewerInfo = optionalViewerInfo.get();
+
         List<RecommendedItem> rawCFRecommendList = new ArrayList<>();
         try {
             ReloadFromJDBCDataModel dataModel = recommendUtil.getDataSource();
@@ -92,9 +112,14 @@ public class RecommendServiceImpl implements RecommendService {
             LogUtil.error(e);
             e.printStackTrace();
         }
-        List<Post> CFRecommendList = rawCFRecommendList.stream().map(item -> postRepository.getByPostId(item.getItemID())).collect(Collectors.toList());
-//        CFRecommendList.removeIf(item -> redisUtil.filterReadPosts(userId, item.getId()));
-        return CFRecommendList;
+        //        CFRecommendList.removeIf(item -> redisUtil.filterReadPosts(userId, item.getId()));
+        return rawCFRecommendList.stream().
+                map(item -> {
+                    Post post = postRepository.getByPostId(item.getItemID());
+                    starRecordRepository.setPostIsStarred(post, viewerInfo);
+                    approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
+                    return post;
+                }).collect(Collectors.toList());
     }
 
     @Override
