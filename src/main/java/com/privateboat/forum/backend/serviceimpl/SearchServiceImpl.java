@@ -96,7 +96,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<UserCardInfoDTO> searchUsers(Long userId, String searchKey) {
-        List<UserInfo> searchedUserInfo = userInfoRepository.findByUserNameContaining(searchKey);
+        List<UserInfo> searchedUserInfo = userInfoRepository.findByUserNameContainingIgnoreCase(searchKey);
 
         return searchedUserInfo.stream().map(userInfo -> {
             FollowStatus followStatus = followRecordRepository.getFollowStatus(userId, userInfo.getId());

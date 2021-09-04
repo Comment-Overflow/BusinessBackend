@@ -14,6 +14,6 @@ public interface UserInfoDAO extends JpaRepository<UserInfo, Long> {
     <T> Optional<T> findOneProjectionById(Long id, Class<T> type);
 
     @EntityGraph(attributePaths = "userStatistic")
-    List<UserInfo> findByUserNameContaining(String userName);
+    List<UserInfo> findByUserNameContainingIgnoreCase(String userName);
 
 }
