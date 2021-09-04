@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @AllArgsConstructor
@@ -44,6 +46,7 @@ public class FollowRecordRepositoryImpl implements FollowRecordRepository {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void deleteFollowRecord(Long fromUserId, Long toUserId) {
         followRecordDAO.deleteByFromUserIdAndToUserId(fromUserId, toUserId);

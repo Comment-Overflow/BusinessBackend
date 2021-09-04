@@ -321,6 +321,7 @@ public class PostServiceImpl implements PostService {
 //        post.get().getUserInfo().getUserStatistic().subPost();
 //        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
         postRepository.setIsDeletedAndFlush(post.get());
+        commentRepository.deleteCommentsByPostId(postId);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
     }
 
@@ -352,7 +353,8 @@ public class PostServiceImpl implements PostService {
         postRepository.saveAndFlush(post);
         commentRepository.setIsDeletedAndFlush(comment);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
-        mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
+        // mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
+        updateCache(post.getId(), comment.getFloor(), 8);
     }
 
     @Override

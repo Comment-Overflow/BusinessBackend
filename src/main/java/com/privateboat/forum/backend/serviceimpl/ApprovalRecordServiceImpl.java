@@ -85,12 +85,12 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
             comment.subApproval();
             // userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
             // userStatisticRepository.subApprovalCount(approvalRecordReceiveDTO.getToUserId());
-            userStatisticRepository.updateApprovalCount(approvalRecordReceiveDTO.getToUserId());
         } else {
             comment.subDisapproval();
         }
         commentRepository.save(comment);
         approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
+        userStatisticRepository.updateApprovalCount(approvalRecordReceiveDTO.getToUserId());
         updateCache(comment.getPost().getId(), comment.getFloor(), 8);
     }
 

@@ -24,4 +24,5 @@ public interface CommentRepository {
     void setIsDeletedAndFlush(Comment comment);
     PageDTO<Comment> updateCommentCache(Long postId, Pageable pageable);
     boolean existsById(Long commentId);
+    void deleteCommentsByPostId(Long postId);
 }
