@@ -321,6 +321,7 @@ public class PostServiceImpl implements PostService {
 //        post.get().getUserInfo().getUserStatistic().subPost();
 //        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
         postRepository.setIsDeletedAndFlush(post.get());
+        commentRepository.deleteCommentsByPostId(postId);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
     }
 

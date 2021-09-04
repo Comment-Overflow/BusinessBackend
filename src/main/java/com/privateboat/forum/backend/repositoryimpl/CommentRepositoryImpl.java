@@ -128,4 +128,9 @@ public class CommentRepositoryImpl implements CommentRepository  {
     public boolean existsById(Long commentId) {
         return commentDAO.existsById(commentId);
     }
+
+    @Override
+    public void deleteCommentsByPostId(Long postId) {
+        commentDAO.deleteCommentsByPostId(postId);
+    }
 }
