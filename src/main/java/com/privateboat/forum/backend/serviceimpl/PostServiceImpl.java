@@ -352,7 +352,8 @@ public class PostServiceImpl implements PostService {
         postRepository.saveAndFlush(post);
         commentRepository.setIsDeletedAndFlush(comment);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
-        mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
+        // mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
+        updateCache(post.getId(), comment.getFloor(), 8);
     }
 
     @Override
