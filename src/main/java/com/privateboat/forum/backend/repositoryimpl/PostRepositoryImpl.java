@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.sql.Timestamp;
@@ -48,7 +50,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<Post> findAllRecentPost() {
+    public List<Post.allPostIdWithTag> findAllRecentPost() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.WEEK_OF_YEAR, Constant.RECOMMEND_EXPIRED_TIME);
         return postDAO.findAllByPostTimeAfter(new Timestamp(calendar.getTime().getTime()));
@@ -64,6 +66,12 @@ public class PostRepositoryImpl implements PostRepository {
         return postDAO.save(post);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public Post saveAndFlush(Post post) {
+        return postDAO.saveAndFlush(post);
+    }
+
     @Override
     public Post getByPostId(Long postId) throws PostException {
         try {
@@ -73,8 +81,9 @@ public class PostRepositoryImpl implements PostRepository {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void delete(Post post) {
+    public void setIsDeletedAndFlush(Post post) {
         post.setIsDeleted(true);
         postDAO.save(post);
     }
@@ -96,5 +105,24 @@ public class PostRepositoryImpl implements PostRepository {
                 .stream()
                 .map(object -> objectMapper.convertValue(object, Post.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Post> findByTitleContainingAndIsDeletedOrderByPostTime(String searchKey,
+                                                                       boolean isDeleted,
+                                                                       Pageable pageable) {
+        return postDAO.findByTitleContainingAndIsDeletedOrderByPostTime(
+                searchKey, isDeleted, pageable
+        );
+    }
+
+    @Override
+    public Page<Post> findByTitleContainingAndTagAndIsDeletedOrderByPostTime(String searchKey,
+                                                                             PostTag tag,
+                                                                             boolean isDeleted,
+                                                                             Pageable pageable) {
+        return postDAO.findByTitleContainingAndTagAndIsDeletedOrderByPostTime(
+                searchKey, tag, isDeleted, pageable
+        );
     }
 }

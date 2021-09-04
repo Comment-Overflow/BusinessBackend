@@ -25,7 +25,7 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
-    public UserStatistic.NewlyRecord getNewlyRecordByUserId(Long userId) {
+    public UserStatistic.NewRecord getNewlyRecordByUserId(Long userId) {
         try {
             return userStatisticDAO.getNewlyRecordByUserId(userId);
         } catch (EntityNotFoundException e) {
@@ -59,8 +59,8 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
     }
 
     @Override
-    public void save(UserStatistic userStatistic){
-        userStatisticDAO.saveAndFlush(userStatistic);
+    public UserStatistic save(UserStatistic userStatistic){
+        return userStatisticDAO.saveAndFlush(userStatistic);
     }
 
     @Override
@@ -86,5 +86,30 @@ public class UserStatisticRepositoryImpl implements UserStatisticRepository {
                 break;
         }
         userStatisticDAO.save(userStatistic);
+    }
+
+    @Override
+    public void updateApprovalCount(Long userId) {
+        userStatisticDAO.updateApprovalCountByUserId(userId);
+    }
+
+    @Override
+    public void updateCommentCount(Long userId) {
+        userStatisticDAO.updateCommentCountByUserId(userId);
+    }
+
+    @Override
+    public void updatePostCount(Long userId) {
+        userStatisticDAO.updatePostCountByUserId(userId);
+    }
+
+    @Override
+    public void updateFollowerCount(Long userId) {
+        userStatisticDAO.updateFollowerCountByUserId(userId);
+    }
+
+    @Override
+    public void updateFollowingCount(Long userId) {
+        userStatisticDAO.updateFollowingCountByUserId(userId);
     }
 }

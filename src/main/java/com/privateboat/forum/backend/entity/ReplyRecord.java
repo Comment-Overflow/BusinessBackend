@@ -9,7 +9,11 @@ import java.sql.Timestamp;
 @Entity
 @Getter
 @Setter
-@Table
+@Table(
+        indexes = {
+                @Index(columnList = "toUserId, timestamp")
+        }
+)
 public class ReplyRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

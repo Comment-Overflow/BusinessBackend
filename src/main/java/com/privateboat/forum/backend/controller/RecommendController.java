@@ -5,6 +5,8 @@ import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.JWTUtil;
 import com.privateboat.forum.backend.util.LogUtil;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.mortbay.log.Log;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 public class RecommendController {
@@ -53,12 +56,23 @@ public class RecommendController {
                                                      @RequestParam("pageSize") Integer pageSize
     ) {
         try {
+            long start, end;
+            start = System.currentTimeMillis();
+            log.info("========== CB start ==========");
             List<Post> CBRecommendList = recommendService.getCBRecommendations(userId);
             LogUtil.debug(CBRecommendList.toString());
             LogUtil.debug(CBRecommendList.size());
+            end = System.currentTimeMillis();
+            log.info(String.format("========== CB time: %d ==========", end - start));
+
+            log.info("========== CF start ==========");
+            start = System.currentTimeMillis();
             List<Post> CFRecommendList = recommendService.getCFRecommendations(userId);
             LogUtil.debug(CFRecommendList.toString());
             LogUtil.debug(CFRecommendList.size());
+            end = System.currentTimeMillis();
+            log.info(String.format("========== CF time: %d ==========", end - start));
+
             CBRecommendList.addAll(CFRecommendList);
             return ResponseEntity.ok(CBRecommendList);
         } catch (RuntimeException e) {

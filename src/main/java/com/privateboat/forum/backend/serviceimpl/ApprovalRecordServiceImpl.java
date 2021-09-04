@@ -1,25 +1,27 @@
 package com.privateboat.forum.backend.serviceimpl;
 
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
-import com.privateboat.forum.backend.entity.ApprovalRecord;
-import com.privateboat.forum.backend.entity.Comment;
-import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.enumerate.RecordType;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.exception.UserInfoException;
+import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.ApprovalRecordService;
 import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.sql.Timestamp;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @Transactional
@@ -29,6 +31,7 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
     private final ApprovalRecordRepository approvalRecordRepository;
     private final CommentRepository commentRepository;
     private final UserStatisticRepository userStatisticRepository;
+    private final MQSender mqSender;
 
     @Override
     public Page<ApprovalRecord> getApprovalRecords(Long userId, Pageable pageable) {
@@ -65,9 +68,12 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
 
         newApprovalRecord.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
-        userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
-        approvalRecordRepository.save(newApprovalRecord);
+        // userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).addApproval();
+        // userStatisticRepository.addApprovalCount(approvalRecordReceiveDTO.getToUserId());
+        approvalRecordRepository.saveAndFlush(newApprovalRecord);
+        userStatisticRepository.updateApprovalCount(approvalRecordReceiveDTO.getToUserId());
         redisUtil.addApprovalCount();
+        updateCache(newComment.getPost().getId(), newComment.getFloor(), 8);
     }
 
     @Override
@@ -77,12 +83,15 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
             Post post = comment.getPost();
             post.decrementApproval();
             comment.subApproval();
-            userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
+            // userStatisticRepository.getByUserId(approvalRecordReceiveDTO.getToUserId()).subApproval();
+            // userStatisticRepository.subApprovalCount(approvalRecordReceiveDTO.getToUserId());
         } else {
             comment.subDisapproval();
         }
         commentRepository.save(comment);
         approvalRecordRepository.deleteApprovalRecord(fromUserId, approvalRecordReceiveDTO.getCommentId());
+        userStatisticRepository.updateApprovalCount(approvalRecordReceiveDTO.getToUserId());
+        updateCache(comment.getPost().getId(), comment.getFloor(), 8);
     }
 
     @Override
@@ -90,5 +99,13 @@ public class ApprovalRecordServiceImpl implements ApprovalRecordService {
         UserInfo userInfo = userInfoRepository.getById(userId);
         Comment comment = commentRepository.getById(commentId);
         return approvalRecordRepository.checkIfHaveApproved(userInfo, comment);
+    }
+
+    private void updateCache(Long postId, Integer commentFloor, Integer pageSize) {
+        int pageNum = commentFloor / pageSize;
+        Pageable pageable = PageRequest.of(pageNum, pageSize,
+                Sort.by(Sort.Direction.ASC, "floor"));
+        // mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
+        commentRepository.updateCommentCache(postId, pageable);
     }
 }

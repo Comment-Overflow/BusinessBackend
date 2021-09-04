@@ -7,24 +7,27 @@ import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.response.HotPostDTO;
 import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.dto.response.SearchedCommentDTO;
-import com.privateboat.forum.backend.entity.*;
-import com.privateboat.forum.backend.enumerate.PostTag;
-import com.privateboat.forum.backend.enumerate.PreferenceDegree;
-import com.privateboat.forum.backend.enumerate.SortPolicy;
-import com.privateboat.forum.backend.enumerate.UserType;
+import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.Post;
+import com.privateboat.forum.backend.entity.StarRecord;
+import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.enumerate.*;
 import com.privateboat.forum.backend.exception.PostException;
+import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
+import com.privateboat.forum.backend.service.ReplyRecordService;
+import com.privateboat.forum.backend.util.RedisUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
 import com.privateboat.forum.backend.util.audit.TextAuditUtil;
 import com.privateboat.forum.backend.util.image.ImageAuditException;
 import com.privateboat.forum.backend.util.image.ImageUploadException;
 import com.privateboat.forum.backend.util.image.ImageUtil;
-import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -48,6 +52,7 @@ public class PostServiceImpl implements PostService {
     private final UserStatisticRepository userStatisticRepository;
     private final RecommendService recommendService;
     private final PreferencePostRepository preferencePostRepository;
+    private final ReplyRecordService replyRecordService;
 
     private final RedisUtil redisUtil;
     private final MQSender mqSender;
@@ -64,7 +69,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findByTag(tag, pageable);
         for (Post post: posts.getContent()) {
-            setPostTransientField(post, userInfo.get());
+            setPostApprovalStatusAndIsStarred(post, userInfo.get());
         }
         return posts;
     }
@@ -78,7 +83,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<Post> posts = postRepository.findAll(pageable);
         for (Post post: posts.getContent()) {
-            setPostTransientField(post, userInfo.get());
+            setPostApprovalStatusAndIsStarred(post, userInfo.get());
         }
         return posts;
     }
@@ -88,7 +93,7 @@ public class PostServiceImpl implements PostService {
         UserInfo userInfo = userInfoRepository.getById(myUserId);
         Page<Post> postPage = postRepository.findByUserId(userId, PageRequest.of(pageNum, pageSize));
         for(Post post: postPage.getContent()) {
-            setPostTransientField(post, userInfo);
+            setPostApprovalStatusAndIsStarred(post, userInfo);
         }
         return postPage;
     }
@@ -102,7 +107,7 @@ public class PostServiceImpl implements PostService {
             postList.add(starRecord.getPost());
         }
         for (Post post : postList) {
-            setPostTransientField(post, userInfo);
+            setPostApprovalStatusAndIsStarred(post, userInfo);
         }
         return new PageImpl<>(postList);
     }
@@ -132,19 +137,18 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(newPost, senderInfo, 0L, newPostDTO.getContent());
         newPost.setHostComment(hostComment);
         newPost.addComment(hostComment);
-        newPost.setKeyWordList(recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent()));
-
-        // Change user statistics.
-        UserStatistic senderStatistic = senderInfo.getUserStatistic();
-        senderStatistic.addPost();
-        userStatisticRepository.save(senderStatistic);
-
         addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
+        postRepository.saveAndFlush(newPost);
+        // Change user statistics.
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
+//        UserStatistic senderStatistic = senderInfo.getUserStatistic();
+//        senderStatistic.addPost();
+//        userStatisticRepository.save(senderStatistic);
 
-        postRepository.save(newPost);
         redisUtil.addPostCounter();
         redisUtil.addActiveUserCounter(userId);
-        commentRepository.save(hostComment);
+
+        recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent());
         return newPost;
     }
 
@@ -163,6 +167,8 @@ public class PostServiceImpl implements PostService {
         if (optionalPost.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
         }
+
+        // Save post and new comment.
         Post post = optionalPost.get();
         auditPostContent(commentDTO.getContent());
         if (post.getIsFrozen()) {
@@ -172,25 +178,38 @@ public class PostServiceImpl implements PostService {
                 commentDTO.getQuoteId(), commentDTO.getContent());
         post.addComment(newComment);
         post.setLastCommentTime(newComment.getTime());
-        optionalSenderInfo.get().getUserStatistic().addComment();
-        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
-        commentRepository.save(newComment);
+        addAndUploadImage(newComment, commentDTO.getUploadFiles());
+//        optionalSenderInfo.get().getUserStatistic().addComment();
+//        userStatisticRepository.save(optionalSenderInfo.get().getUserStatistic());
+        commentRepository.saveAndFlush(newComment);
+        postRepository.saveAndFlush(post);
+
+        // Increment comment count.
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
+
+        // Updating of recommendation better stuffed into message queue.
         Long newCommentId = newComment.getId();
-        postRepository.save(post);
         recommendService.updateRecommendSystem(userId, commentDTO.getPostId(), PreferenceDegree.REPLY);
+
+        // Reply the host user (async).
         Long postUserId = post.getUserInfo().getId();
         if (!postUserId.equals(userId)) {
-            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(postUserId, commentDTO.getPostId(), newCommentId, commentDTO.getQuoteId());
-            // replyRecordService.postReplyRecord(userId, reply);
+            ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(
+                    postUserId,
+                    commentDTO.getPostId(),
+                    newCommentId,
+                    post.getHostComment().getId()
+            );
+//             replyRecordService.postReplyRecord(userId, reply);
             mqSender.sendReplyMessage(userId, reply);
         }
+
+        // Reply quote, if there is any.
         if (newComment.getQuoteId() != 0) {
-            List<Comment> finder =
-                    post.getComments().stream().filter(
-                            c -> c.getId().equals(newComment.getQuoteId())
-                    ).collect(Collectors.toList());
-            if (finder.size() != 1) throw new PostException(PostException.PostExceptionType.QUOTE_OUT_OF_BOUND);
-            Comment target = finder.get(0);
+            Optional<Comment> optionalTarget = commentRepository.findById(newComment.getQuoteId());
+            if (optionalTarget.isEmpty()) throw new PostException(PostException.PostExceptionType.QUOTE_OUT_OF_BOUND);
+            Comment target = optionalTarget.get();
+
             Long quoteUserId = target.getUserInfo().getId();
             if (!quoteUserId.equals(userId) && !quoteUserId.equals(postUserId)) {
                 ReplyRecordReceiveDTO reply = new ReplyRecordReceiveDTO(
@@ -198,12 +217,12 @@ public class PostServiceImpl implements PostService {
                         commentDTO.getPostId(),
                         newCommentId,
                         commentDTO.getQuoteId());
-                // replyRecordService.postReplyRecord(userId, reply);
+//                 replyRecordService.postReplyRecord(userId, reply);
                 mqSender.sendReplyMessage(userId, reply);
             }
         }
 
-        addAndUploadImage(newComment, commentDTO.getUploadFiles());
+        updateCache(post.getId(), newComment.getFloor(), 8);
 
         redisUtil.addCommentCounter();
         redisUtil.addActiveUserCounter(userId);
@@ -233,13 +252,25 @@ public class PostServiceImpl implements PostService {
         if (userInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST);
         }
+
+
+        Optional<Post> optionalPost = postRepository.findByPostId(postId);
+        if (optionalPost.isEmpty()) {
+            throw new PostException(PostException.PostExceptionType.POST_NOT_EXIST);
+        }
+
+
         Sort.Direction direction = policy == SortPolicy.EARLIEST ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, "floor"));
-        Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
+
+
+        PageDTO<Comment> comments = commentRepository.findByPostId(postId, pageable);
+        comments.setSize(optionalPost.get().getCommentCount().longValue());
+
 
         Comment host = null;
         for (Comment comment: comments.getContent()) {
-            if (comment.getFloor() == 0) host = comment;
+            comment.setUserInfo(userInfoRepository.getById(comment.getUserInfo().getId()));
             comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo.get(), comment));
             if (comment.getIsDeleted()) {
                 comment.setContent("");
@@ -247,6 +278,7 @@ public class PostServiceImpl implements PostService {
                 comment.setQuoteId(0L);
                 continue;
             }
+
             if (comment.getQuoteId() != 0) {
                 Comment quoteComment = commentRepository.getById(comment.getQuoteId());
                 QuoteDTO quoteDTO = new QuoteDTO(quoteComment);
@@ -255,17 +287,20 @@ public class PostServiceImpl implements PostService {
                 }
                 comment.setQuoteDTO(quoteDTO);
             }
+
+            if (comment.getFloor() == 0) host = comment;
         }
+
         if (host != null) {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
             recommendService.updateRecommendSystem(userId, postId, PreferenceDegree.BROWSE);
             redisUtil.addViewCounter(userId, postId);
-            return new PageDTO<>(commentList, comments.getTotalElements());
+            return new PageDTO<>(commentList, comments.getSize());
         }
 
-        return new PageDTO<>(comments);
+        return comments;
     }
 
     @Transactional
@@ -283,9 +318,11 @@ public class PostServiceImpl implements PostService {
                 userInfo.get().getUserAuth().getUserType() != UserType.ADMIN) {
             throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
-        post.get().getUserInfo().getUserStatistic().subPost();
-        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
-        postRepository.delete(post.get());
+//        post.get().getUserInfo().getUserStatistic().subPost();
+//        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
+        postRepository.setIsDeletedAndFlush(post.get());
+        commentRepository.deleteCommentsByPostId(postId);
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
     }
 
     @Transactional
@@ -311,17 +348,35 @@ public class PostServiceImpl implements PostService {
             throw new PostException(PostException.PostExceptionType.PERMISSION_DENIED);
         }
         post.deleteComment(comment);
-        senderInfo.getUserStatistic().subComment();
-        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
-        postRepository.save(post);
-        commentRepository.delete(comment);
+//        senderInfo.getUserStatistic().subComment();
+//        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
+        postRepository.saveAndFlush(post);
+        commentRepository.setIsDeletedAndFlush(comment);
+        mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
+        // mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
+        updateCache(post.getId(), comment.getFloor(), 8);
     }
 
     @Override
-    public List<SearchedCommentDTO> findMyComments(Long userId, Integer pageNum, Integer pageSize) {
-        List<Comment> myComments = commentRepository.getMyComments(userId, PageRequest.of(pageNum, pageSize)).getContent();
-        removeQuoteId(myComments);
-        return wrapSearchedCommentsWithPost(myComments);
+    public List<SearchedCommentDTO> findOnesComments(Long targetId, Long viewerId, Integer pageNum, Integer pageSize) {
+        Optional<UserInfo> optionalViewerInfo = userInfoRepository.findByUserId(viewerId);
+        if (optionalViewerInfo.isEmpty()) {
+            throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
+        }
+        UserInfo viewerInfo = optionalViewerInfo.get();
+
+        List<Comment> targetComments = commentRepository.getOnesComments(targetId, PageRequest.of(pageNum, pageSize)).getContent();
+        removeQuoteId(targetComments);
+        return targetComments.stream().map(comment -> {
+            Post parentPost = comment.getPost();
+            setPostIsStarred(parentPost, viewerInfo);
+            setCommentApprovalStatus(comment, viewerInfo);
+
+            SearchedCommentDTO dto = new SearchedCommentDTO(parentPost, comment);
+            // isStarred is no longer set upon constructor invocation.
+            dto.setIsStarred(parentPost.getIsStarred());
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -340,26 +395,27 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void setPostTransientField(Post post, UserInfo userInfo) {
-        post.getHostComment().setApprovalStatus(
-                approvalRecordRepository.checkIfHaveApproved(userInfo, post.getHostComment()));
+    public void setPostApprovalStatusAndIsStarred(Post post, UserInfo userInfo) {
+        setCommentApprovalStatus(post.getHostComment(), userInfo);
+        setPostIsStarred(post, userInfo);
+    }
+
+    @Override
+    public void setPostIsStarred(Post post, UserInfo userInfo) {
         post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
+    }
+
+    @Override
+    public void setCommentApprovalStatus(Comment comment, UserInfo userInfo) {
+        comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, comment));
     }
 
     @Override
     public List<HotPostDTO> getHotList(Integer pageNum, Integer pageSize) {
         List<Post> hottestPosts = postRepository.getHotPosts(PageRequest.of(pageNum, pageSize));
         return hottestPosts.stream().map(post -> {
-            setPostTransientField(post, post.getUserInfo());
+            setPostApprovalStatusAndIsStarred(post, post.getUserInfo());
             return new HotPostDTO(post);
-        }).collect(Collectors.toList());
-    }
-
-    public List<SearchedCommentDTO> wrapSearchedCommentsWithPost(List<Comment> comments) {
-        return comments.stream().map(comment -> {
-            Post parentPost = comment.getPost();
-            setPostTransientField(parentPost, comment.getUserInfo());
-            return new SearchedCommentDTO(parentPost, comment);
         }).collect(Collectors.toList());
     }
 
@@ -398,5 +454,13 @@ public class PostServiceImpl implements PostService {
             String imageUrl = environment.getProperty("com.privateboat.forum.backend.image-base-url") + imageFolderName + newName;
             imageUrlList.add(imageUrl);
         }
+    }
+
+    private void updateCache(Long postId, Integer commentFloor, Integer pageSize) {
+        int pageNum = commentFloor / pageSize;
+        Pageable pageable = PageRequest.of(pageNum, pageSize,
+                Sort.by(Sort.Direction.ASC, "floor"));
+        // mqSender.sendCacheUpdateMessage(postId, pageNum, pageSize);
+        commentRepository.updateCommentCache(postId, pageable);
     }
 }

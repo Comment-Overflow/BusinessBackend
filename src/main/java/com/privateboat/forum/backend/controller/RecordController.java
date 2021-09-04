@@ -35,7 +35,7 @@ public class RecordController {
 
     @GetMapping(value = "/notifications/new_records")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<UserStatistic.NewlyRecord> getNewlyRecords(@RequestAttribute Long userId) {
+    ResponseEntity<UserStatistic.NewRecord> getNewRecords(@RequestAttribute Long userId) {
         try {
             return ResponseEntity.ok(userStatisticService.getNewlyRecords(userId));
         } catch (RuntimeException e) {
@@ -65,7 +65,6 @@ public class RecordController {
     ResponseEntity<String> postApprovalRecord(@RequestAttribute Long userId,
                                               @RequestBody ApprovalRecordReceiveDTO approvalRecordReceiveDTO) throws UserInfoException, PostException {
         try{
-            // approvalRecordService.postApprovalRecord(userId, approvalRecordReceiveDTO);
             mqSender.sendApprovalMessage(userId, approvalRecordReceiveDTO, MQMethod.POST);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (RuntimeException e) {
@@ -160,11 +159,11 @@ public class RecordController {
         }
     }
 
-    @GetMapping(value = "/records/following")
+    @GetMapping(value = "/records/following/{userId}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowingRecords(@RequestAttribute Long userId,
-                                                                     @RequestParam int page,
-                                                                     @RequestParam int pageSize) {
+    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowingRecords(@PathVariable Long userId,
+                                                                   @RequestParam int page,
+                                                                   @RequestParam int pageSize) {
         try{
             Page<UserCardInfoDTO> ret = followRecordService.getFollowingRecords(userId, PageRequest.of(page, pageSize));
             return ResponseEntity.ok(new PageDTO<>(ret));
@@ -174,11 +173,11 @@ public class RecordController {
         }
     }
 
-    @GetMapping(value = "/records/followed")
+    @GetMapping(value = "/records/followed/{userId}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowedRecords(@RequestAttribute Long userId,
-                                                               @RequestParam int page,
-                                                               @RequestParam int pageSize) {
+    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowedRecords(@PathVariable Long userId,
+                                                                  @RequestParam int page,
+                                                                  @RequestParam int pageSize) {
         try {
             Page<UserCardInfoDTO> ret = followRecordService.getFollowedRecords(userId, PageRequest.of(page, pageSize));
             return ResponseEntity.ok(new PageDTO<>(ret));

@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -23,6 +25,7 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
         return approvalRecordDAO.findByToUserIdAndFromUserIdIsNotAndApprovalStatusOrderByTimestampDesc(toUserId, toUserId, ApprovalStatus.APPROVAL, pageable);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void deleteApprovalRecord(Long userId, Long commentId) {
         approvalRecordDAO.deleteByFromUserIdAndCommentId(userId, commentId);
@@ -31,6 +34,12 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
     @Override
     public void save(ApprovalRecord newApprovalRecord){
         approvalRecordDAO.saveAndFlush(newApprovalRecord);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public void saveAndFlush(ApprovalRecord newApprovalRecord) {
+        approvalRecordDAO.save(newApprovalRecord);
     }
 
     @Override

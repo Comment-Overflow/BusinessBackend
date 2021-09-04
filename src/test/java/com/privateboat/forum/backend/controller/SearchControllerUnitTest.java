@@ -61,9 +61,10 @@ public class SearchControllerUnitTest {
     @Test
     void testSearchComments() throws Exception {
         List<SearchedCommentDTO> commentPage = new ArrayList<>();
-        given(searchService.searchComments(any(String.class), any(PageRequest.class))).
+        given(searchService.searchAllComments(any(Long.class), any(String.class), any(PageRequest.class))).
                 willReturn(commentPage);
         given(searchService.searchCommentsByPostTag(
+                USER_ID,
                 any(PostTag.class),
                 any(String.class),
                 any(PageRequest.class)

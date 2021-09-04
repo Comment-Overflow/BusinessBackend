@@ -3,11 +3,10 @@ package com.privateboat.forum.backend.rabbitmq;
 import com.privateboat.forum.backend.configuration.RabbitMQConfig;
 import com.privateboat.forum.backend.dto.request.ApprovalRecordReceiveDTO;
 import com.privateboat.forum.backend.dto.request.ReplyRecordReceiveDTO;
+import com.privateboat.forum.backend.entity.Message;
 import com.privateboat.forum.backend.enumerate.MQMethod;
-import com.privateboat.forum.backend.rabbitmq.bean.ApprovalBean;
-import com.privateboat.forum.backend.rabbitmq.bean.FollowBean;
-import com.privateboat.forum.backend.rabbitmq.bean.ReplyBean;
-import com.privateboat.forum.backend.rabbitmq.bean.StarBean;
+import com.privateboat.forum.backend.enumerate.StatisticType;
+import com.privateboat.forum.backend.rabbitmq.bean.*;
 import com.privateboat.forum.backend.util.JacksonUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -40,6 +39,23 @@ public class MQSender {
         ReplyBean replyBean = new ReplyBean(userId ,dto);
         String msg = JacksonUtil.bean2Json(replyBean);
         amqpTemplate.convertAndSend(RabbitMQConfig.REPLY_QUEUE, msg);
+    }
+
+    public void sendCacheUpdateMessage(Long postId, Integer pageNum, Integer pageSize) {
+        CommentCacheUpdateBean bean = new CommentCacheUpdateBean(postId, pageNum, pageSize);
+        String msg = JacksonUtil.bean2Json(bean);
+        amqpTemplate.convertAndSend(RabbitMQConfig.COMMENT_CACHE_UPDATE_QUEUE, msg);
+    }
+
+    public void sendUpdateStatisticMessage(Long userId, StatisticType type) {
+        StatisticBean bean = new StatisticBean(userId, type);
+        String msg = JacksonUtil.bean2Json(bean);
+        amqpTemplate.convertAndSend(RabbitMQConfig.STATISTIC_QUEUE, msg);
+    }
+
+    public void updateChat(Message message) {
+        String msg = JacksonUtil.bean2Json(message);
+        amqpTemplate.convertAndSend(RabbitMQConfig.CHAT_QUEUE, msg);
     }
 
 }

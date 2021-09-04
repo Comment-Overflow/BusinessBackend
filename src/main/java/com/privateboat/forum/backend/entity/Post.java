@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
@@ -18,6 +18,13 @@ import java.util.List;
 @Getter
 @Setter
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(
+        indexes = {
+                @Index(columnList = "isDeleted, user_info_id, postTime"),
+                @Index(columnList = "postTime"),
+                @Index(columnList = "host_comment_id")
+        }
+)
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,13 +58,10 @@ public class Post {
     @Column(nullable = false)
     private Boolean isFrozen;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private Comment hostComment;
     @Transient
     private Boolean isStarred;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    List<KeyWord> KeyWordList;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Basic(fetch = FetchType.LAZY)
@@ -114,5 +118,10 @@ public class Post {
 
     public void setTransientProperties() {
 
+    }
+
+    public interface allPostIdWithTag {
+        Long getId();
+        PostTag getTag();
     }
 }

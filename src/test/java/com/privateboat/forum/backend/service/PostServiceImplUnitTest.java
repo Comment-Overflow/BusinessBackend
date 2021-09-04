@@ -151,8 +151,8 @@ public class PostServiceImplUnitTest {
                 .thenReturn(Optional.of(COMMENT));
         Mockito.when(commentRepository.findById(WRONG_COMMENT_ID))
                 .thenReturn(Optional.empty());
-        Mockito.when(commentRepository.findByPostId(POST_ID, SORTED_PAGEABLE))
-                .thenReturn(COMMENT_PAGE);
+//        Mockito.when(commentRepository.findByPostId(POST_ID, SORTED_PAGEABLE))
+//                .thenReturn(COMMENT_PAGE);
 
     }
 
@@ -296,7 +296,7 @@ public class PostServiceImplUnitTest {
     void testDeletePost() {
         postService.deletePost(POST_ID, USER_ID);
         Mockito.verify(userStatisticRepository).save(any());
-        Mockito.verify(postRepository).delete(any());
+        Mockito.verify(postRepository).setIsDeletedAndFlush(any());
 
         PostException wrongPostException =
                 Assertions.assertThrows(PostException.class, () -> postService
@@ -310,7 +310,7 @@ public class PostServiceImplUnitTest {
         postService.deleteComment(COMMENT_ID, USER_ID);
         Mockito.verify(userStatisticRepository).save(any());
         Mockito.verify(postRepository).save(any());
-        Mockito.verify(commentRepository).delete(any());
+        Mockito.verify(commentRepository).setIsDeletedAndFlush(any());
 
         PostException wrongPostException =
                 Assertions.assertThrows(PostException.class, () -> postService

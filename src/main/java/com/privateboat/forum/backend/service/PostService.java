@@ -23,12 +23,15 @@ public interface PostService {
     Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException;
     Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException;
     Post getPost(Long postId, Long userId) throws PostException;
-    List<SearchedCommentDTO> findMyComments(Long userId, Integer pageNum, Integer pageSize);
+    List<SearchedCommentDTO> findOnesComments(Long targetId, Long viewerId, Integer pageNum, Integer pageSize);
     Post getPostByComment(Long commentId, Long userId) throws PostException;
     PageDTO<Comment> findByPostIdOrderByPolicy(Long postId, SortPolicy policy,
                                                Integer pageNum, Integer pageSize, Long userId);
     void deletePost(Long postId, Long userId) throws PostException;
     void deleteComment(Long commentId, Long userId) throws PostException;
-    void setPostTransientField(Post post, UserInfo userInfo);
+    void setPostApprovalStatusAndIsStarred(Post post, UserInfo userInfo);
     List<HotPostDTO> getHotList(Integer pageNum, Integer pageSize);
+
+    void setPostIsStarred(Post post, UserInfo userInfo);
+    void setCommentApprovalStatus(Comment comment, UserInfo userInfo);
 }

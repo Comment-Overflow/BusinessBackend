@@ -1,6 +1,7 @@
 package com.privateboat.forum.backend.configuration;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import lombok.AllArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +9,10 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 @Configuration
+@AllArgsConstructor
 public class DataSourceConfig {
+
+    private final Environment environment;
 
 //    @Bean
 //    @ConfigurationProperties(prefix = "spring.datasource")
@@ -19,10 +23,10 @@ public class DataSourceConfig {
     @Bean
     public DataSource getDataSource() {
         DataSourceBuilder dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.driverClassName("org.postgresql.Driver");
-        dataSourceBuilder.url("jdbc:postgresql://localhost:5432/comment_overflow_db");
-        dataSourceBuilder.username("weixinpeng");
-        dataSourceBuilder.password("iloveyou0118");
+        dataSourceBuilder.driverClassName(environment.getProperty("spring.datasource.driverClassName"));
+        dataSourceBuilder.url(environment.getProperty("spring.datasource.url"));
+        dataSourceBuilder.username(environment.getProperty("spring.datasource.username"));
+        dataSourceBuilder.password(environment.getProperty("spring.datasource.password"));
         return dataSourceBuilder.build();
     }
 }

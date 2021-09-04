@@ -2,15 +2,24 @@ package com.privateboat.forum.backend.repositoryimpl;
 
 import com.privateboat.forum.backend.dao.CommentDAO;
 import com.privateboat.forum.backend.dto.QuoteDTO;
+import com.privateboat.forum.backend.dto.response.PageDTO;
 import com.privateboat.forum.backend.entity.Comment;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.CommentRepository;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,13 +28,44 @@ public class CommentRepositoryImpl implements CommentRepository  {
     private final CommentDAO commentDAO;
 
     @Override
-    public Page<Comment> findByPostId(Long postId, Pageable pageable) {
-        return commentDAO.findByPostId(postId, pageable);
+    @Cacheable(value = "post-cache", key = "#p0 + '-' + #p1.pageNumber + '-' + #p1.pageSize")
+    public PageDTO<Comment> findByPostId(Long postId, Pageable pageable) {
+        System.out.println("entering database...");
+        Page<Comment> commentPage = commentDAO.findByPostId(postId, pageable);
+        List<Comment> contentList = commentPage.getContent();
+        if (contentList.size() == 0) {
+            return new PageDTO<>(commentPage);
+        }
+        for (Comment comment : contentList) {
+            comment.setUserInfo((UserInfo) Hibernate.unproxy(comment.getUserInfo()));
+            comment.setImageUrl(new ArrayList<>(comment.getImageUrl()));
+        }
+
+        Comment firstComment = contentList.get(0);
+        if (firstComment.getFloor() == 0) {
+            List<Comment> newContentList = new ArrayList<>(contentList);
+            newContentList.set(0, (Comment) Hibernate.unproxy(firstComment));
+            return new PageDTO<>(newContentList, commentPage.getTotalElements());
+        }
+        return new PageDTO<>(commentPage);
+    }
+
+    @Override
+    @CachePut(value = "post-cache", key = "#p0 + '-' + #p1.pageNumber + '-' + #p1.pageSize")
+    public PageDTO<Comment> updateCommentCache(Long postId, Pageable pageable) {
+        // Calling function annotated by @Cacheable in the same class won't be cached.
+        return findByPostId(postId, pageable);
     }
 
     @Override
     public Comment save(Comment comment) {
         return commentDAO.save(comment);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Comment saveAndFlush(Comment newComment) {
+        return commentDAO.saveAndFlush(newComment);
     }
 
     @Override
@@ -48,11 +88,11 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
-    public Page<Comment> findByContentContainingOrPostTitleContainingAndIsDeleted(
+    public Page<Comment> findByContentContainingAndIsDeleted(
             String searchKey,
             Boolean isDeleted,
             Pageable pageable) {
-        return commentDAO.findByContentContainingOrPostTitleContainingAndPostIsDeleted(
+        return commentDAO.findByContentContainingAndPostIsDeleted(
                 searchKey,
                 false,
                 pageable);
@@ -60,7 +100,7 @@ public class CommentRepositoryImpl implements CommentRepository  {
 
     @Override
     public Page<Comment> findByPostTag(PostTag postTag, String searchKey, Pageable pageable) {
-        return commentDAO.findByPostTagAndContentContainingOrPostTitleContainingAndPostIsDeleted(
+        return commentDAO.findByPostTagAndContentContainingAndPostIsDeleted(
                 postTag,
                 searchKey,
                 false,
@@ -73,12 +113,24 @@ public class CommentRepositoryImpl implements CommentRepository  {
     }
 
     @Override
-    public Page<Comment> getMyComments(Long userId, Pageable pageable) {
-        return commentDAO.findByUserInfoIdAndFloorIsNotAndIsDeletedOrderByTimeDesc(userId, 0,false, pageable);
+    public Page<Comment> getOnesComments(Long userId, Pageable pageable) {
+        return commentDAO.findByUserInfoIdAndFloorGreaterThanAndIsDeletedOrderByTimeDesc(userId, 0, false, pageable);
     }
 
-    public void delete(Comment comment) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
+    public void setIsDeletedAndFlush(Comment comment) {
         comment.setIsDeleted(true);
         commentDAO.save(comment);
+    }
+
+    @Override
+    public boolean existsById(Long commentId) {
+        return commentDAO.existsById(commentId);
+    }
+
+    @Override
+    public void deleteCommentsByPostId(Long postId) {
+        commentDAO.deleteCommentsByPostId(postId);
     }
 }

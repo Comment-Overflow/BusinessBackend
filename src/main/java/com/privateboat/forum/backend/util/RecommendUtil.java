@@ -3,10 +3,14 @@ package com.privateboat.forum.backend.util;
 import com.privateboat.forum.backend.configuration.DataSourceConfig;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import org.ansj.app.keyword.Keyword;
+import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 import org.ansj.library.StopLibrary;
 import org.ansj.splitWord.Analysis;
+import org.ansj.splitWord.analysis.NlpAnalysis;
+import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,20 +34,29 @@ public class RecommendUtil<T extends Analysis> {
     @Autowired
     DataSourceConfig dataSourceConfig;
 
+    public RecommendUtil(){
+        this.analysisType = (T) new NlpAnalysis();
+    }
+
     public void setAnalysisType(T analysisType) {
         this.analysisType = analysisType;
     }
 
+//    public PostgreSQLJDBCDataModel getDataSource() throws TasteException {
+//        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
+//    }
 
-    public PostgreSQLJDBCDataModel getDataSource(){
-//        ConnectionPoolDataSource connectionPoolDataSource = new ConnectionPoolDataSource(dataSourceConfig.getDataSource());
-        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
+    public ReloadFromJDBCDataModel getDataSource() throws TasteException {
+            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
     }
+
 
     public List<Keyword> computeArticleTfidf(String title, String content, int nKeyword) {
         Map<String, Keyword> tm = new HashMap<>();
 
         List<Term> parse = this.analysisType.parseStr(title + '\t' + content).recognition(StopLibrary.get()).getTerms();
+//        List<Term> parse = this.analysisType.parseStr(title + '\t' + content).getTerms();
+
 
         for (Term term : parse) {
             double weight = this.getWeight(term, content.length(), title.length());
