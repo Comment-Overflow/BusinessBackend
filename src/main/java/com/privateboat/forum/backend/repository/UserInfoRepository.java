@@ -11,6 +11,6 @@ public interface UserInfoRepository {
     UserInfo save(UserInfo userInfo);
     Optional<UserInfo> findByUserId(Long userId);
     UserInfo getById(Long userId) throws UserInfoException;
-    List<UserInfo> findByUserNameContaining(String searchKey);
+    List<UserInfo> findByUserNameContainingIgnoreCase(String searchKey);
     UserInfo.UserNameAndAvatarUrl getUserNameAndAvatarUrlById(Long userId);
 }

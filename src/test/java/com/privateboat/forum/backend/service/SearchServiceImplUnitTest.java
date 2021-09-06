@@ -119,7 +119,7 @@ public class SearchServiceImplUnitTest {
             add(USER_INFO);
         }};
 
-        given(userInfoRepository.findByUserNameContaining(USER_NAME)).
+        given(userInfoRepository.findByUserNameContainingIgnoreCase(USER_NAME)).
                 willReturn(userInfoList);
 
         List<UserCardInfoDTO> searchedUserInfo = searchService.searchUsers(USER_ID, USER_NAME);

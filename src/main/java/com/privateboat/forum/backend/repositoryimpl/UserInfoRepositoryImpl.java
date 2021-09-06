@@ -36,8 +36,8 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
     }
 
     @Override
-    public List<UserInfo> findByUserNameContaining(String searchKey) {
-        return userInfoDao.findByUserNameContaining(searchKey);
+    public List<UserInfo> findByUserNameContainingIgnoreCase(String searchKey) {
+        return userInfoDao.findByUserNameContainingIgnoreCase(searchKey);
     }
 
     @Override

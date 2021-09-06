@@ -9,12 +9,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface ApprovalRecordRepository {
     Page<ApprovalRecord> getApprovalRecords(Long userId, Pageable pageable);
-
     void deleteApprovalRecord(Long userId, Long commentId);
-
     void save(ApprovalRecord newApprovalRecord);
-
     void saveAndFlush(ApprovalRecord newApprovalRecord);
-
     ApprovalStatus checkIfHaveApproved(UserInfo userInfo, Comment comment);
+     void setCommentApprovalStatus(Comment comment, UserInfo userInfo);
 }

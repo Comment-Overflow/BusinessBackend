@@ -50,4 +50,9 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
         }
         else return ApprovalStatus.NONE;
     }
+
+    @Override
+    public void setCommentApprovalStatus(Comment comment, UserInfo userInfo) {
+        comment.setApprovalStatus(checkIfHaveApproved(userInfo, comment));
+    }
 }

@@ -47,4 +47,9 @@ public class StarRecordRepositoryImpl implements StarRecordRepository {
     public Boolean checkIfHaveStarred(UserInfo userInfo, Post post) {
         return starRecordDAO.existsByFromUserAndPost(userInfo, post);
     }
+
+    @Override
+    public void setPostIsStarred(Post post, UserInfo userInfo) {
+        post.setIsStarred(checkIfHaveStarred(userInfo, post));
+    }
 }
