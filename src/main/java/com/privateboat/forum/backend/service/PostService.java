@@ -31,7 +31,4 @@ public interface PostService {
     void deleteComment(Long commentId, Long userId) throws PostException;
     void setPostApprovalStatusAndIsStarred(Post post, UserInfo userInfo);
     List<HotPostDTO> getHotList(Integer pageNum, Integer pageSize);
-
-    void setPostIsStarred(Post post, UserInfo userInfo);
-    void setCommentApprovalStatus(Comment comment, UserInfo userInfo);
 }

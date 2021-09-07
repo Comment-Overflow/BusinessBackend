@@ -73,8 +73,8 @@ public class RecommendController {
             end = System.currentTimeMillis();
             log.info(String.format("========== CF time: %d ==========", end - start));
 
-            CBRecommendList.addAll(CFRecommendList);
-            return ResponseEntity.ok(CBRecommendList);
+//            CBRecommendList.addAll(CFRecommendList);
+            return ResponseEntity.ok(CFRecommendList);
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

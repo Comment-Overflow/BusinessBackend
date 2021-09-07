@@ -65,6 +65,6 @@ public interface UserStatisticDAO extends JpaRepository<UserStatistic, Long> {
     void updateFollowerCountByUserId(Long userId);
 
     @Modifying
-    @Query(value = "update user_statistic set follower_count = (select count(*) from follow_record where from_user_id = ?1) where user_id = ?1", nativeQuery = true)
+    @Query(value = "update user_statistic set following_count = (select count(*) from follow_record where from_user_id = ?1) where user_id = ?1", nativeQuery = true)
     void updateFollowingCountByUserId(Long userId);
 }

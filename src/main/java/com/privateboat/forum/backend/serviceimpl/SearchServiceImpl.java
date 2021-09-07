@@ -96,7 +96,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<UserCardInfoDTO> searchUsers(Long userId, String searchKey) {
-        List<UserInfo> searchedUserInfo = userInfoRepository.findByUserNameContaining(searchKey);
+        List<UserInfo> searchedUserInfo = userInfoRepository.findByUserNameContainingIgnoreCase(searchKey);
 
         return searchedUserInfo.stream().map(userInfo -> {
             FollowStatus followStatus = followRecordRepository.getFollowStatus(userId, userInfo.getId());
@@ -140,25 +140,13 @@ public class SearchServiceImpl implements SearchService {
         // Sort by comment time.
         results.sort((r1, r2) -> -r1.getSearchedComment().getTime().compareTo(r2.getSearchedComment().getTime()));
 
-        long a = System.currentTimeMillis();
         // Set isStarred and isApproved.
         for (SearchedCommentDTO result: results) {
-            Thread thread = new Thread(() -> {
-                Comment hostComment = result.getHostComment();
-                result.getSearchedComment().setQuoteId(0L);
-                result.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, result.getPost()));
-                hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
-            });
-            thread.start();
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                results.remove(result);
-                log.error(e.getMessage());
-            }
+            Comment hostComment = result.getHostComment();
+            result.getSearchedComment().setQuoteId(0L);
+            result.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, result.getPost()));
+            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
         }
-        long b = System.currentTimeMillis();
-        log.info(String.format("<processResults> elapsed time: %d%n", b - a));
 
         return results;
     }
@@ -169,32 +157,9 @@ public class SearchServiceImpl implements SearchService {
         AtomicReference<List<Comment>> searchedCommentsReference = new AtomicReference<>();
         AtomicReference<List<Post>> searchedPostsReference = new AtomicReference<>();
 
-        Thread commentThread = new Thread(
-                () -> {
-                    long a = System.currentTimeMillis();
-                    searchedCommentsReference.set(searchCommentsInterface.search());
-                    long b = System.currentTimeMillis();
-                    log.info(String.format("<searchComments> elapsed time: %d%n", b - a));
-                }
-        );
-        commentThread.start();
+        searchedCommentsReference.set(searchCommentsInterface.search());
 
-        Thread postThread = new Thread(
-            () -> {
-                long a = System.currentTimeMillis();
-                searchedPostsReference.set(searchPostsInterface.search());
-                long b = System.currentTimeMillis();
-                log.info(String.format("<searchPosts> elapsed time: %d%n", b - a));
-            }
-        );
-        postThread.start();
-
-        try {
-            commentThread.join();
-            postThread.join();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
+        searchedPostsReference.set(searchPostsInterface.search());
 
         return Pair.of(
                 searchedCommentsReference.get(),

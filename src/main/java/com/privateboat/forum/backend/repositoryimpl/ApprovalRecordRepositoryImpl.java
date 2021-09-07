@@ -25,6 +25,7 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
         return approvalRecordDAO.findByToUserIdAndFromUserIdIsNotAndApprovalStatusOrderByTimestampDesc(toUserId, toUserId, ApprovalStatus.APPROVAL, pageable);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void deleteApprovalRecord(Long userId, Long commentId) {
         approvalRecordDAO.deleteByFromUserIdAndCommentId(userId, commentId);
@@ -38,7 +39,7 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void saveAndFlush(ApprovalRecord newApprovalRecord) {
-
+        approvalRecordDAO.save(newApprovalRecord);
     }
 
     @Override
@@ -48,5 +49,10 @@ public class ApprovalRecordRepositoryImpl implements ApprovalRecordRepository {
             return approvalRecord.get().getApprovalStatus();
         }
         else return ApprovalStatus.NONE;
+    }
+
+    @Override
+    public void setCommentApprovalStatus(Comment comment, UserInfo userInfo) {
+        comment.setApprovalStatus(checkIfHaveApproved(userInfo, comment));
     }
 }

@@ -18,7 +18,6 @@ import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
-import com.privateboat.forum.backend.service.ReplyRecordService;
 import com.privateboat.forum.backend.util.RedisUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
@@ -49,10 +48,7 @@ public class PostServiceImpl implements PostService {
     private final UserInfoRepository userInfoRepository;
     private final ApprovalRecordRepository approvalRecordRepository;
     private final StarRecordRepository starRecordRepository;
-    private final UserStatisticRepository userStatisticRepository;
     private final RecommendService recommendService;
-    private final PreferencePostRepository preferencePostRepository;
-    private final ReplyRecordService replyRecordService;
 
     private final RedisUtil redisUtil;
     private final MQSender mqSender;
@@ -321,6 +317,7 @@ public class PostServiceImpl implements PostService {
 //        post.get().getUserInfo().getUserStatistic().subPost();
 //        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
         postRepository.setIsDeletedAndFlush(post.get());
+        commentRepository.deleteCommentsByPostId(postId);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
     }
 
@@ -352,7 +349,8 @@ public class PostServiceImpl implements PostService {
         postRepository.saveAndFlush(post);
         commentRepository.setIsDeletedAndFlush(comment);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
-        mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
+        // mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
+        updateCache(post.getId(), comment.getFloor(), 8);
     }
 
     @Override
@@ -367,8 +365,8 @@ public class PostServiceImpl implements PostService {
         removeQuoteId(targetComments);
         return targetComments.stream().map(comment -> {
             Post parentPost = comment.getPost();
-            setPostIsStarred(parentPost, viewerInfo);
-            setCommentApprovalStatus(comment, viewerInfo);
+            starRecordRepository.setPostIsStarred(parentPost, viewerInfo);
+            approvalRecordRepository.setCommentApprovalStatus(comment, viewerInfo);
 
             SearchedCommentDTO dto = new SearchedCommentDTO(parentPost, comment);
             // isStarred is no longer set upon constructor invocation.
@@ -394,18 +392,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void setPostApprovalStatusAndIsStarred(Post post, UserInfo userInfo) {
-        setCommentApprovalStatus(post.getHostComment(), userInfo);
-        setPostIsStarred(post, userInfo);
-    }
-
-    @Override
-    public void setPostIsStarred(Post post, UserInfo userInfo) {
-        post.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, post));
-    }
-
-    @Override
-    public void setCommentApprovalStatus(Comment comment, UserInfo userInfo) {
-        comment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, comment));
+        approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), userInfo);
+        starRecordRepository.setPostIsStarred(post, userInfo);
     }
 
     @Override

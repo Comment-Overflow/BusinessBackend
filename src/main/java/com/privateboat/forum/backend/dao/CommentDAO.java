@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -41,4 +42,8 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
     Page<Comment> findByPostIdAndIsDeleted(Long postId, Boolean isDeleted, Pageable pageable);
 
     Page<Comment> findByUserInfoIdAndFloorGreaterThanAndIsDeletedOrderByTimeDesc(Long userId, Integer floor, Boolean isDeleted, Pageable pageable);
+
+    @Modifying
+    @Query(value = "update comment set is_deleted = false where post_id = ?1", nativeQuery = true)
+    void deleteCommentsByPostId(Long postId);
 }
