@@ -143,19 +143,10 @@ public class SearchServiceImpl implements SearchService {
         long a = System.currentTimeMillis();
         // Set isStarred and isApproved.
         for (SearchedCommentDTO result: results) {
-            Thread thread = new Thread(() -> {
-                Comment hostComment = result.getHostComment();
-                result.getSearchedComment().setQuoteId(0L);
-                result.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, result.getPost()));
-                hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
-            });
-            thread.start();
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                results.remove(result);
-                log.error(e.getMessage());
-            }
+            Comment hostComment = result.getHostComment();
+            result.getSearchedComment().setQuoteId(0L);
+            result.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, result.getPost()));
+            hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
         }
         long b = System.currentTimeMillis();
         log.info(String.format("<processResults> elapsed time: %d%n", b - a));
