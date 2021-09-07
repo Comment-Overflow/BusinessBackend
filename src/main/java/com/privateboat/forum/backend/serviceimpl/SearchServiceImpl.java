@@ -140,7 +140,6 @@ public class SearchServiceImpl implements SearchService {
         // Sort by comment time.
         results.sort((r1, r2) -> -r1.getSearchedComment().getTime().compareTo(r2.getSearchedComment().getTime()));
 
-        long a = System.currentTimeMillis();
         // Set isStarred and isApproved.
         for (SearchedCommentDTO result: results) {
             Comment hostComment = result.getHostComment();
@@ -148,8 +147,6 @@ public class SearchServiceImpl implements SearchService {
             result.setIsStarred(starRecordRepository.checkIfHaveStarred(userInfo, result.getPost()));
             hostComment.setApprovalStatus(approvalRecordRepository.checkIfHaveApproved(userInfo, hostComment));
         }
-        long b = System.currentTimeMillis();
-        log.info(String.format("<processResults> elapsed time: %d%n", b - a));
 
         return results;
     }
@@ -160,15 +157,9 @@ public class SearchServiceImpl implements SearchService {
         AtomicReference<List<Comment>> searchedCommentsReference = new AtomicReference<>();
         AtomicReference<List<Post>> searchedPostsReference = new AtomicReference<>();
 
-        long a = System.currentTimeMillis();
         searchedCommentsReference.set(searchCommentsInterface.search());
-        long b = System.currentTimeMillis();
-        log.info(String.format("<searchComments> elapsed time: %d%n", b - a));
 
-        a = System.currentTimeMillis();
         searchedPostsReference.set(searchPostsInterface.search());
-        b = System.currentTimeMillis();
-        log.info(String.format("<searchPosts> elapsed time: %d%n", b - a));
 
         return Pair.of(
                 searchedCommentsReference.get(),
