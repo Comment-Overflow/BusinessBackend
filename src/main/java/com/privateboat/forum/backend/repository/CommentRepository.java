@@ -21,7 +21,7 @@ public interface CommentRepository {
     Page<Comment> findByFollowingOnly(Long userId, Pageable pageable);
     Page<Comment> getOnesComments(Long userId, Pageable pageable);
     QuoteDTO getCommentAsQuote(Long commentId) throws PostException;
-    void delete(Comment comment);
+    void setIsDeletedAndFlush(Comment comment);
     PageDTO<Comment> updateCommentCache(Long postId, Pageable pageable);
     boolean existsById(Long commentId);
 }

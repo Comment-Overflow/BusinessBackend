@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.sql.Timestamp;
@@ -64,6 +66,7 @@ public class PostRepositoryImpl implements PostRepository {
         return postDAO.save(post);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public Post saveAndFlush(Post post) {
         return postDAO.saveAndFlush(post);
@@ -78,8 +81,9 @@ public class PostRepositoryImpl implements PostRepository {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void delete(Post post) {
+    public void setIsDeletedAndFlush(Post post) {
         post.setIsDeleted(true);
         postDAO.save(post);
     }

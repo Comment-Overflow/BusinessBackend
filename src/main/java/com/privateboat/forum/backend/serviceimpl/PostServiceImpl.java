@@ -31,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -138,20 +137,17 @@ public class PostServiceImpl implements PostService {
         Comment hostComment = new Comment(newPost, senderInfo, 0L, newPostDTO.getContent());
         newPost.setHostComment(hostComment);
         newPost.addComment(hostComment);
-
+        addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
+        postRepository.saveAndFlush(newPost);
         // Change user statistics.
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
 //        UserStatistic senderStatistic = senderInfo.getUserStatistic();
 //        senderStatistic.addPost();
 //        userStatisticRepository.save(senderStatistic);
 
-
-        addAndUploadImage(hostComment, newPostDTO.getUploadFiles());
-
-        postRepository.save(newPost);
         redisUtil.addPostCounter();
         redisUtil.addActiveUserCounter(userId);
-        commentRepository.save(hostComment);
+
         recommendService.addNewPost(newPostDTO.getTag(), newPost.getId(), newPostDTO.getTitle(), newPostDTO.getContent());
         return newPost;
     }
@@ -324,8 +320,8 @@ public class PostServiceImpl implements PostService {
         }
 //        post.get().getUserInfo().getUserStatistic().subPost();
 //        userStatisticRepository.save(post.get().getUserInfo().getUserStatistic());
+        postRepository.setIsDeletedAndFlush(post.get());
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.POST);
-        postRepository.delete(post.get());
     }
 
     @Transactional
@@ -353,9 +349,9 @@ public class PostServiceImpl implements PostService {
         post.deleteComment(comment);
 //        senderInfo.getUserStatistic().subComment();
 //        userStatisticRepository.save(comment.getUserInfo().getUserStatistic());
+        postRepository.saveAndFlush(post);
+        commentRepository.setIsDeletedAndFlush(comment);
         mqSender.sendUpdateStatisticMessage(userId, StatisticType.COMMENT);
-        postRepository.save(post);
-        commentRepository.delete(comment);
         mqSender.sendCacheUpdateMessage(post.getId(), comment.getFloor(), 8);
     }
 

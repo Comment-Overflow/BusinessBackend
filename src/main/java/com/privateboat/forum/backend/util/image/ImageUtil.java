@@ -76,7 +76,7 @@ public class ImageUtil {
         }
     }
 
-    static public byte[] downloadImage(String fileName, String folderName) throws RuntimeException {
+    static public byte[] downloadImage(String fileName, String folderName) {
         // Specify the path to store on COS. File name should include extension.
         String key = BASE_KEY + folderName + fileName;
         // Acquire download input steam.
@@ -88,7 +88,7 @@ public class ImageUtil {
             // Get the image in the form of byte stream.
             return cosObjectInput.readAllBytes();
         } catch (IOException e) {
-            throw new RuntimeException();
+            throw new RuntimeException("Image with key " + key + " does not exist.");
         }
     }
 
