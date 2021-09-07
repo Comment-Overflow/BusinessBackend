@@ -25,6 +25,7 @@ import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final PostRepository postRepository;
     private final UserInfoRepository userInfoRepository;
     private final KeyWordRepository keyWordRepository;
+    private final CFItemRepository cfItemRepository;
     private final RecommendUtil<NlpAnalysis> recommendUtil;
     private final PreferencePostRepository preferencePostRepository;
 
@@ -92,32 +94,12 @@ public class RecommendServiceImpl implements RecommendService {
             throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         }
         UserInfo viewerInfo = optionalViewerInfo.get();
-
-        List<RecommendedItem> rawCFRecommendList = new ArrayList<>();
-        try {
-            ReloadFromJDBCDataModel dataModel = recommendUtil.getDataSource();
-            UserSimilarity similarity = new
-                    EuclideanDistanceSimilarity(dataModel);
-//                    LogLikelihoodSimilarity(dataModel);
-//                    PearsonCorKrelationSimilarity(dataModel);
-//                    UncenteredCosineSimilarity(dataModel);
-
-            UserNeighborhood neighborhood = new NearestNUserNeighborhood(Constant.NEAREST_N_USER, similarity, dataModel);
-
-            Recommender recommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
-            rawCFRecommendList = recommender.recommend(userId, Constant.CF_RECOMMEND_POST_NUMBER);
-        } catch (TasteException e) {
-            LogUtil.error(e);
-            e.printStackTrace();
-        }
-        //        CFRecommendList.removeIf(item -> redisUtil.filterReadPosts(userId, item.getId()));
-        return rawCFRecommendList.stream().
-                map(item -> {
-                    Post post = postRepository.getByPostId(item.getItemID());
-                    starRecordRepository.setPostIsStarred(post, viewerInfo);
-                    approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
-                    return post;
-                }).collect(Collectors.toList());
+        return cfItemRepository.getCFItemByUserId(userId).stream().map(item -> {
+            Post post = postRepository.getByPostId(item);
+            starRecordRepository.setPostIsStarred(post, viewerInfo);
+            approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
+            return post;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -165,6 +147,32 @@ public class RecommendServiceImpl implements RecommendService {
             ret.add(new KeyWord(postId, keyword.getName(), (long) (keyword.getScore()) * 100));
         }
         keyWordRepository.saveNewPostKeyWord(ret);
+    }
+
+    @Override
+    @Scheduled(cron = "*/30 0 0 * * *")
+    public void updateCFItems() {
+        List<Long> userIdList = userInfoRepository.getAllUserId().stream().map(UserInfo.UserInfoId::getUserId).collect(Collectors.toList());
+        try {
+            ReloadFromJDBCDataModel dataModel = recommendUtil.getDataSource();
+            UserSimilarity similarity = new
+                    EuclideanDistanceSimilarity(dataModel);
+            /* other similarity algorithm
+             *    LogLikelihoodSimilarity(dataModel);
+             *    PearsonCorKrelationSimilarity(dataModel);
+             *    UncenteredCosineSimilarity(dataModel);
+             */
+            UserNeighborhood neighborhood = new NearestNUserNeighborhood(Constant.NEAREST_N_USER, similarity, dataModel);
+
+            Recommender recommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
+            for(Long userId: userIdList) {
+                List<Long> CFRecommendList = recommender.recommend(userId, Constant.CF_RECOMMEND_POST_NUMBER).stream().map(RecommendedItem::getItemID).collect(Collectors.toList());
+                cfItemRepository.saveOneUserCFItem(userId, CFRecommendList);
+            }
+        } catch (TasteException e) {
+            LogUtil.error(e);
+            e.printStackTrace();
+        }
     }
 
 
