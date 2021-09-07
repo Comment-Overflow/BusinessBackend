@@ -11,4 +11,5 @@ public interface RecommendService {
     List<Post> getCFRecommendations(Long userId);
     void updateRecommendSystem(Long userId, Long postId, PreferenceDegree preferenceDegree);
     void addNewPost(PostTag postTag, Long postId, String title, String content);
+    void updateCFItems();
 }

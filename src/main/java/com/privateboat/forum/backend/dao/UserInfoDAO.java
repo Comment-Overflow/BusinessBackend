@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.dao;
 import com.privateboat.forum.backend.entity.UserInfo;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -16,4 +17,6 @@ public interface UserInfoDAO extends JpaRepository<UserInfo, Long> {
     @EntityGraph(attributePaths = "userStatistic")
     List<UserInfo> findByUserNameContaining(String userName);
 
+    @Query("select id from UserInfo")
+    List<UserInfo.UserInfoId> getAllUserId();
 }
