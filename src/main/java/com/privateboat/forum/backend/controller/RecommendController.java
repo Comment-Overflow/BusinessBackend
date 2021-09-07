@@ -57,13 +57,13 @@ public class RecommendController {
     ) {
         try {
             long start, end;
-//            start = System.currentTimeMillis();
-//            log.info("========== CB start ==========");
-//            List<Post> CBRecommendList = recommendService.getCBRecommendations(userId);
-//            LogUtil.debug(CBRecommendList.toString());
-//            LogUtil.debug(CBRecommendList.size());
-//            end = System.currentTimeMillis();
-//            log.info(String.format("========== CB time: %d ==========", end - start));
+            start = System.currentTimeMillis();
+            log.info("========== CB start ==========");
+            List<Post> CBRecommendList = recommendService.getCBRecommendations(userId);
+            LogUtil.debug(CBRecommendList.toString());
+            LogUtil.debug(CBRecommendList.size());
+            end = System.currentTimeMillis();
+            log.info(String.format("========== CB time: %d ==========", end - start));
 
             log.info("========== CF start ==========");
             start = System.currentTimeMillis();
