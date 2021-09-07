@@ -1,9 +1,7 @@
 package com.privateboat.forum.backend.util;
 
-import com.privateboat.forum.backend.configuration.DataSourceConfig;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import org.ansj.app.keyword.Keyword;
-import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 import org.ansj.library.StopLibrary;
 import org.ansj.splitWord.Analysis;
@@ -31,9 +29,6 @@ public class RecommendUtil<T extends Analysis> {
     private static final String TIMESTAMP_COLUMN = "browse_time";
 
     private T analysisType;
-
-//    @Autowired
-//    DataSourceConfig dataSourceConfig;
 
     @Autowired
     DataSource dataSource;
