@@ -150,7 +150,7 @@ public class RecommendServiceImpl implements RecommendService {
     }
 
     @Override
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "*/30 0 0 * * *")
     public void updateCFItems() {
         List<Long> userIdList = userInfoRepository.getAllUserId().stream().map(UserInfo.UserInfoId::getUserId).collect(Collectors.toList());
         try {
