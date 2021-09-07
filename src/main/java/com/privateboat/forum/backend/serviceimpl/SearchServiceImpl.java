@@ -160,32 +160,15 @@ public class SearchServiceImpl implements SearchService {
         AtomicReference<List<Comment>> searchedCommentsReference = new AtomicReference<>();
         AtomicReference<List<Post>> searchedPostsReference = new AtomicReference<>();
 
-        Thread commentThread = new Thread(
-                () -> {
-                    long a = System.currentTimeMillis();
-                    searchedCommentsReference.set(searchCommentsInterface.search());
-                    long b = System.currentTimeMillis();
-                    log.info(String.format("<searchComments> elapsed time: %d%n", b - a));
-                }
-        );
-        commentThread.start();
+        long a = System.currentTimeMillis();
+        searchedCommentsReference.set(searchCommentsInterface.search());
+        long b = System.currentTimeMillis();
+        log.info(String.format("<searchComments> elapsed time: %d%n", b - a));
 
-        Thread postThread = new Thread(
-            () -> {
-                long a = System.currentTimeMillis();
-                searchedPostsReference.set(searchPostsInterface.search());
-                long b = System.currentTimeMillis();
-                log.info(String.format("<searchPosts> elapsed time: %d%n", b - a));
-            }
-        );
-        postThread.start();
-
-        try {
-            commentThread.join();
-            postThread.join();
-        } catch (InterruptedException e) {
-            log.error(e.getMessage());
-        }
+        a = System.currentTimeMillis();
+        searchedPostsReference.set(searchPostsInterface.search());
+        b = System.currentTimeMillis();
+        log.info(String.format("<searchPosts> elapsed time: %d%n", b - a));
 
         return Pair.of(
                 searchedCommentsReference.get(),
