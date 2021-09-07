@@ -14,6 +14,7 @@ import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.util.*;
 
 @Component
@@ -31,9 +32,11 @@ public class RecommendUtil<T extends Analysis> {
 
     private T analysisType;
 
-    @Autowired
-    DataSourceConfig dataSourceConfig;
+//    @Autowired
+//    DataSourceConfig dataSourceConfig;
 
+    @Autowired
+    DataSource dataSource;
     public RecommendUtil(){
         this.analysisType = (T) new NlpAnalysis();
     }
@@ -43,11 +46,11 @@ public class RecommendUtil<T extends Analysis> {
     }
 
 //    public PostgreSQLJDBCDataModel getDataSource() throws TasteException {
-//        return new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
+//        return new PostgreSQLJDBCDataModel(dataSource, PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN);
 //    }
 
     public ReloadFromJDBCDataModel getDataSource() throws TasteException {
-            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSourceConfig.getDataSource(), PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
+            return new ReloadFromJDBCDataModel(new PostgreSQLJDBCDataModel(dataSource, PREFERENCE_POST_TABLE, USER_ID_COLUMN, POST_ID_COLUMN, PREFERENCE_COLUMN, TIMESTAMP_COLUMN));
     }
 
 
