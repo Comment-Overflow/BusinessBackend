@@ -144,7 +144,7 @@ public class RecommendServiceImpl implements RecommendService {
         List<KeyWord> ret = new LinkedList<>();
         for(Keyword keyword : keyWordList) {
             LogUtil.debug(keyword.toString());
-            ret.add(new KeyWord(postId, keyword.getName(), (long) (keyword.getScore()) * 100));
+            ret.add(new KeyWord(postId, keyword.getName(), (long) (keyword.getScore())));
         }
         keyWordRepository.saveNewPostKeyWord(ret);
     }
