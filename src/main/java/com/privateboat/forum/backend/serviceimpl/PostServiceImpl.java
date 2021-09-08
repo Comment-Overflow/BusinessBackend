@@ -18,6 +18,7 @@ import com.privateboat.forum.backend.rabbitmq.MQSender;
 import com.privateboat.forum.backend.repository.*;
 import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
+import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.RedisUtil;
 import com.privateboat.forum.backend.util.audit.TextAuditResult;
 import com.privateboat.forum.backend.util.audit.TextAuditResultType;
@@ -111,6 +112,11 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public Post postPost(Long userId, NewPostDTO newPostDTO) throws PostException {
+        // Check content length.
+        if (newPostDTO.getContent().length() > Constant.POST_CONTENT_MAX_LENGTH) {
+            throw new PostException(PostException.PostExceptionType.CONTENT_TOO_LONG);
+        }
+
         Optional<UserInfo> optionalSenderInfo = userInfoRepository.findByUserId(userId);
         if (optionalSenderInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
@@ -151,6 +157,10 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public Comment postComment(Long userId, NewCommentDTO commentDTO) throws PostException {
+        // Check content length.
+        if (commentDTO.getContent().length() > Constant.POST_CONTENT_MAX_LENGTH) {
+            throw new PostException(PostException.PostExceptionType.CONTENT_TOO_LONG);
+        }
         Optional<UserInfo> optionalSenderInfo = userInfoRepository.findByUserId(userId);
         if (optionalSenderInfo.isEmpty()) {
             throw new PostException(PostException.PostExceptionType.POSTER_NOT_EXIST);
