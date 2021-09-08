@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -74,6 +76,9 @@ public class RecommendController {
 //            log.info(String.format("========== CF time: %d ==========", end - start));
 
             CBRecommendList.addAll(CFRecommendList);
+            Set<Post> set = new HashSet<>(CBRecommendList);
+            CBRecommendList.clear();
+            CBRecommendList.addAll(set);
             return ResponseEntity.ok(CBRecommendList);
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
