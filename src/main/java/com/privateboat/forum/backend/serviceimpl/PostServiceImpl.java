@@ -301,7 +301,8 @@ public class PostServiceImpl implements PostService {
             List<Comment> commentList = new ArrayList<>(comments.getContent());
             commentList.remove(host);
             commentList.add(0, host);
-            recommendService.updateRecommendSystem(userId, postId, PreferenceDegree.BROWSE);
+            if(!redisUtil.filterReadPosts(userId, postId))
+                recommendService.updateRecommendSystem(userId, postId, PreferenceDegree.BROWSE);
             redisUtil.addViewCounter(userId, postId);
             return new PageDTO<>(commentList, comments.getSize());
         }
