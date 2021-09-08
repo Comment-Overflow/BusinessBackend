@@ -74,7 +74,7 @@ public class RecommendController {
 //            log.info(String.format("========== CF time: %d ==========", end - start));
 
             CBRecommendList.addAll(CFRecommendList);
-            return ResponseEntity.ok(CFRecommendList);
+            return ResponseEntity.ok(CBRecommendList);
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

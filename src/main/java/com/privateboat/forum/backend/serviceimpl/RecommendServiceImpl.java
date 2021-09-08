@@ -12,6 +12,7 @@ import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
 import com.privateboat.forum.backend.util.RecommendUtil;
+import com.privateboat.forum.backend.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ansj.app.keyword.Keyword;
@@ -63,7 +64,7 @@ public class RecommendServiceImpl implements RecommendService {
 
 //        start = System.currentTimeMillis();
 //        log.info("========== findAllRecentPost ==========");
-        List<Post.allPostIdWithTag> postList = postRepository.findAllRecentPost();
+        List<Post.allPostIdWithTag> postList = postRepository.findAllRecentPost(userInfoRepository.getById(userId));
 //        log.info(String.format("========== findAllRecentPost time: %d", System.currentTimeMillis() - start));
 
         HashMap<Post.allPostIdWithTag, Long> CBRecommendMap = new HashMap<>();

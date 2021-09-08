@@ -3,6 +3,7 @@ package com.privateboat.forum.backend.repositoryimpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dao.PostDAO;
 import com.privateboat.forum.backend.entity.Post;
+import com.privateboat.forum.backend.entity.UserInfo;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.exception.PostException;
 import com.privateboat.forum.backend.repository.PostRepository;
@@ -50,10 +51,10 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<Post.allPostIdWithTag> findAllRecentPost() {
+    public List<Post.allPostIdWithTag> findAllRecentPost(UserInfo userInfo) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.WEEK_OF_YEAR, Constant.RECOMMEND_EXPIRED_TIME);
-        return postDAO.findAllByPostTimeAfter(new Timestamp(calendar.getTime().getTime()));
+        return postDAO.findAllByPostTimeAfterAndUserInfoNot(new Timestamp(calendar.getTime().getTime()), userInfo);
     }
 
     @Override
