@@ -48,4 +48,11 @@ public class UserInfoRepositoryImpl implements UserInfoRepository {
             throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         return userNameAndAvatarUrl.get();
     }
+
+    @Override
+    public List<UserInfo.UserInfoId> getAllUserId() {
+        return userInfoDao.getAllUserId();
+    }
+
+
 }

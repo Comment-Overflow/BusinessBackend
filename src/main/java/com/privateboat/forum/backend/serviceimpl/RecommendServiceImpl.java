@@ -8,15 +8,14 @@ import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.repository.*;
-import com.privateboat.forum.backend.service.PostService;
 import com.privateboat.forum.backend.service.RecommendService;
 import com.privateboat.forum.backend.util.Constant;
 import com.privateboat.forum.backend.util.LogUtil;
 import com.privateboat.forum.backend.util.RecommendUtil;
 import com.privateboat.forum.backend.util.RedisUtil;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.ansj.app.keyword.Keyword;
-import lombok.AllArgsConstructor;
 import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
@@ -27,6 +26,7 @@ import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +43,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final PostRepository postRepository;
     private final UserInfoRepository userInfoRepository;
     private final KeyWordRepository keyWordRepository;
+    private final CFItemRepository cfItemRepository;
     private final RecommendUtil<NlpAnalysis> recommendUtil;
     private final PreferencePostRepository preferencePostRepository;
 
@@ -63,7 +64,7 @@ public class RecommendServiceImpl implements RecommendService {
 
 //        start = System.currentTimeMillis();
 //        log.info("========== findAllRecentPost ==========");
-        List<Post.allPostIdWithTag> postList = postRepository.findAllRecentPost();
+        List<Post.allPostIdWithTag> postList = postRepository.findAllRecentPost(userInfoRepository.getById(userId));
 //        log.info(String.format("========== findAllRecentPost time: %d", System.currentTimeMillis() - start));
 
         HashMap<Post.allPostIdWithTag, Long> CBRecommendMap = new HashMap<>();
@@ -94,32 +95,12 @@ public class RecommendServiceImpl implements RecommendService {
             throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         }
         UserInfo viewerInfo = optionalViewerInfo.get();
-
-        List<RecommendedItem> rawCFRecommendList = new ArrayList<>();
-        try {
-            ReloadFromJDBCDataModel dataModel = recommendUtil.getDataSource();
-            UserSimilarity similarity = new
-                    EuclideanDistanceSimilarity(dataModel);
-//                    LogLikelihoodSimilarity(dataModel);
-//                    PearsonCorKrelationSimilarity(dataModel);
-//                    UncenteredCosineSimilarity(dataModel);
-
-            UserNeighborhood neighborhood = new NearestNUserNeighborhood(Constant.NEAREST_N_USER, similarity, dataModel);
-
-            Recommender recommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
-            rawCFRecommendList = recommender.recommend(userId, Constant.CF_RECOMMEND_POST_NUMBER);
-        } catch (TasteException e) {
-            LogUtil.error(e);
-            e.printStackTrace();
-        }
-        //        CFRecommendList.removeIf(item -> redisUtil.filterReadPosts(userId, item.getId()));
-        return rawCFRecommendList.stream().
-                map(item -> {
-                    Post post = postRepository.getByPostId(item.getItemID());
-                    starRecordRepository.setPostIsStarred(post, viewerInfo);
-                    approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
-                    return post;
-                }).collect(Collectors.toList());
+        return cfItemRepository.getCFItemByUserId(userId).stream().map(item -> {
+            Post post = postRepository.getByPostId(item);
+            starRecordRepository.setPostIsStarred(post, viewerInfo);
+            approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
+            return post;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -164,9 +145,35 @@ public class RecommendServiceImpl implements RecommendService {
         List<KeyWord> ret = new LinkedList<>();
         for(Keyword keyword : keyWordList) {
             LogUtil.debug(keyword.toString());
-            ret.add(new KeyWord(postId, keyword.getName(), (long) (keyword.getScore()) * 100));
+            ret.add(new KeyWord(postId, keyword.getName(), (long) (keyword.getScore())));
         }
         keyWordRepository.saveNewPostKeyWord(ret);
+    }
+
+    @Override
+    @Scheduled(cron = "*/30 0 0 * * *")
+    public void updateCFItems() {
+        List<Long> userIdList = userInfoRepository.getAllUserId().stream().map(UserInfo.UserInfoId::getUserId).collect(Collectors.toList());
+        try {
+            ReloadFromJDBCDataModel dataModel = recommendUtil.getDataSource();
+            UserSimilarity similarity = new
+                    EuclideanDistanceSimilarity(dataModel);
+            /* other similarity algorithm
+             *    LogLikelihoodSimilarity(dataModel);
+             *    PearsonCorKrelationSimilarity(dataModel);
+             *    UncenteredCosineSimilarity(dataModel);
+             */
+            UserNeighborhood neighborhood = new NearestNUserNeighborhood(Constant.NEAREST_N_USER, similarity, dataModel);
+
+            Recommender recommender = new GenericUserBasedRecommender(dataModel, neighborhood, similarity);
+            for(Long userId: userIdList) {
+                List<Long> CFRecommendList = recommender.recommend(userId, Constant.CF_RECOMMEND_POST_NUMBER).stream().map(RecommendedItem::getItemID).collect(Collectors.toList());
+                cfItemRepository.saveOneUserCFItem(userId, CFRecommendList);
+            }
+        } catch (TasteException e) {
+            LogUtil.error(e);
+            e.printStackTrace();
+        }
     }
 
 

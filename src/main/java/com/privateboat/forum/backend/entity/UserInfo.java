@@ -60,4 +60,8 @@ public class UserInfo implements Serializable {
         String getUserName();
         String getAvatarUrl();
     }
+
+    public interface UserInfoId {
+        Long getUserId();
+    }
 }

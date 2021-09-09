@@ -7,7 +7,7 @@ public class PostException extends RuntimeException {
     public enum PostExceptionType {
         POST_NOT_EXIST, POST_DELETED, PAGE_OUT_OF_BOUND, POSTER_NOT_EXIST, UPLOAD_IMAGE_FAILED, COMMENT_NOT_EXIST,
         VIEWER_NOT_EXIST, QUOTE_OUT_OF_BOUND, PERMISSION_DENIED, USER_SILENCED, POST_FROZEN, ILLEGAL_TEXT,
-        ILLEGAL_IMAGE, EMPTY_TITLE
+        ILLEGAL_IMAGE, EMPTY_TITLE, CONTENT_TOO_LONG
     }
 
     private final PostExceptionType type;
@@ -27,6 +27,8 @@ public class PostException extends RuntimeException {
         put(PostExceptionType.ILLEGAL_IMAGE, "图片中存在不合规内容");
         put(PostExceptionType.POST_FROZEN, "该帖子已被冻结！");
         put(PostExceptionType.EMPTY_TITLE, "标题为空！");
+        put(PostExceptionType.CONTENT_TOO_LONG, "内容不可超过300字！");
+
     }};
 
     public PostException(PostExceptionType postExceptionType) {
