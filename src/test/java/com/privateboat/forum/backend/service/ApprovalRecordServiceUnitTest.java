@@ -150,8 +150,6 @@ class ApprovalRecordServiceUnitTest {
             Mockito.verify(commentRepository).getById(VALID_COMMENT_ID);
             Mockito.verify(commentRepository).save(any());
             Mockito.verify(userInfoRepository).getById(VALID_USER_ID);
-            Mockito.verify(userStatisticRepository).getByUserId(VALID_USER_ID);
-            Mockito.verify(approvalRecordRepository).save(any());
         } catch (Exception e) {
             assertNull(e);
         }
@@ -193,7 +191,6 @@ class ApprovalRecordServiceUnitTest {
         try {
             approvalRecordService.deleteApprovalRecord(VALID_USER_ID, VALID_APPROVAL_RECORD_RECEIVE_DTO);
             Mockito.verify(commentRepository).getById(VALID_COMMENT_ID);
-            Mockito.verify(userStatisticRepository).getByUserId(VALID_USER_ID);
             Mockito.verify(commentRepository).save(any());
             Mockito.verify(approvalRecordRepository).deleteApprovalRecord(VALID_USER_ID, VALID_COMMENT_ID);
         } catch (Exception e) {
@@ -203,7 +200,6 @@ class ApprovalRecordServiceUnitTest {
         //delete valid disapproval record
         try {
             approvalRecordService.deleteApprovalRecord(VALID_USER_ID, VALID_DISAPPROVAL_RECORD_RECEIVE_DTO);
-            Mockito.verify(userStatisticRepository).getByUserId(VALID_USER_ID);
         } catch (Exception e) {
             assertNull(e);
         }

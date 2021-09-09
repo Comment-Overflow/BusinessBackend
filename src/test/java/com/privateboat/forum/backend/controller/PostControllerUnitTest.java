@@ -188,35 +188,6 @@ class PostControllerUnitTest {
     }
 
     @Test
-    void testGetPost() throws Exception {
-        given(postService.getPost(POST_ID, USER_ID)).willReturn(POST);
-        Mockito.doThrow(new PostException(PostException.PostExceptionType.POST_NOT_EXIST))
-                .when(postService)
-                .getPost(WRONG_POST_ID, USER_ID);
-        Mockito.doThrow(new PostException(PostException.PostExceptionType.VIEWER_NOT_EXIST))
-                .when(postService)
-                .getPost(POST_ID, WRONG_USER_ID);
-
-        // Test get a post successfully
-        mvc.perform(get("/post")
-                .param("postId", POST_ID.toString())
-                .requestAttr("userId", USER_ID))
-                .andExpect(status().isOk());
-
-        // Test get a wrong post
-        mvc.perform(get("/post")
-                        .param("postId", WRONG_POST_ID.toString())
-                        .requestAttr("userId", USER_ID))
-                .andExpect(status().isConflict());
-
-        // Test get a post with wrong user
-        mvc.perform(get("/post")
-                        .param("postId", POST_ID.toString())
-                        .requestAttr("userId", WRONG_USER_ID))
-                .andExpect(status().isConflict());
-    }
-
-    @Test
     void testGetPostComments() throws Exception {
         Pageable pageable = PageRequest.of(PAGE_NUM, PAGE_SIZE);
         List<Comment> comments = new ArrayList<>();

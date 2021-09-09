@@ -64,7 +64,7 @@ public class SearchControllerUnitTest {
         given(searchService.searchAllComments(any(Long.class), any(String.class), any(PageRequest.class))).
                 willReturn(commentPage);
         given(searchService.searchCommentsByPostTag(
-                USER_ID,
+                any(Long.class),
                 any(PostTag.class),
                 any(String.class),
                 any(PageRequest.class)

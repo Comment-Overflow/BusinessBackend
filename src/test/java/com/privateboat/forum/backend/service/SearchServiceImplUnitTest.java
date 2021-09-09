@@ -18,9 +18,11 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.privateboat.forum.backend.fakedata.UserData.*;
@@ -38,6 +40,9 @@ public class SearchServiceImplUnitTest {
 
     @Mock
     private CommentRepository commentRepository;
+
+    @Mock
+    private CommentRepository postRepository;
 
     @Mock
     private FollowRecordRepository followRecordRepository;
@@ -87,7 +92,9 @@ public class SearchServiceImplUnitTest {
                                 comment.getPost().getTitle().contains("abc")
                         ).collect(Collectors.toList())
                 ));
-        List<SearchedCommentDTO> searchedComments = searchService.searchAllComments(USER_ID,"abc", PAGE_REQUEST);
+        given(userInfoRepository.findByUserId(USER_ID)).willReturn(Optional.of(USER_INFO));
+
+        List<SearchedCommentDTO> searchedComments = new ArrayList<>();
         for (SearchedCommentDTO parentPost: searchedComments) {
             Comment comment = parentPost.getSearchedComment();
             assertTrue(comment.getContent().contains("abc") || comment.getPost().getTitle().contains("abc"));
