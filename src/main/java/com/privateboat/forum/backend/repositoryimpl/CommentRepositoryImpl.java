@@ -41,11 +41,12 @@ public class CommentRepositoryImpl implements CommentRepository  {
             comment.setImageUrl(new ArrayList<>(comment.getImageUrl()));
         }
 
-        for (int index = 0; index < contentList.size(); ++index) {
-            contentList.set(index, (Comment) Hibernate.unproxy(contentList.get(index)));
+        List<Comment> comments = new ArrayList<>();
+        for (Comment comment : contentList) {
+            comments.add((Comment) Hibernate.unproxy(comment));
         }
 
-        return new PageDTO<>(commentPage);
+        return new PageDTO<>(comments, commentPage.getTotalElements());
     }
 
     @Override
