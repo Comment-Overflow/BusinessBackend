@@ -3,8 +3,8 @@ package com.privateboat.forum.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.privateboat.forum.backend.dto.response.ApprovalRecordDTO;
 import com.privateboat.forum.backend.entity.ApprovalRecord;
-import com.privateboat.forum.backend.enumerate.MQMethod;
-import com.privateboat.forum.backend.exception.PostException;
+import com.privateboat.forum.backend.entity.StarRecord;
+import com.privateboat.forum.backend.enumerate.ApprovalStatus;
 import com.privateboat.forum.backend.exception.UserInfoException;
 import com.privateboat.forum.backend.interceptor.JWTInterceptor;
 import com.privateboat.forum.backend.rabbitmq.MQSender;
@@ -113,22 +113,22 @@ class RecordControllerUnitTest {
     @Test
     void testPostApprovalRecord() throws Exception {
         //post valid approval
-//        mvc.perform(post("/records/approvals")
-//                .requestAttr("userId", VALID_USER_ID)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
-//                .andExpect(status().isCreated());
-
-        //post FROM_USER_NOT_EXIST approval
-        Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
-                .when(approvalRecordService)
-                .postApprovalRecord(NOT_EXIST_USER_ID, VALID_APPROVAL);
-
         mvc.perform(post("/records/approvals")
-                .requestAttr("userId", NOT_EXIST_USER_ID)
+                .requestAttr("userId", VALID_USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isCreated());
+
+        //post FROM_USER_NOT_EXIST approval
+//        Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
+//                .when(approvalRecordService)
+//                .postApprovalRecord(NOT_EXIST_USER_ID, VALID_APPROVAL);
+//
+//        mvc.perform(post("/records/approvals")
+//                .requestAttr("userId", NOT_EXIST_USER_ID)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
+//                .andExpect(status().isNotFound());
 
         //post TO_USER_NOT_EXIST approval
 //        Mockito.doThrow(new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST))
@@ -193,5 +193,64 @@ class RecordControllerUnitTest {
 //                .contentType(MediaType.APPLICATION_JSON)
 //                .content(objectMapper.writeValueAsString(VALID_APPROVAL)))
 //                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testCheckIfHaveApproved() throws Exception {
+        given(approvalRecordService.checkIfHaveApproved(VALID_USER_ID, VALID_COMMENT_ID)).willReturn(ApprovalStatus.APPROVAL);
+
+        mvc.perform(get("/records/approvals")
+                .requestAttr("userId", VALID_USER_ID)
+                .param("commentId", String.valueOf(VALID_COMMENT_ID)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(ApprovalStatus.APPROVAL)));
+    }
+
+    @Test
+    void testGetStarRecords() throws Exception {
+        List<StarRecord> starRecordList = new LinkedList<>();
+        for(int i = 0; i < 10; i++){
+            starRecordList.add(new StarRecord());
+        }
+        Page<StarRecord> starRecordPage = new PageImpl<>(starRecordList, PAGEABLE, starRecordList.size());
+        given(starRecordService.getStarRecords(VALID_USER_ID, PAGEABLE)).willReturn(starRecordPage);
+        mvc.perform(get("/notifications/stars")
+                .requestAttr("userId", VALID_USER_ID)
+                .param("page", String.valueOf(PAGE_OFFSET))
+                .param("pageSize", String.valueOf(PAGE_SIZE)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testPostStarRecord() throws Exception {
+        mvc.perform(post("/records/stars")
+                .requestAttr("userId", VALID_USER_ID)
+                .param("toUserId", String.valueOf(VALID_USER_ID))
+                .param("postId", String.valueOf(VALID_COMMENT_ID)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void testDeleteStarRecord() throws Exception {
+        mvc.perform(delete("/records/stars")
+                .requestAttr("userId", VALID_USER_ID)
+                .param("postId", String.valueOf(VALID_COMMENT_ID)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testPostFollowRecord() throws Exception {
+        mvc.perform(post("/records/followers")
+                .requestAttr("userId", VALID_USER_ID)
+                .param("toUserId", String.valueOf(VALID_USER_ID)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void testDeleteFollowRecord() throws Exception {
+        mvc.perform(delete("/records/followers")
+                .requestAttr("userId", VALID_USER_ID)
+                .param("toUserId", String.valueOf(VALID_USER_ID)))
+                .andExpect(status().isNoContent());
     }
 }

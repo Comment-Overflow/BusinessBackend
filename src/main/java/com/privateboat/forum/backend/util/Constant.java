@@ -12,9 +12,9 @@ public class Constant {
     // week as unit
     public static final Integer RECOMMEND_EXPIRED_TIME = -2;
     public static final Integer CB_RECOMMEND_POST_NUMBER = 10;
-    public static final Integer CF_RECOMMEND_POST_NUMBER = 10;
+    public static final Integer CF_RECOMMEND_POST_NUMBER = 5;
     public static final Integer POST_KEYS_WORDS = 5;
-    public static final Integer NEAREST_N_USER = 2;
+    public static final Integer NEAREST_N_USER = 4;
     public static final Integer POST_CONTENT_MAX_LENGTH = 300;
     public static final String REDIS_HOT_LIST_KEY = "hot-post-list";
 }

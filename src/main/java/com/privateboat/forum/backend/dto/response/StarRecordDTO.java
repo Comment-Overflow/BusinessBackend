@@ -1,8 +1,10 @@
 package com.privateboat.forum.backend.dto.response;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class StarRecordDTO {
     private Long timestamp;
 
