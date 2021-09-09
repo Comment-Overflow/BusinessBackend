@@ -81,9 +81,16 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<SearchedCommentDTO> searchCommentsByFollowingUsers(Long userId, Pageable pageable) {
+        long a;
+        a = System.currentTimeMillis();
         List<Comment> searchedComments = commentRepository.findByFollowingOnly(userId, pageable).getContent();
+        log.info(String.format("========== findByFollowingOnly: %d", System.currentTimeMillis() - a));
         removeQuoteId(searchedComments);
-        return wrapSearchedCommentsWithPost(searchedComments);
+
+        a = System.currentTimeMillis();
+        List<SearchedCommentDTO> ret = wrapSearchedCommentsWithPost(searchedComments);
+        log.info(String.format("========== wrap: %d", System.currentTimeMillis() - a));
+        return ret;
     }
 
     private List<SearchedCommentDTO> wrapSearchedCommentsWithPost(List<Comment> comments) {
