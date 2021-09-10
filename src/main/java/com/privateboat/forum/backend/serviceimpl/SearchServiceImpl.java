@@ -97,7 +97,10 @@ public class SearchServiceImpl implements SearchService {
         return comments.stream().map(comment -> {
             Post parentPost = comment.getPost();
             postService.setPostApprovalStatusAndIsStarred(parentPost, comment.getUserInfo());
-            return new SearchedCommentDTO(parentPost, comment);
+            SearchedCommentDTO dto = new SearchedCommentDTO(parentPost, comment);
+            // isStarred is no longer set upon constructor invocation.
+            dto.setIsStarred(parentPost.getIsStarred());
+            return dto;
         }).collect(Collectors.toList());
     }
 
