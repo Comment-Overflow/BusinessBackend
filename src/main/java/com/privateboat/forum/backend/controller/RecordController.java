@@ -159,13 +159,18 @@ public class RecordController {
         }
     }
 
-    @GetMapping(value = "/records/following/{userId}")
+    @GetMapping(value = "/records/following/{otherUserId}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowingRecords(@PathVariable Long userId,
+    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowingRecords(@RequestAttribute Long userId,
+                                                                   @PathVariable Long otherUserId,
                                                                    @RequestParam int page,
                                                                    @RequestParam int pageSize) {
         try{
-            Page<UserCardInfoDTO> ret = followRecordService.getFollowingRecords(userId, PageRequest.of(page, pageSize));
+            Page<UserCardInfoDTO> ret;
+            if (otherUserId.equals(userId))
+                ret = followRecordService.getMyFollowingRecords(userId, PageRequest.of(page, pageSize));
+            else
+                ret = followRecordService.getOthersFollowingRecords(otherUserId, PageRequest.of(page, pageSize));
             return ResponseEntity.ok(new PageDTO<>(ret));
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
@@ -173,13 +178,18 @@ public class RecordController {
         }
     }
 
-    @GetMapping(value = "/records/followed/{userId}")
+    @GetMapping(value = "/records/followed/{otherUserId}")
     @JWTUtil.Authentication(type = JWTUtil.AuthenticationType.USER)
-    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowedRecords(@PathVariable Long userId,
+    ResponseEntity<PageDTO<UserCardInfoDTO>> getMyFollowedRecords(@RequestAttribute Long userId,
+                                                                  @PathVariable Long otherUserId,
                                                                   @RequestParam int page,
                                                                   @RequestParam int pageSize) {
         try {
-            Page<UserCardInfoDTO> ret = followRecordService.getFollowedRecords(userId, PageRequest.of(page, pageSize));
+            Page<UserCardInfoDTO> ret;
+            if (otherUserId.equals(userId))
+                ret = followRecordService.getMyFollowedRecords(userId, PageRequest.of(page, pageSize));
+            else
+                ret = followRecordService.getOthersFollowedRecords(otherUserId, PageRequest.of(page, pageSize));
             return ResponseEntity.ok(new PageDTO<>(ret));
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());

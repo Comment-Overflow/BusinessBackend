@@ -9,9 +9,11 @@ import org.springframework.data.domain.Pageable;
 public interface FollowRecordService {
     Page<FollowRecord> getFollowingNotifications(Long userId, Pageable pageable) throws UserInfoException;
 
-    Page<UserCardInfoDTO> getFollowingRecords(Long userId, Pageable pageable) throws UserInfoException;
+    Page<UserCardInfoDTO> getMyFollowingRecords(Long userId, Pageable pageable) throws UserInfoException;
+    Page<UserCardInfoDTO> getOthersFollowingRecords(Long userId, Pageable pageable) throws UserInfoException;
 
-    Page<UserCardInfoDTO> getFollowedRecords(Long userId, Pageable pageable) throws UserInfoException;
+    Page<UserCardInfoDTO> getMyFollowedRecords(Long userId, Pageable pageable) throws UserInfoException;
+    Page<UserCardInfoDTO> getOthersFollowedRecords(Long userId, Pageable pageable) throws UserInfoException;
 
     void postFollowRecord(Long fromUserId, Long toUserId) throws UserInfoException;
 

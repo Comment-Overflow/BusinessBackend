@@ -97,7 +97,10 @@ public class SearchServiceImpl implements SearchService {
         return comments.stream().map(comment -> {
             Post parentPost = comment.getPost();
             postService.setPostApprovalStatusAndIsStarred(parentPost, comment.getUserInfo());
-            return new SearchedCommentDTO(parentPost, comment);
+            SearchedCommentDTO dto = new SearchedCommentDTO(parentPost, comment);
+            // isStarred is no longer set upon constructor invocation.
+            dto.setIsStarred(parentPost.getIsStarred());
+            return dto;
         }).collect(Collectors.toList());
     }
 
@@ -108,15 +111,15 @@ public class SearchServiceImpl implements SearchService {
         return searchedUserInfo.stream().map(userInfo -> {
             FollowStatus followStatus = followRecordRepository.getFollowStatus(userId, userInfo.getId());
             UserStatistic userStatistic = userInfo.getUserStatistic();
-            return new UserCardInfoDTO(
+            return new UserCardInfoDTO.MyUserCardInfoDTO(
                     userInfo.getId(),
                     userInfo.getUserName(),
                     userInfo.getAvatarUrl(),
                     userInfo.getBrief(),
                     userStatistic.getCommentCount(),
                     userStatistic.getFollowerCount(),
-                    followStatus,
-                    userInfo.getUserAuth().getUserType()
+                    userInfo.getUserAuth().getUserType(),
+                    followStatus
             );
         }).collect(Collectors.toList());
     }

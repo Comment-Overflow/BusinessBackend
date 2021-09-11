@@ -29,49 +29,80 @@ public class FollowRecordServiceImpl implements FollowRecordService {
     public Page<FollowRecord> getFollowingNotifications(Long userId, Pageable pageable) throws UserInfoException {
         userStatisticRepository.removeFlag(userId, RecordType.FOLLOW);
         Page<FollowRecord> followRecords = followRecordRepository.getFollowingRecords(userId, pageable);
-        followRecords.forEach((followRecord) -> {
-            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(userId, followRecord.getFromUser().getId()));
-        });
+        followRecords.forEach((followRecord) -> followRecord.setFollowStatus(
+                followRecordRepository.getFollowStatus(userId, followRecord.getFromUser().getId())));
         return followRecords;
     }
 
     @Override
-    public Page<UserCardInfoDTO> getFollowingRecords(Long userId, Pageable pageable) throws UserInfoException {
+    public Page<UserCardInfoDTO> getMyFollowingRecords(Long userId, Pageable pageable) throws UserInfoException {
         Page<FollowRecord> followRecords = followRecordRepository.getFollowingRecords(userId, pageable);
-        followRecords.forEach((followRecord) -> {
-            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(userId, followRecord.getFromUser().getId()));
-        });
+        followRecords.forEach((followRecord) -> followRecord.setFollowStatus(
+                followRecordRepository.getFollowStatus(userId, followRecord.getFromUser().getId())));
         return followRecords.map((followRecord -> {
             UserInfo userInfo = followRecord.getFromUser();
-            return new UserCardInfoDTO(
+            return new UserCardInfoDTO.MyUserCardInfoDTO(
                     userInfo.getId(),
                     userInfo.getUserName(),
                     userInfo.getAvatarUrl(),
                     userInfo.getBrief(),
                     userInfo.getUserStatistic().getCommentCount(),
                     userInfo.getUserStatistic().getFollowerCount(),
-                    followRecord.getFollowStatus(),
+                    userInfo.getUserAuth().getUserType(),
+                    followRecord.getFollowStatus()
+            );
+        }));
+    }
+
+    @Override
+    public Page<UserCardInfoDTO> getOthersFollowingRecords(Long userId, Pageable pageable) throws UserInfoException {
+        Page<FollowRecord> followRecords = followRecordRepository.getFollowingRecords(userId, pageable);
+        return followRecords.map((followRecord -> {
+            UserInfo userInfo = followRecord.getFromUser();
+            return new UserCardInfoDTO.OthersUserCardInfoDTO(
+                    userInfo.getId(),
+                    userInfo.getUserName(),
+                    userInfo.getAvatarUrl(),
+                    userInfo.getBrief(),
+                    userInfo.getUserStatistic().getCommentCount(),
+                    userInfo.getUserStatistic().getFollowerCount(),
                     userInfo.getUserAuth().getUserType()
             );
         }));
     }
 
     @Override
-    public Page<UserCardInfoDTO> getFollowedRecords(Long userId, Pageable pageable) throws UserInfoException {
+    public Page<UserCardInfoDTO> getMyFollowedRecords(Long userId, Pageable pageable) throws UserInfoException {
         Page<FollowRecord> followRecords = followRecordRepository.getFollowedRecords(userId, pageable);
-        followRecords.forEach((followRecord) -> {
-            followRecord.setFollowStatus(followRecordRepository.getFollowStatus(userId, followRecord.getToUserId()));
-        });
+        followRecords.forEach((followRecord) -> followRecord.setFollowStatus(
+                followRecordRepository.getFollowStatus(userId, followRecord.getToUserId())));
         return followRecords.map((followRecord -> {
             UserInfo userInfo = userInfoRepository.getById(followRecord.getToUserId());
-            return new UserCardInfoDTO(
+            return new UserCardInfoDTO.MyUserCardInfoDTO(
                     userInfo.getId(),
                     userInfo.getUserName(),
                     userInfo.getAvatarUrl(),
                     userInfo.getBrief(),
                     userInfo.getUserStatistic().getCommentCount(),
                     userInfo.getUserStatistic().getFollowerCount(),
-                    followRecord.getFollowStatus(),
+                    userInfo.getUserAuth().getUserType(),
+                    followRecord.getFollowStatus()
+            );
+        }));
+    }
+
+    @Override
+    public Page<UserCardInfoDTO> getOthersFollowedRecords(Long userId, Pageable pageable) throws UserInfoException {
+        Page<FollowRecord> followRecords = followRecordRepository.getFollowedRecords(userId, pageable);
+        return followRecords.map((followRecord -> {
+            UserInfo userInfo = userInfoRepository.getById(followRecord.getToUserId());
+            return new UserCardInfoDTO.OthersUserCardInfoDTO(
+                    userInfo.getId(),
+                    userInfo.getUserName(),
+                    userInfo.getAvatarUrl(),
+                    userInfo.getBrief(),
+                    userInfo.getUserStatistic().getCommentCount(),
+                    userInfo.getUserStatistic().getFollowerCount(),
                     userInfo.getUserAuth().getUserType()
             );
         }));
