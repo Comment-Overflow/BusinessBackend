@@ -22,7 +22,7 @@ public class TextAuditUtil {
             JSONObject response = client.textCensorUserDefined(text);
 
             // Treat the result as ok on error.
-            if (response.has("conclusionType")) {
+            if (!response.has("conclusionType")) {
                 return TextAuditResult.ok();
             }
 

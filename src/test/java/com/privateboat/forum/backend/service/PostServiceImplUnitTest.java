@@ -90,9 +90,6 @@ public class PostServiceImplUnitTest {
     @Mock
     private RecommendService recommendService;
 
-    @Mock
-    private MQSender mqSender;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
