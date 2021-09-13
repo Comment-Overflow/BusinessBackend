@@ -51,6 +51,11 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public Page<Post> findByIsDeleted(boolean isDeleted, Pageable pageable) {
+        return postDAO.findByIsDeleted(isDeleted, pageable);
+    }
+
+    @Override
     public List<Post.allPostIdWithTag> findAllRecentPost(UserInfo userInfo) {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.WEEK_OF_YEAR, Constant.RECOMMEND_EXPIRED_TIME);

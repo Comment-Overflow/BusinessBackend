@@ -40,4 +40,6 @@ public interface PostDAO extends JpaRepository<Post, Long> {
             @Param("tag") PostTag tag,
             @Param("isDeleted") boolean isDeleted,
             Pageable pageable);
+
+    Page<Post> findByIsDeleted(boolean isDeleted, Pageable pageable);
 }

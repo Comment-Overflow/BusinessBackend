@@ -14,6 +14,7 @@ public interface PostRepository {
     Optional<Post> findByPostId(Long postId);
     Page<Post> findByUserId(Long userId, Pageable pageable);
     Page<Post> findAll(Pageable pageable);
+    Page<Post> findByIsDeleted(boolean isDeleted, Pageable pageable);
     List<Post.allPostIdWithTag> findAllRecentPost(UserInfo userInfo);
     Page<Post> findByTag(PostTag tag, Pageable pageable);
     Post save(Post post);
