@@ -101,7 +101,9 @@ public class PostServiceImpl implements PostService {
         Page<StarRecord> starRecordPage = starRecordRepository.getMyStarRecords(userId, PageRequest.of(pageNum, pageSize));
         List<Post> postList = new LinkedList<>();
         for (StarRecord starRecord : starRecordPage.getContent()) {
-            postList.add(starRecord.getPost());
+            if (!starRecord.getPost().getIsDeleted()) {
+                postList.add(starRecord.getPost());
+            }
         }
         for (Post post : postList) {
             setPostApprovalStatusAndIsStarred(post, userInfo);
