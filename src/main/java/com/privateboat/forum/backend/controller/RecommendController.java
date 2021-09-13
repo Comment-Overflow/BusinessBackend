@@ -79,7 +79,7 @@ public class RecommendController {
             CBRecommendList.addAll(set);
             return ResponseEntity.ok(CBRecommendList);
         } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
