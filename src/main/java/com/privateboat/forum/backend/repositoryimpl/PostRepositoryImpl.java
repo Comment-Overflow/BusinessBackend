@@ -97,7 +97,7 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public List<Post> generateHotPosts(Integer limit) {
         PageRequest pageRequest = PageRequest.of(0, limit, Sort.by(Sort.Order.desc("hotIndex")));
-        return postDAO.findAll(pageRequest).getContent();
+        return postDAO.findByIsDeleted(false, pageRequest).getContent();
     }
 
     @Override
