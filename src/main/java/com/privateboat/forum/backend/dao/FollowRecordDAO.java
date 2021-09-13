@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface FollowRecordDAO extends JpaRepository<FollowRecord, Long> {
     Page<FollowRecord> getByToUserId(Long toUserId, Pageable pageable);
     Page<FollowRecord> getByFromUserId(Long fromUserId, Pageable pageable);
+    Page<FollowRecord> getByFromUserIdOrderByTimestamp(Long fromUserId, Pageable pageable);
     Boolean existsByFromUserIdAndToUserId(Long fromUserId, Long toUserId);
     void deleteByFromUserIdAndToUserId(Long fromUserId, Long toUserId);
 }

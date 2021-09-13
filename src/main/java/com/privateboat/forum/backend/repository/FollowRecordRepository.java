@@ -16,4 +16,6 @@ public interface FollowRecordRepository {
     FollowStatus getFollowStatus(Long fromUserId, Long toUserId);
 
     void deleteFollowRecord(Long fromUserId, Long toUserId);
+
+    Page<FollowRecord> getFollowingRecordsOrderedByTimestamp(Long userId, Pageable pageable);
 }
