@@ -10,7 +10,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @AllArgsConstructor
@@ -48,5 +50,10 @@ public class PreferencePostRepositoryImpl implements PreferencePostRepository {
     @Override
     public void clearExpiredRecord() {
 
+    }
+
+    @Override
+    public List<Long> getOneUserPreferredPostId(Long userId){
+        return preferencePostDAO.getByUserIdOrderByBrowseTime(userId).stream().map(PreferencePost::getPostId).collect(Collectors.toList());
     }
 }

@@ -52,4 +52,8 @@ public class FollowRecordRepositoryImpl implements FollowRecordRepository {
         followRecordDAO.deleteByFromUserIdAndToUserId(fromUserId, toUserId);
     }
 
+    @Override
+    public Page<FollowRecord> getFollowingRecordsOrderedByTimestamp(Long userId, Pageable pageable) {
+        return followRecordDAO.getByFromUserIdOrderByTimestamp(userId, pageable);
+    }
 }

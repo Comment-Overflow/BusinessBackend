@@ -1,9 +1,6 @@
 package com.privateboat.forum.backend.serviceimpl;
 
-import com.privateboat.forum.backend.entity.KeyWord;
-import com.privateboat.forum.backend.entity.Post;
-import com.privateboat.forum.backend.entity.PreferredWord;
-import com.privateboat.forum.backend.entity.UserInfo;
+import com.privateboat.forum.backend.entity.*;
 import com.privateboat.forum.backend.enumerate.PostTag;
 import com.privateboat.forum.backend.enumerate.PreferenceDegree;
 import com.privateboat.forum.backend.exception.UserInfoException;
@@ -26,6 +23,7 @@ import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,6 +44,7 @@ public class RecommendServiceImpl implements RecommendService {
     private final CFItemRepository cfItemRepository;
     private final RecommendUtil<NlpAnalysis> recommendUtil;
     private final PreferencePostRepository preferencePostRepository;
+    private final FollowRecordRepository followRecordRepository;
 
     /**
      * get Content Based Recommendations
@@ -95,12 +94,25 @@ public class RecommendServiceImpl implements RecommendService {
             throw new UserInfoException(UserInfoException.UserInfoExceptionType.USER_NOT_EXIST);
         }
         UserInfo viewerInfo = optionalViewerInfo.get();
-        return cfItemRepository.getCFItemByUserId(userId).stream().map(item -> {
+        List<Post> cfList = cfItemRepository.getCFItemByUserId(userId).stream().map(item -> {
             Post post = postRepository.getByPostId(item);
             starRecordRepository.setPostIsStarred(post, viewerInfo);
             approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
             return post;
         }).collect(Collectors.toList());
+
+        if(cfList.isEmpty()) {
+            List<FollowRecord> followRecordList = followRecordRepository.getFollowingRecordsOrderedByTimestamp(userId, PageRequest.of(0, 1)).getContent();
+            LogUtil.debug(followRecordList.size());
+            List<Long> followingPreferredPostList = new LinkedList<>(preferencePostRepository.getOneUserPreferredPostId(followRecordList.get(0).getToUserId()));
+            return followingPreferredPostList.stream().map(item -> {
+                Post post = postRepository.getByPostId(item);
+                starRecordRepository.setPostIsStarred(post, viewerInfo);
+                approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
+                return post;
+            }).collect(Collectors.toList());
+        }
+        else return cfList;
     }
 
     @Override
