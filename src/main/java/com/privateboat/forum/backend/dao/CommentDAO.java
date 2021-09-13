@@ -35,7 +35,7 @@ public interface CommentDAO extends JpaRepository<Comment, Long> {
             Pageable pageable);
 
     @Query(value = "select c from Comment c, FollowRecord record " +
-            "where record.fromUser.id = ?1 and record.toUserId = c.userInfo.id and c.isDeleted = false " +
+            "where record.fromUser.id = ?1 and record.toUserId = c.userInfo.id and c.post.isDeleted = false " +
             "order by c.time desc")
     Page<Comment> findByFollowingOnly(Long userId, Pageable pageable);
 
