@@ -103,13 +103,16 @@ public class RecommendServiceImpl implements RecommendService {
 
         if(cfList.isEmpty()) {
             List<FollowRecord> followRecordList = followRecordRepository.getFollowingRecordsOrderedByTimestamp(userId, PageRequest.of(0, 1)).getContent();
-            List<Long> followingPreferredPostList = new LinkedList<>(preferencePostRepository.getOneUserPreferredPostId(followRecordList.get(0).getToUserId()));
-            return followingPreferredPostList.stream().limit(5).map(item -> {
-                Post post = postRepository.getByPostId(item);
-                starRecordRepository.setPostIsStarred(post, viewerInfo);
-                approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
-                return post;
-            }).collect(Collectors.toList());
+            if(!followRecordList.isEmpty()) {
+                List<Long> followingPreferredPostList = new LinkedList<>(preferencePostRepository.getOneUserPreferredPostId(followRecordList.get(0).getToUserId()));
+                return followingPreferredPostList.stream().limit(5).map(item -> {
+                    Post post = postRepository.getByPostId(item);
+                    starRecordRepository.setPostIsStarred(post, viewerInfo);
+                    approvalRecordRepository.setCommentApprovalStatus(post.getHostComment(), viewerInfo);
+                    return post;
+                }).collect(Collectors.toList());
+            }
+            else return cfList;
         }
         else return cfList;
     }
